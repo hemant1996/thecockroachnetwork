@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <rect width="1200" height="630" fill="#0a0a0a"/>
-  <g transform="translate(420,95) scale(2)" fill="#f97316" stroke="#f97316" stroke-width="5" stroke-linecap="round">
+  <g transform="translate(440,55) scale(1.6)" fill="#f97316" stroke="#f97316" stroke-width="5" stroke-linecap="round">
     <ellipse cx="100" cy="115" rx="40" ry="60" stroke="none"/>
     <ellipse cx="100" cy="55" rx="22" ry="18" stroke="none"/>
     <path d="M 88 42 Q 70 18 50 14" fill="none"/>
@@ -12,6 +12,7 @@
     <path d="M 140 120 Q 172 122 188 110" fill="none"/>
     <path d="M 135 150 Q 162 162 174 178" fill="none"/>
   </g>
-  <text x="600" y="540" text-anchor="middle" fill="#f4f4f5" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="56" font-weight="800" letter-spacing="-1">cockroach</text>
-  <text x="600" y="590" text-anchor="middle" fill="#9ca3af" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="24" font-weight="400">a public network for civic signal · owned by no one</text>
+  <text x="600" y="465" text-anchor="middle" fill="#f4f4f5" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="72" font-weight="800" letter-spacing="-2">Main bhi cockroach.</text>
+  <text x="600" y="525" text-anchor="middle" fill="#f97316" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="30" font-weight="700">the cockroach network</text>
+  <text x="600" y="575" text-anchor="middle" fill="#9ca3af" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="22" font-weight="400">janta ka network · owned by no one · cannot be shut down</text>
 </svg>

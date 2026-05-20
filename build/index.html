@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Build on Cockroach — protocol, code, run your own</title>
+  <meta name="description" content="The Cockroach Relay Protocol: signed civic-signal events over WebSocket + WebRTC peer mesh. CC0 public domain. Source, spec, whitepaper, reference relay and client — fork freely." />
+  <meta name="theme-color" content="#0a0a0a" />
+  <link rel="canonical" href="https://thecockroachnetwork.com/build/" />
+  <link rel="icon" href="../web/assets/cockroach.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../web/styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <a class="topbar-link" href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
+        <path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.1.83-.26.83-.58v-2.04c-3.34.73-4.04-1.41-4.04-1.41-.54-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.84 2.8 1.31 3.49 1 .1-.78.42-1.31.76-1.61-2.66-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.31-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.87.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.38.82 1.11.82 2.23v3.3c0 .32.22.69.83.58A12 12 0 0 0 12 .3"/>
+      </svg>
+      <span>github.com/hemant1996/thecockroachnetwork</span>
+      <span class="topbar-arrow">→</span>
+    </a>
+  </div>
+
+  <main>
+    <section class="hero">
+      <svg class="mark" viewBox="0 0 200 200" aria-hidden="true">
+        <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
+        <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
+        <path d="M 88 42 Q 70 18 50 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 112 42 Q 130 18 150 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+
+      <p class="muted" style="margin-bottom:8px"><a href="../" style="color:var(--muted)">← Back to landing</a></p>
+      <h1>Build on Cockroach.</h1>
+      <p class="lead">A decentralized civic-signal protocol. Signed events, dumb relays, peer-to-peer mesh. CC0 public domain. Fork it. Run your own. Replace ours.</p>
+
+      <div class="hero-actions">
+        <a class="action-card primary" href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">
+          <span class="action-title">Source code →</span>
+          <span class="action-sub">github.com/hemant1996/thecockroachnetwork — spec, reference relay, reference client, deploy templates, all CC0.</span>
+        </a>
+        <a class="action-card ghost" href="#download">
+          <span class="action-title">Download a relay →</span>
+          <span class="action-sub">Standalone binaries for Mac · Windows · Linux. ~70 MB. No install.</span>
+        </a>
+      </div>
+    </section>
+
+    <section id="docs">
+      <h2>Read these</h2>
+      <div class="deliverables">
+        <div class="d">
+          <h3>SPEC.md</h3>
+          <p>Normative protocol: event format, signing rules, relay wire protocol, reputation reference algorithm, threat model, v0.2 WebRTC mesh kinds (10001/10002/10003).</p>
+          <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/SPEC.md" target="_blank" rel="noopener">Read &rarr;</a>
+        </div>
+        <div class="d">
+          <h3>WHITEPAPER.md</h3>
+          <p>The <em>why</em>. Vision, design principles, threat model in prose, comparison to alternatives, the locality-weighted reputation argument.</p>
+          <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/WHITEPAPER.md" target="_blank" rel="noopener">Read &rarr;</a>
+        </div>
+        <div class="d">
+          <h3>RELEASE.md</h3>
+          <p>How to cut a release: signed Git tags, deterministic tarballs, multi-host Git mirroring, IPFS pinning, coordinated multi-operator launches.</p>
+          <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/RELEASE.md" target="_blank" rel="noopener">Read &rarr;</a>
+        </div>
+        <div class="d">
+          <h3>relay/RUN.md</h3>
+          <p>Operator's friction ladder: Render, Replit, Termux, Docker, Fly, bare VPS, TLS reverse proxies, Tor hidden services, content policy template.</p>
+          <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/relay/RUN.md" target="_blank" rel="noopener">Read &rarr;</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="download">
+      <h2>Download a relay binary</h2>
+      <p class="muted" style="margin-bottom:8px">
+        Standalone executables. ~70 MB. Extract and run — no install, no Bun runtime required. <span id="detected-platform-note"></span>
+      </p>
+
+      <div class="downloads-grid">
+        <a class="download-btn" data-platform="darwin-arm64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-darwin-arm64.tar.gz">
+          <div class="download-platform">Mac · Apple Silicon</div>
+          <div class="download-detail">M1 / M2 / M3 / M4 · .tar.gz</div>
+        </a>
+        <a class="download-btn" data-platform="darwin-x64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-darwin-x64.tar.gz">
+          <div class="download-platform">Mac · Intel</div>
+          <div class="download-detail">Older Macs · .tar.gz</div>
+        </a>
+        <a class="download-btn" data-platform="windows-x64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-windows-x64.zip">
+          <div class="download-platform">Windows</div>
+          <div class="download-detail">Windows 10 / 11 · x86_64 · .zip</div>
+        </a>
+        <a class="download-btn" data-platform="linux-x64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-linux-x64.tar.gz">
+          <div class="download-platform">Linux · x86_64</div>
+          <div class="download-detail">Most distros · .tar.gz</div>
+        </a>
+        <a class="download-btn" data-platform="linux-arm64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-linux-arm64.tar.gz">
+          <div class="download-platform">Linux · ARM</div>
+          <div class="download-detail">Raspberry Pi 4 / 5 · .tar.gz</div>
+        </a>
+      </div>
+
+      <p class="muted" style="font-size:14px;margin-top:14px">
+        Extract → double-click <code>start.command</code> (Mac/Linux) or <code>start.bat</code> (Windows). The launcher inside the archive strips macOS quarantine, sets the exec bit, and runs the relay.
+      </p>
+      <p class="muted" style="font-size:14px;margin-top:6px">
+        Or deploy with one click to a hosted runtime:
+      </p>
+
+      <div class="deploys" style="margin-top:10px">
+        <a class="deploy-card" href="https://render.com/deploy?repo=https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">
+          <div class="deploy-name">Deploy to Render</div>
+          <div class="deploy-detail">~3 min · free tier · no credit card · works from phone</div>
+        </a>
+        <a class="deploy-card" href="https://replit.com/github/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">
+          <div class="deploy-name">Run on Replit</div>
+          <div class="deploy-detail">~2 min · free tier · runs in the browser · works from phone</div>
+        </a>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>How it works</h2>
+
+      <div class="how-grid">
+        <div class="how-card">
+          <h3>You hold your identity</h3>
+          <p>Your phone or browser generates an ed25519 keypair the first time you open a client. The secret key never leaves your device. No signup, no email, no profile server.</p>
+        </div>
+        <div class="how-card">
+          <h3>Reports are signed events</h3>
+          <p>A small JSON object — pubkey, timestamp, geohash, tags, description, signature. Around 300–500 bytes. Media is referenced by content-hash, never embedded.</p>
+        </div>
+        <div class="how-card">
+          <h3>Relays are dumb brokers</h3>
+          <p>A relay verifies your signature, indexes the event, and serves it. It does not decide what is true. Anyone can run one. Anyone can ignore one.</p>
+        </div>
+        <div class="how-card">
+          <h3>v0.2 — WebRTC peer mesh</h3>
+          <p>Every PWA install joins a peer-to-peer mesh via WebRTC. Events flow over both relays and peer connections. The network survives any single relay going offline.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="verbs">
+      <h2>The five verification verbs</h2>
+      <p>A report on its own is one person's claim. The network's value comes from <em>others observing the same reality and signing what they see</em>. A verification is itself a signed event referencing a report, carrying exactly one verdict:</p>
+      <div class="verbs">
+        <div class="verb green">true</div>
+        <div class="verb">duplicate</div>
+        <div class="verb green">resolved</div>
+        <div class="verb red">fake</div>
+        <div class="verb yellow">needs-more-proof</div>
+      </div>
+      <p style="margin-top:16px">No global <code>verified=true</code> is stamped on a report. There is only a stream of signed verifications. Different clients aggregate them differently — by locality, by trust list, by recency.</p>
+    </section>
+
+    <section id="why-locality">
+      <h2>Why locality — not vouching, not proof-of-personhood</h2>
+      <p>If anyone can sign a verification, what stops one person from spinning up ten thousand keys?</p>
+      <p>Not a central registry of "real" users — that reintroduces the authority we just eliminated. Not proof-of-personhood — that hands the kill switch to whoever runs the verifier. Not vouching — that creates a social graph that becomes a kill list under a hostile regime.</p>
+      <p>The answer is <b>locality</b>. A key's verification of a report counts in proportion to that key's sustained signed presence in the area where the report was filed. Building influence costs <em>being there over time</em>, not money, not social capital, not external attestation.</p>
+      <p>Full algorithm in <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/SPEC.md#8-reputation-reference-algorithm" target="_blank" rel="noopener">SPEC §8</a> and <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/WHITEPAPER.md#6-reputation--locality--accuracy" target="_blank" rel="noopener">WHITEPAPER §6</a>.</p>
+    </section>
+
+    <section id="fork">
+      <h2>Fork. Run your own. Replace ours.</h2>
+      <p>Every artifact in this project is <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener">CC0 public domain</a>. No attribution required. No license clauses to honor. No "permission" to ask for. Mirror the repo to GitLab or Codeberg. Pin the spec to IPFS. Build a better client. Run a relay in your city.</p>
+      <p>If the maintainers of this repo disappear tomorrow, the network keeps working. That is, on purpose, the entire point.</p>
+      <p style="margin-top:20px">
+        <a class="btn" href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">github.com/hemant1996/thecockroachnetwork →</a>
+      </p>
+    </section>
+
+    <footer>
+      <div class="row">
+        <div>
+          <svg class="mark" viewBox="0 0 200 200" aria-hidden="true">
+            <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
+            <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
+          </svg>
+          <span>cockroach v0.2 · CC0 public domain · janta ka network</span>
+        </div>
+        <div>
+          <a href="../">← back to landing</a> &nbsp;·&nbsp;
+          <a href="../client/index.html">open the client</a> &nbsp;·&nbsp;
+          <a href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">source</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+  (function () {
+    const note = document.getElementById("detected-platform-note");
+    if (!note) return;
+    const p = (navigator.platform || "").toLowerCase();
+    const ua = (navigator.userAgent || "").toLowerCase();
+    const set = (key, label) => {
+      const btn = document.querySelector('[data-platform="' + key + '"]');
+      if (btn) btn.classList.add("recommended");
+      if (label) note.innerHTML = ' Recommended for your system: <b>' + label + '</b>.';
+    };
+    if (/iphone|ipad|ipod/.test(ua)) {
+      note.innerHTML = ' On iOS? <a href="../client/index.html">Open the client</a> instead — the binary is the operator path.';
+      return;
+    }
+    if (/android/.test(ua)) {
+      note.innerHTML = ' On Android? <a href="../client/index.html">Open the client</a>, or <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/relay/RUN.md">run a relay via Termux</a>.';
+      return;
+    }
+    if (/win/.test(p)) { set("windows-x64", "Windows"); return; }
+    if (/linux/.test(p)) { set("linux-x64", "Linux x86_64"); return; }
+    if (/mac/.test(p)) {
+      if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+        navigator.userAgentData.getHighEntropyValues(["architecture"]).then((d) => {
+          const arch = (d.architecture || "").toLowerCase();
+          if (arch === "arm") set("darwin-arm64", "Mac · Apple Silicon");
+          else set("darwin-x64", "Mac · Intel");
+        }).catch(() => { set("darwin-arm64", "Mac (pick Apple Silicon or Intel)"); set("darwin-x64", ""); });
+      } else {
+        set("darwin-arm64", "Mac (pick Apple Silicon or Intel)");
+        set("darwin-x64", "");
+      }
+    }
+  })();
+  </script>
+</body>
+</html>

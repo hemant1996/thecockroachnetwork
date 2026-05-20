@@ -270,6 +270,72 @@ ul li { margin-bottom: 6px; }
 }
 @media (max-width: 760px) { .steps { grid-template-columns: 1fr; gap: 28px; } }
 
+/* Community-first landing: action list (what you can do here). */
+.action-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 22px;
+}
+.action-item {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.action-item h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+.action-item p {
+  margin: 0 0 8px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+.action-item .action-tag {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.action-item .action-tag code {
+  margin-right: 6px;
+}
+@media (max-width: 640px) { .action-list { grid-template-columns: 1fr; } }
+
+/* Compare grid: yahan vs Twitter/Insta/WhatsApp. */
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+.compare-item {
+  border-radius: 12px;
+  padding: 18px 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+.compare-item h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--muted);
+}
+.compare-item.good h3 { color: var(--accent); }
+.compare-item p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+.compare-item.good { border-color: var(--accent); background: rgba(249, 115, 22, 0.06); }
+.compare-item.good p { color: var(--fg); }
+@media (max-width: 800px) { .compare-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 460px) { .compare-grid { grid-template-columns: 1fr; } }
+
+/* Single-card hero variant (one big primary CTA). */
+.hero-actions.single { grid-template-columns: 1fr; }
+
 .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
 .how-card {
   border: 1px solid var(--line);
