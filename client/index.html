@@ -27,9 +27,15 @@
       </svg>
       <span>cockroach</span>
     </div>
-    <div style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:14px">
-      <span><span id="live-dot" class="dot"></span><span id="status" data-i18n="status.starting">starting…</span></span>
-      <span id="peer-indicator" style="display:none"><span id="peer-dot" class="dot"></span><span id="peer-count">0 peers</span></span>
+    <div class="header-status">
+      <span class="status-pill">
+        <span id="live-dot" class="dot"></span>
+        <span id="status" data-i18n="status.starting">starting…</span>
+      </span>
+      <span id="peer-indicator" class="status-pill peer-pill" style="display:none">
+        <span id="peer-dot" class="dot"></span>
+        <span>🔗 <span id="peer-count">0 peers</span></span>
+      </span>
     </div>
   </header>
 
@@ -129,6 +135,40 @@
   </main>
 
   <div id="toast" class="toast"></div>
+
+  <!-- Publish confirmation card: small slide-in showing the fan-out
+       (signed → relays → peers → permanent).  Appears after every publish. -->
+  <div id="publish-toast" class="publish-toast"></div>
+
+  <!-- First-publish modal: shown once, explains what just happened.
+       Makes the decentralization architecture VISIBLE to the user. -->
+  <div id="publish-explainer" class="modal-overlay" hidden>
+    <div class="modal-card">
+      <div class="explainer-head">
+        <span class="explainer-check">✓</span>
+        <h3>Yeh kya hua? · What just happened?</h3>
+      </div>
+      <ol class="explainer-steps">
+        <li>
+          <b>Signed with your key.</b>
+          Aapke phone ne aapki gupt chaabi se signature lagaya. Koi aur is event ko forge nahi kar sakta.
+        </li>
+        <li>
+          <b>Sent to <span id="explainer-relays">0</span> relay(s).</b>
+          Public servers jo anyone chala sakta hai. Aaj ek hai — aur chaahiye. <a href="../#pehredaar">Pehredaar baniye</a>.
+        </li>
+        <li id="explainer-peers-block">
+          <b>Fanned out to <span id="explainer-peers">0</span> peer(s).</b>
+          WebRTC se direct connections — dusre cockroaches ke phones se. No middleman.
+        </li>
+        <li>
+          <b>Permanent record.</b>
+          Signed event ko koi badal nahi sakta. Tabhi tak rahega jab tak koi Pehredaar host kar raha hai.
+        </li>
+      </ol>
+      <button id="explainer-ok" class="btn">Samjha · Got it</button>
+    </div>
+  </div>
 
   <script type="module" src="app.js"></script>
 </body>

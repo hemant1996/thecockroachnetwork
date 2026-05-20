@@ -446,11 +446,47 @@ function publishReport({ content, tags, lat, lon, precision }) {
   const event = signEvent(partial, sk);
   ingest(event);
   const sent = pool.publish(event);
-  peers.broadcast(event);              // fan out to WebRTC peers as well
-  if (sent === 0) toast(t("toast.published_0"));
-  else if (sent === 1) toast(t("toast.published_1", { n: sent }));
-  else toast(t("toast.published_n", { n: sent }));
+  const peerSent = peers.broadcast(event);
+  showPublishConfirmation(sent, peerSent);
   return event;
+}
+
+// "What just happened?" — the visible signal that this network is different.
+// First time: a modal explainer (signed → relays → peers → permanent).
+// After that: a small slide-in card showing the same fan-out, briefly.
+function showPublishConfirmation(relayCount, peerCount) {
+  const FIRST_KEY = "cockroach.first_publish_seen";
+  const isFirst = !localStorage.getItem(FIRST_KEY);
+
+  if (isFirst) {
+    localStorage.setItem(FIRST_KEY, "1");
+    const modal = $("#publish-explainer");
+    if (modal) {
+      $("#explainer-relays").textContent = relayCount;
+      $("#explainer-peers").textContent = peerCount;
+      $("#explainer-peers-block").style.display = peerCount > 0 ? "" : "none";
+      modal.hidden = false;
+    }
+    return;
+  }
+
+  const ptoast = $("#publish-toast");
+  if (!ptoast) return;
+  const peerLine = peerCount > 0
+    ? `<div class="pt-step pt-peers">⤳ Fanned out to <b>${peerCount}</b> peer${peerCount === 1 ? "" : "s"}</div>`
+    : "";
+  const relayLine = relayCount === 0
+    ? `<div class="pt-step pt-fail">⚠ No relay reachable — held locally, will retry</div>`
+    : `<div class="pt-step">↗ Sent to <b>${relayCount}</b> relay${relayCount === 1 ? "" : "s"}</div>`;
+  ptoast.innerHTML = `
+    <div class="pt-step pt-signed">✓ <b>Signed</b> with your key</div>
+    ${relayLine}
+    ${peerLine}
+    <div class="pt-step pt-permanent">✓ Permanent record</div>
+  `;
+  ptoast.classList.add("show");
+  clearTimeout(window.__pubToastTimer);
+  window.__pubToastTimer = setTimeout(() => ptoast.classList.remove("show"), 3500);
 }
 
 function publishVerification(reportId, verdict, note = "") {
@@ -464,7 +500,7 @@ function publishVerification(reportId, verdict, note = "") {
   const event = signEvent(partial, sk);
   ingest(event);
   pool.publish(event);
-  peers.broadcast(event);              // fan out to WebRTC peers as well
+  peers.broadcast(event);
   return event;
 }
 
@@ -505,6 +541,27 @@ const $$ = (s) => [...document.querySelectorAll(s)];
 function shortUrl(u) { try { return new URL(u).host; } catch { return u; } }
 function escapeHTML(s) {
   return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// Short readable ID — first 4 hex chars of the pubkey, "#abcd".
+function shortId(pubkey) { return "#" + pubkey.slice(0, 4); }
+
+// Deterministic cockroach avatar — color derived from the pubkey hash,
+// inline SVG so there's no avatar server and no network round-trip.  The
+// avatar IS the identity; same key always renders the same circle.
+function avatarSvg(pubkey, size = 30) {
+  const hue   = (parseInt(pubkey.slice(0, 2), 16) / 255) * 360;
+  const sat   = 60 + (parseInt(pubkey.slice(2, 4), 16) / 255) * 30;
+  const light = 45 + (parseInt(pubkey.slice(4, 6), 16) / 255) * 18;
+  const bg = `hsl(${hue.toFixed(0)} ${sat.toFixed(0)}% ${light.toFixed(0)}%)`;
+  const fg = light > 56 ? "#0a0a0a" : "#ffffff";
+  return `<svg class="feed-avatar" viewBox="0 0 32 32" width="${size}" height="${size}" aria-hidden="true">
+    <circle cx="16" cy="16" r="16" fill="${bg}"/>
+    <ellipse cx="16" cy="20" rx="6.5" ry="8.5" fill="${fg}"/>
+    <ellipse cx="16" cy="11.5" rx="3.5" ry="3" fill="${fg}"/>
+    <path d="M 13.6 9.5 Q 11.2 6.5 8.8 6" fill="none" stroke="${fg}" stroke-width="1" stroke-linecap="round"/>
+    <path d="M 18.4 9.5 Q 20.8 6.5 23.2 6" fill="none" stroke="${fg}" stroke-width="1" stroke-linecap="round"/>
+  </svg>`;
 }
 
 // Convert a relay's WS(S) URL to its HTTP(S) origin for permalink rendering.
@@ -645,36 +702,46 @@ function renderFeed() {
     const geo = r.tags.find(t => t[0] === "g")?.[1] || "";
     const decoded = geo ? geohashDecode(geo) : null;
     const cachedPlace = geo ? placeCache.get(geo) : null;
-    // Trigger background resolution; result updates the feed when ready.
     if (geo && decoded && cachedPlace === undefined) requestPlaceName(geo);
 
     let locHTML = "";
     if (decoded) {
       const label = cachedPlace || formatLatLon(decoded);
       const mapUrl = `https://www.openstreetmap.org/?mlat=${decoded.lat.toFixed(5)}&mlon=${decoded.lon.toFixed(5)}#map=14/${decoded.lat.toFixed(5)}/${decoded.lon.toFixed(5)}`;
-      const titleAttr = `${formatLatLon(decoded)} · geohash ${geo} · open in OpenStreetMap`;
-      locHTML = `<span>·</span><a class="loc" data-geo="${escapeHTML(geo)}" href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener" title="${escapeHTML(titleAttr)}"><span class="loc-pin">📍</span><span class="loc-name">${escapeHTML(label)}</span></a>`;
+      const titleAttr = `${formatLatLon(decoded)} · geohash ${geo} · OpenStreetMap`;
+      locHTML = `<a class="loc" data-geo="${escapeHTML(geo)}" href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener" title="${escapeHTML(titleAttr)}"><span class="loc-pin">📍</span><span class="loc-name">${escapeHTML(label)}</span></a>`;
     } else if (geo) {
-      locHTML = `<span>·</span><span title="geohash">${escapeHTML(geo)}</span>`;
+      locHTML = `<span class="loc" title="geohash">📍 ${escapeHTML(geo)}</span>`;
     }
 
     const counts = verdictCounts(r.id);
     const cv = consensusVerdict(r.id);
+    const totalVerifs = Object.values(counts).reduce((a, b) => a + b, 0);
+
+    // Hide the score line completely when nothing has been verified yet —
+    // a fresh report shouldn't shout "incomplete" at every reader.
+    let scoreHTML = "";
+    if (cv) {
+      scoreHTML = `<div class="score"><b class="score-consensus">✓ ${escapeHTML(t("verdict." + cv) !== "verdict." + cv ? t("verdict." + cv) : cv)}</b>${Object.entries(counts).map(([k, n]) => `<span>${escapeHTML(t("verdict." + k) !== "verdict." + k ? t("verdict." + k) : k)}: <b>${n}</b></span>`).join("")}</div>`;
+    } else if (totalVerifs > 0) {
+      scoreHTML = `<div class="score"><span class="score-progress">${totalVerifs} verified</span>${Object.entries(counts).map(([k, n]) => `<span>${escapeHTML(t("verdict." + k) !== "verdict." + k ? t("verdict." + k) : k)}: <b>${n}</b></span>`).join("")}</div>`;
+    }
+
     return `
       <div class="report-card" data-id="${r.id}">
-        <div class="meta">
-          <span class="pub" title="${r.pubkey}">${r.pubkey.slice(0, 8)}…</span>
-          <span>·</span>
-          <span>${fmtTimeAgo(r.created_at)}</span>
-          ${locHTML}
-          ${r.pubkey === pkHex ? `<span>·</span><span style="color:var(--accent)">${escapeHTML(t("feed.you"))}</span>` : ""}
+        <div class="card-head">
+          <span class="avatar-wrap" title="${r.pubkey}">${avatarSvg(r.pubkey, 30)}</span>
+          <div class="meta">
+            <span class="id mono" title="${r.pubkey}">${shortId(r.pubkey)}</span>
+            ${locHTML ? `<span class="dot">·</span>${locHTML}` : ""}
+            <span class="dot">·</span>
+            <span class="time">${fmtTimeAgo(r.created_at)}</span>
+            ${r.pubkey === pkHex ? `<span class="you-tag">${escapeHTML(t("feed.you"))}</span>` : ""}
+          </div>
         </div>
         <div class="content">${escapeHTML(r.content)}</div>
         ${tags.length ? `<div class="tags">${tags.map(t => `<span>#${escapeHTML(t)}</span>`).join("")}</div>` : ""}
-        <div class="score">
-          ${cv ? `<span>${escapeHTML(t("feed.consensus_label"))} <b>${escapeHTML(t("verdict." + cv) !== "verdict." + cv ? t("verdict." + cv) : cv)}</b></span>` : `<span style="opacity:0.6">${escapeHTML(t("feed.awaiting_verifications"))}</span>`}
-          ${Object.entries(counts).map(([k, n]) => `<span>${escapeHTML(t("verdict." + k) !== "verdict." + k ? t("verdict." + k) : k)}: <b>${n}</b></span>`).join(" ")}
-        </div>
+        ${scoreHTML}
         <div class="verify-row">
           ${["true", "duplicate", "resolved", "fake", "needs-more-proof"]
             .map(v => `<button data-verdict="${v}">${escapeHTML(t("verdict." + v))}</button>`).join("")}
@@ -897,6 +964,16 @@ window.addEventListener("DOMContentLoaded", async () => {
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     navigator.serviceWorker.register("sw.js").catch(() => { /* offline support is best-effort */ });
   }
+
+  // First-publish explainer dismiss
+  const explainerOk = $("#explainer-ok");
+  if (explainerOk) explainerOk.addEventListener("click", () => {
+    $("#publish-explainer").hidden = true;
+  });
+  const explainerOverlay = $("#publish-explainer");
+  if (explainerOverlay) explainerOverlay.addEventListener("click", (e) => {
+    if (e.target === explainerOverlay) explainerOverlay.hidden = true;
+  });
 
   // ─── Peer mode toggle (v0.2 WebRTC mesh) ──────────────────────────────
   const PEER_PREF_KEY = "cockroach.peer_enabled";

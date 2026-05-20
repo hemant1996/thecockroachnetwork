@@ -91,19 +91,53 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
 .report-card {
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
   background: #0f0f10;
+}
+.report-card .card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.report-card .avatar-wrap {
+  flex-shrink: 0;
+  display: flex;
+}
+.report-card .feed-avatar {
+  border-radius: 50%;
+  display: block;
 }
 .report-card .meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  font-size: 12px;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
   color: var(--muted);
-  margin-bottom: 8px;
+  flex: 1;
+  min-width: 0;
 }
-.report-card .meta .pub { font-family: ui-monospace, monospace; }
+.report-card .meta .dot { opacity: 0.5; }
+.report-card .meta .id {
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+  color: var(--fg);
+  font-size: 12px;
+}
+.report-card .meta .time { font-size: 12px; }
+.report-card .meta .you-tag {
+  background: var(--accent);
+  color: #0a0a0a;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-left: 4px;
+}
 .report-card .meta .loc {
   color: var(--muted);
   text-decoration: none;
@@ -130,13 +164,16 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
 }
 .report-card .score {
   display: flex;
-  gap: 12px;
-  font-size: 13px;
+  gap: 10px;
+  font-size: 12.5px;
   color: var(--muted);
   align-items: center;
   margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 .report-card .score b { color: var(--fg); }
+.report-card .score .score-consensus { color: var(--good); }
+.report-card .score .score-progress { color: var(--accent); }
 .report-card .verify-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .report-card .verify-row button { font-size: 12px; padding: 6px 10px; border-radius: 8px; background: transparent; border: 1px solid var(--line); color: var(--muted); }
 .report-card .verify-row button:hover { color: var(--fg); border-color: var(--fg); }
@@ -171,7 +208,33 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
 }
 .tag-pills .pill.selected { background: var(--accent); color: #000; border-color: var(--accent); }
 
-.dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; background: var(--muted); margin-right: 6px; }
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #111;
+  border: 1px solid var(--line);
+  font-size: 11.5px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.peer-pill {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: var(--good);
+}
+.peer-pill #peer-count b { color: var(--good); }
+
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 999px; background: var(--muted); margin-right: 0; }
 .dot.live, .dot.connected { background: var(--good); animation: pulse 1.5s ease-in-out infinite; }
 .dot.warn, .dot.connecting { background: var(--warn); animation: pulse 1s ease-in-out infinite; }
 .dot.error { background: var(--bad); }
@@ -243,6 +306,114 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
   z-index: 100;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+/* Publish confirmation card — the visible signal that signing + fan-out
+   actually happened.  Appears in the lower-center after every publish. */
+.publish-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-2);
+  border: 1px solid var(--good);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 13px;
+  line-height: 1.7;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 8px 30px rgba(34, 197, 94, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  max-width: 320px;
+  min-width: 240px;
+}
+.publish-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.publish-toast .pt-step {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--fg);
+}
+.publish-toast .pt-step b { font-variant-numeric: tabular-nums; }
+.publish-toast .pt-signed { color: var(--good); }
+.publish-toast .pt-permanent { color: var(--good); margin-top: 2px; }
+.publish-toast .pt-fail { color: var(--warn); }
+
+/* First-publish explainer modal — the "what just happened" overlay,
+   shown once.  Makes the decentralization architecture visible. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+.modal-overlay[hidden] { display: none; }
+.modal-card {
+  background: var(--bg);
+  border: 1px solid var(--good);
+  border-radius: 16px;
+  padding: 26px 24px 22px;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(34, 197, 94, 0.12);
+}
+.explainer-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.explainer-check {
+  width: 28px;
+  height: 28px;
+  background: var(--good);
+  color: #0a0a0a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.modal-card h3 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.explainer-steps {
+  padding-left: 22px;
+  margin: 14px 0 18px;
+}
+.explainer-steps li {
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+.explainer-steps li b {
+  display: block;
+  color: var(--fg);
+  font-size: 14.5px;
+  margin-bottom: 2px;
+}
+.explainer-steps li a { color: var(--accent); }
+#explainer-ok {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 15px;
+}
 
 code { font-family: ui-monospace, monospace; font-size: 13px; background: #1a1a1c; padding: 2px 6px; border-radius: 4px; }
 .mono { font-family: ui-monospace, monospace; word-break: break-all; }
