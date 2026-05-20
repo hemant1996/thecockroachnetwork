@@ -3,12 +3,30 @@
 // Env: PORT (default 7447), DB (default ./relay.db), RETENTION_DAYS (default 90)
 
 import { Database } from "bun:sqlite";
+import { mkdirSync } from "node:fs";
 import {
   validateEvent,
   matchesFilter,
   type SignedEvent,
   type Filter,
 } from "./lib.ts";
+
+// ──────────────────────────────────────────────────────────────────────────
+// Default paths (compiled-binary friendly)
+//
+// Distributed as a standalone executable, the relay may be double-clicked
+// from Finder/Explorer, which sets cwd=/ on macOS — writing to "./relay.db"
+// would fail.  Use ~/.cockroach-relay/relay.db as a robust default; the DB
+// env var still overrides for explicit setups (Docker volumes, Fly mounts).
+function defaultDbPath(): string {
+  const home = process.env.HOME ?? process.env.USERPROFILE;
+  if (home) {
+    const dir = `${home}/.cockroach-relay`;
+    try { mkdirSync(dir, { recursive: true }); } catch { /* fall through */ }
+    return `${dir}/relay.db`;
+  }
+  return "./relay.db";
+}
 
 // ──────────────────────────────────────────────────────────────────────────
 // Permalink rendering (shareable HTML page per event, with OG tags)
@@ -156,7 +174,7 @@ function renderPermalinkHTML(ev: SignedEvent, origin: string): string {
 // Config
 
 const PORT = Number(process.env.PORT ?? 7447);
-const DB_PATH = process.env.DB ?? "./relay.db";
+const DB_PATH = process.env.DB ?? defaultDbPath();
 const RETENTION_DAYS = Number(process.env.RETENTION_DAYS ?? 90);
 const MAX_SUBS_PER_CONN = 64;
 const MAX_FILTERS_PER_REQ = 10;
@@ -294,7 +312,9 @@ const liveSockets = new Set<any>();
 // ──────────────────────────────────────────────────────────────────────────
 // HTTP + WebSocket server
 
-const server = Bun.serve({
+let server: ReturnType<typeof Bun.serve>;
+try {
+  server = Bun.serve({
   port: PORT,
   fetch(req, srv) {
     // WebSocket upgrade must be checked before any other handling, since the
@@ -389,7 +409,27 @@ const server = Bun.serve({
       ws.send(JSON.stringify(["NOTICE", `unknown verb: ${verb}`]));
     },
   },
-});
+  });
+} catch (e: any) {
+  if (e?.code === "EADDRINUSE") {
+    console.error("");
+    console.error(`  ✗ Port ${PORT} is already in use.`);
+    console.error("");
+    console.error(`    Try a different port: PORT=7448 ./cockroach-relay`);
+    console.error("");
+  } else {
+    console.error("✗ Failed to start:", e?.message ?? e);
+  }
+  process.exit(1);
+}
 
-console.log(`cockroach-relay listening on ws://localhost:${server.port}`);
-console.log(`  db: ${DB_PATH}   retention: ${RETENTION_DAYS}d`);
+console.log("");
+console.log("  cockroach-relay v0.1.0 running");
+console.log("");
+console.log(`  WebSocket:  ws://localhost:${server.port}`);
+console.log(`  Info:       http://localhost:${server.port}/`);
+console.log(`  Database:   ${DB_PATH}`);
+console.log(`  Retention:  ${RETENTION_DAYS} days`);
+console.log("");
+console.log("  Press Ctrl+C to stop.");
+console.log("");

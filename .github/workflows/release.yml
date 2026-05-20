@@ -1,0 +1,115 @@
+# Builds standalone executables for all 5 supported platforms when a version
+# tag is pushed (or via manual dispatch), then publishes them to a GitHub
+# Release.  Bun supports cross-compilation so we build everything on one
+# ubuntu-latest runner — fast, cheap, and the binaries are byte-identical to
+# what users would build on their own machine.
+
+name: Release binaries
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to create (e.g. v0.1.0)'
+        required: true
+
+permissions:
+  contents: write    # to create the release + upload assets
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: bun-linux-x64
+            artifact: cockroach-relay-linux-x64
+          - target: bun-linux-arm64
+            artifact: cockroach-relay-linux-arm64
+          - target: bun-darwin-x64
+            artifact: cockroach-relay-darwin-x64
+          - target: bun-darwin-arm64
+            artifact: cockroach-relay-darwin-arm64
+          - target: bun-windows-x64
+            artifact: cockroach-relay-windows-x64.exe
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install relay deps
+        working-directory: relay
+        run: bun install --production --frozen-lockfile
+
+      - name: Compile ${{ matrix.target }}
+        working-directory: relay
+        run: |
+          bun build --compile --minify --sourcemap=none \
+            --target=${{ matrix.target }} \
+            server.ts \
+            --outfile ../${{ matrix.artifact }}
+
+      - name: SHA256 checksum
+        run: shasum -a 256 ${{ matrix.artifact }} > ${{ matrix.artifact }}.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            ${{ matrix.artifact }}
+            ${{ matrix.artifact }}.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Inventory
+        run: ls -lh cockroach-relay-*
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: cockroach-relay-*
+          generate_release_notes: true
+          body: |
+            Standalone executables for the Cockroach Relay reference implementation.
+
+            **Pick your platform and download. No install needed.**
+
+            | Platform | Binary |
+            |---|---|
+            | Mac (Apple Silicon — M1/M2/M3/M4) | `cockroach-relay-darwin-arm64` |
+            | Mac (Intel) | `cockroach-relay-darwin-x64` |
+            | Windows | `cockroach-relay-windows-x64.exe` |
+            | Linux (x86_64) | `cockroach-relay-linux-x64` |
+            | Linux (ARM — Raspberry Pi 4/5) | `cockroach-relay-linux-arm64` |
+
+            Each binary is ~70 MB and bundles the Bun runtime, SQLite, and the relay code into a single file.
+
+            **Run from terminal:**
+            ```
+            ./cockroach-relay-darwin-arm64
+            ```
+
+            Or double-click from Finder/Explorer.
+
+            The relay listens on `ws://localhost:7447`. Database lives at `~/.cockroach-relay/relay.db`.
+
+            **First-run warnings:**
+            - **macOS Gatekeeper** blocks unsigned binaries. Allow with `xattr -d com.apple.quarantine cockroach-relay-darwin-arm64`, or right-click → Open → Open.
+            - **Windows SmartScreen** warns about an unrecognized publisher. Click "More info" → "Run anyway."
+
+            Verify your download with the `.sha256` file shipped alongside each binary.
+
+            **Caveat:** running on `localhost` reaches only your own machine. To be part of the public network, either put a TLS reverse proxy in front + open a port, or run as a Tor hidden service. See `relay/RUN.md` for both recipes.
+
+            Binaries are unsigned in v0.1 because Apple ($99/yr) and Microsoft ($200–500/yr) developer certificates aren't in the v0.1 budget. The protocol and source are CC0 — anyone with a certificate can build and sign their own.

@@ -2,9 +2,56 @@
 
 Anyone can run a Cockroach relay. *Anyone* means anyone — there is no registration, no allow-list, no "official" relay. If you stand one up and a client adds your URL, you are part of the network.
 
-This guide walks the friction ladder, from zero-install to bare-metal. Pick whichever fits your setup. The first three options need no terminal and no laptop install — they work from a phone browser.
+This guide walks the friction ladder, from zero-install to bare-metal. Pick whichever fits your setup. The first option is a literal download-and-double-click; the next two need no terminal and no laptop install (they work from a phone browser).
 
 > **Coming in v0.2** — every PWA install of the reference client will join a WebRTC peer-relay mesh automatically. No setup at all: opening the client makes your device part of the network. The current options below remain valid; the v0.2 mesh complements them, doesn't replace them.
+
+---
+
+## Option 0 — Download the executable (~30 seconds, no install at all)
+
+**[Releases page →](https://github.com/hemant1996/thecockroachnetwork/releases)**
+
+Pick the binary for your platform:
+
+| Platform | Binary |
+|---|---|
+| Mac (Apple Silicon — M1/M2/M3/M4) | `cockroach-relay-darwin-arm64` |
+| Mac (Intel) | `cockroach-relay-darwin-x64` |
+| Windows | `cockroach-relay-windows-x64.exe` |
+| Linux (x86_64) | `cockroach-relay-linux-x64` |
+| Linux (ARM — Raspberry Pi 4/5) | `cockroach-relay-linux-arm64` |
+
+Each binary is ~70 MB and bundles Bun + SQLite + the relay code into a single file. No dependencies. No install.
+
+Run from terminal:
+
+```sh
+chmod +x cockroach-relay-darwin-arm64    # mac/linux only
+./cockroach-relay-darwin-arm64
+```
+
+Or double-click from Finder / Explorer. The relay listens on `ws://localhost:7447`. Database lives at `~/.cockroach-relay/relay.db`.
+
+**First-run warnings (unsigned binaries — v0.1 budget):**
+
+- **macOS Gatekeeper** blocks unsigned binaries. To allow:
+  ```sh
+  xattr -d com.apple.quarantine cockroach-relay-darwin-arm64
+  ```
+  Or right-click → **Open** → **Open** in the confirmation dialog.
+
+- **Windows SmartScreen** warns *"Windows protected your PC."* Click **More info** → **Run anyway**.
+
+Verify your download with the `.sha256` checksum file shipped beside each binary:
+
+```sh
+shasum -a 256 -c cockroach-relay-darwin-arm64.sha256
+```
+
+**Caveat:** running on `localhost` reaches only your own machine. To be part of the public network, you need either (a) a TLS reverse proxy + open port (see *Option 7*), or (b) a Tor hidden service (see *Behind Tor*). Both work with the same downloaded binary; no rebuild needed.
+
+**Build from source instead:** if you don't want to trust the prebuilt binary, you can reproduce it locally with `relay/scripts/build-binaries.sh`. Same Bun version, same source, byte-identical output.
 
 ---
 

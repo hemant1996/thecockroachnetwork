@@ -40,6 +40,7 @@ The first public release. Sets the wire protocol baseline; subsequent v0.x relea
 - Normative spec (`SPEC.md`).
 - Landing page (`web/`) positioning the protocol as a release, not a service.
 - Release process (`RELEASE.md`) for multi-host Git mirroring and IPFS pinning.
+- **Standalone executables** for Mac (arm64 + x64), Windows (x64), and Linux (x64 + arm64), built via Bun's `--compile` mode. ~70 MB per binary, no install needed, no Bun runtime required on the user's machine. Built on tag push by `.github/workflows/release.yml`; reproducible locally with `relay/scripts/build-binaries.sh`.
 
 ### Known limits in v0.1
 

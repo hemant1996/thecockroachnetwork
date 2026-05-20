@@ -8,3 +8,4 @@ bun.lockb
 .env
 .env.local
 .gstack/
+thecockroachnetwork/
