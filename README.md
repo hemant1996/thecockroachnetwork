@@ -51,7 +51,7 @@ docs/              Design notes and the brainstorm record
 
 **No download. No install.** Open the client on any phone or laptop:
 
-**https://hemant1996.github.io/thecockroachnetwork/client/**
+**https://thecockroachnetwork.com/client/**
 
 Generates a keypair in your browser on first load. Compose a report, sign it, watch it appear in the feed. This is the truly zero-friction entry to the network.
 

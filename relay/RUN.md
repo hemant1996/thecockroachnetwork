@@ -12,7 +12,7 @@ This guide walks the friction ladder, from zero-install to bare-metal. Pick whic
 
 **[Releases page →](https://github.com/hemant1996/thecockroachnetwork/releases/latest)**
 
-> If you just want to **use** the network, open the client at `https://hemant1996.github.io/thecockroachnetwork/client/` on your phone — zero download, zero install. The relay binary is for people running their own node.
+> If you just want to **use** the network, open the client at `https://thecockroachnetwork.com/client/` on your phone — zero download, zero install. The relay binary is for people running their own node.
 
 Pick the archive for your platform. Archives preserve the executable bit so you don't need `chmod`.
 

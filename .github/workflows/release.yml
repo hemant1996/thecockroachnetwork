@@ -93,7 +93,7 @@ jobs:
           body: |
             Standalone executables for the Cockroach Relay reference implementation.
 
-            **Operator path.** If you just want to USE the network, open the [client PWA](https://hemant1996.github.io/thecockroachnetwork/) on your phone instead — zero download, zero install, auto-generated keypair. Binaries are for people running their own relay.
+            **Operator path.** If you just want to USE the network, open the [client PWA](https://thecockroachnetwork.com/) on your phone instead — zero download, zero install, auto-generated keypair. Binaries are for people running their own relay.
 
             ## Download for your platform
 

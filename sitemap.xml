@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://hemant1996.github.io/thecockroachnetwork/</loc>
+    <loc>https://thecockroachnetwork.com/</loc>
     <priority>1.0</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://hemant1996.github.io/thecockroachnetwork/client/</loc>
+    <loc>https://thecockroachnetwork.com/client/</loc>
     <priority>0.9</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://hemant1996.github.io/thecockroachnetwork/SPEC.md</loc>
+    <loc>https://thecockroachnetwork.com/SPEC.md</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://hemant1996.github.io/thecockroachnetwork/WHITEPAPER.md</loc>
+    <loc>https://thecockroachnetwork.com/WHITEPAPER.md</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://hemant1996.github.io/thecockroachnetwork/RELEASE.md</loc>
+    <loc>https://thecockroachnetwork.com/RELEASE.md</loc>
     <priority>0.5</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://hemant1996.github.io/thecockroachnetwork/relay/RUN.md</loc>
+    <loc>https://thecockroachnetwork.com/relay/RUN.md</loc>
     <priority>0.7</priority>
     <changefreq>monthly</changefreq>
   </url>
