@@ -89,6 +89,37 @@
       </div>
     </section>
 
+    <section id="quickstart" class="quickstart">
+      <h2>Three taps. You're in.</h2>
+      <p class="muted" style="font-size:17px">No app store. No signup. No email. The protocol works in your browser.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Open the client</h3>
+          <p>Your phone generates an ed25519 keypair the first time the page loads. That keypair <em>is</em> your identity. It never leaves your device. There is no account to create.</p>
+          <a class="btn small" href="../client/index.html">Open the client →</a>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Enable peer mode <span class="step-tag">new in v0.2</span></h3>
+          <p>In the Identity tab, flip the <b>Enable peer mode</b> switch. Your browser opens direct WebRTC connections to other peers and joins the mesh. <b>No download. No install. Your phone is now a relay.</b></p>
+          <p class="muted small">Peer mode exposes your IP to other peers — off by default, you opt in with a clear consent dialog.</p>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Publish a report</h3>
+          <p>In the Report tab, type what's broken. Pick tags — <code>#road</code>, <code>#corruption</code>, <code>#scam</code>, <code>#protest</code>, anything you want. Tap <b>Sign and publish</b>. Your event signs with your keypair and propagates through the mesh. Permanent. Verifiable. Yours.</p>
+        </div>
+      </div>
+
+      <p class="muted" style="margin-top:28px;font-size:14px">
+        Want to operate dedicated infrastructure too — a 24/7 public node with persistent storage? <a href="#download">Download a relay binary ↓</a> or <a href="#run">deploy one in three clicks</a>. The three taps above are enough to participate in the network. Running a dedicated relay is for operators, not users.
+      </p>
+    </section>
+
     <section id="download" class="download-section">
       <h2>Download a relay</h2>
       <p class="muted" style="margin-bottom:8px">

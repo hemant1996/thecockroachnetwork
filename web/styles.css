@@ -183,6 +183,65 @@ ul li { margin-bottom: 6px; }
 .download-btn .download-platform { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
 .download-btn .download-detail { color: var(--muted); font-size: 13px; }
 
+/* Three-step quick-start — the action-first explainer right under the hero. */
+.quickstart { padding-top: 56px; padding-bottom: 56px; }
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 32px;
+}
+.step {
+  position: relative;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 28px 24px 24px;
+}
+.step-num {
+  position: absolute;
+  top: -18px;
+  left: 24px;
+  width: 36px;
+  height: 36px;
+  background: var(--accent);
+  color: #0a0a0a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 17px;
+  box-shadow: 0 0 0 4px var(--bg);
+}
+.step h3 {
+  margin: 6px 0 12px;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+.step p {
+  margin: 0 0 12px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #e4e4e7;
+}
+.step p.muted { color: var(--muted); }
+.step .btn { margin-top: 4px; }
+.step-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  background: var(--accent);
+  color: #0a0a0a;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+@media (max-width: 760px) { .steps { grid-template-columns: 1fr; gap: 28px; } }
+
 .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
 .how-card {
   border: 1px solid var(--line);
