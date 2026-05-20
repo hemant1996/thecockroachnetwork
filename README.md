@@ -47,6 +47,30 @@ web/               Landing page — "join the network", not "use our app"
 docs/              Design notes and the brainstorm record
 ```
 
+## Quick start (download and run)
+
+The lowest-friction path. No install, no Docker, no terminal needed.
+
+**[Download a binary from the latest release →](https://github.com/hemant1996/thecockroachnetwork/releases/latest)**
+
+| Platform | File |
+|---|---|
+| Mac (Apple Silicon — M1/M2/M3/M4) | `cockroach-relay-darwin-arm64` |
+| Mac (Intel) | `cockroach-relay-darwin-x64` |
+| Windows | `cockroach-relay-windows-x64.exe` |
+| Linux (x86_64) | `cockroach-relay-linux-x64` |
+| Linux (ARM — Raspberry Pi 4/5) | `cockroach-relay-linux-arm64` |
+
+Each binary is ~70 MB and bundles Bun + SQLite + the relay code. Run from terminal (`./cockroach-relay-darwin-arm64`) or double-click from Finder / Explorer. The relay listens on `ws://localhost:7447`. Database at `~/.cockroach-relay/relay.db`.
+
+**First-run warnings (unsigned binaries — v0.1):**
+- **macOS:** Gatekeeper blocks unsigned binaries. Allow with `xattr -d com.apple.quarantine cockroach-relay-darwin-arm64`, or right-click → Open → Open.
+- **Windows:** SmartScreen warns about an unrecognized publisher. Click **More info** → **Run anyway**.
+
+To be part of the public network (not just localhost), put a TLS reverse proxy in front or run as a Tor hidden service — both recipes in [`relay/RUN.md`](relay/RUN.md).
+
+Don't trust the prebuilt binaries? Reproduce them locally with `relay/scripts/build-binaries.sh`. Same Bun version, same source, byte-identical output.
+
 ## Quick start (local development)
 
 Two terminals.
