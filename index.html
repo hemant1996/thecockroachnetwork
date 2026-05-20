@@ -651,6 +651,17 @@
       return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
     }
 
+    // Match a "cockroach declaration" by tag OR by content phrase.
+    // Users often write "i am a cockroach" / "main bhi cockroach" without
+    // picking the exact hashtag — we count those too.
+    const COCKROACH_TAG_RE = /^main[-_]?bhi[-_]?cockroach$/i;
+    const COCKROACH_CONTENT_RE = /\b(?:main\s+bhi|i\s+am(?:\s+(?:a|the))?|we\s+are(?:\s+all)?|hum(?:\s+sab)?)\s+cockroach(?:es)?\b/i;
+    function isCockroachDeclaration(ev) {
+      const tags = ev.tags || [];
+      if (tags.some(t => t[0] === "t" && COCKROACH_TAG_RE.test(t[1]))) return true;
+      return COCKROACH_CONTENT_RE.test(ev.content || "");
+    }
+
     function ingest(ev) {
       if (seenIds.has(ev.id)) return;
       seenIds.add(ev.id);
@@ -659,8 +670,7 @@
       if (ageSec < 86400) reports24h++;
       const geo = (tags.find(t => t[0] === "g") || [])[1];
       if (geo) { cities.add(shortGeo(geo)); requestPlace(shortGeo(geo)); }
-      const isCockroach = tags.some(t => t[0] === "t" && /^main[-_]?bhi[-_]?cockroach$/i.test(t[1]));
-      if (isCockroach && ageSec < 7 * 86400) {
+      if (isCockroachDeclaration(ev) && ageSec < 7 * 86400) {
         cockroaches7d++;
         declarations.push(ev);
         declarations.sort((a, b) => b.created_at - a.created_at);

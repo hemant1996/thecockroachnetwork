@@ -737,7 +737,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   const geoLine = $("#geo-line");
   const precSel = $("#geo-precision");
 
-  const DEFAULT_TAGS = ["road", "outage", "garbage", "corruption", "scam", "public-safety", "environment", "protest"];
+  const DEFAULT_TAGS = ["mainbhicockroach", "paperleak", "unemployment", "road", "harassment", "election", "corruption", "scam", "outage", "protest"];
+
+  // A "main bhi cockroach" / "I am cockroach" phrase in the content auto-adds
+  // the canonical #mainbhicockroach tag — so users who just write the
+  // declaration without picking the hashtag still show up on the live wall.
+  const COCKROACH_PHRASE_RE = /\b(?:main\s+bhi|i\s+am(?:\s+(?:a|the))?|we\s+are(?:\s+all)?|hum(?:\s+sab)?)\s+cockroach(?:es)?\b/i;
   const selectedTags = new Set();
   function renderTagPills() {
     tagPills.innerHTML = "";
@@ -782,6 +787,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     const content = composeText.value.trim();
     if (!content) { toast(t("compose.error.empty")); return; }
+    // If the user wrote a "main bhi cockroach" declaration in the content,
+    // make sure the canonical tag is attached even if they didn't pick it.
+    if (COCKROACH_PHRASE_RE.test(content)) selectedTags.add("mainbhicockroach");
     if (selectedTags.size === 0) { toast(t("compose.error.no_tag")); return; }
     composeBtn.disabled = true;
     try {
