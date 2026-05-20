@@ -53,30 +53,38 @@
         <path d="M 135 150 Q 162 162 174 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
       </svg>
 
-      <!-- Hindi-Latin (Hinglish) version -->
+      <!-- Hinglish -->
       <div data-lang-content="hi">
         <h1>Main bhi <span class="accent">cockroach</span>.</h1>
         <p class="lead">CJI ne hume cockroach kaha. Ye naam ab humara hai.</p>
-        <p class="lead" style="margin-top:0">Ab humara apna network hai. Aap jo likhenge, woh signed hoga — koi badal nahi sakta. Aisa banaya hai ki koi band na kar sake. <b>Jitne zyada cockroach relay chalayenge, utna sach hoga.</b></p>
+        <p class="lead" style="margin-top:0">Aap jo likhenge, woh signed hoga — koi badal nahi sakta. Network jeeta rahega jab tak koi Pehredaar relay chala raha hai. <b>Jitne zyada Pehredaar, utna sach.</b></p>
 
-        <div class="hero-actions single">
+        <div class="hero-actions">
           <a class="action-card primary" href="client/index.html">
-            <span class="action-title">Abhi kholiye →</span>
-            <span class="action-sub">Phone ho ya laptop, bas browser chahiye. Na signup, na email, na app — sirf ek link.</span>
+            <span class="action-title">Network mein aaiye →</span>
+            <span class="action-sub">Phone ya laptop, bas browser chahiye. Likhiye, verify kariye, padhiye.</span>
+          </a>
+          <a class="action-card ghost" href="#pehredaar">
+            <span class="action-title">Pehredaar baniye →</span>
+            <span class="action-sub">Ek relay chala kar network ko zinda rakhiye. 3 minute. Koi code nahi.</span>
           </a>
         </div>
       </div>
 
-      <!-- English version -->
+      <!-- English -->
       <div data-lang-content="en" hidden>
         <h1>I am also <span class="accent">cockroach</span>.</h1>
         <p class="lead">The Chief Justice called us cockroaches. We have made the name our own.</p>
-        <p class="lead" style="margin-top:0">We have our own network now. What you write is signed — no one can alter it. It is built so no single party can shut it down. <b>The more cockroaches run relays, the more true that becomes.</b></p>
+        <p class="lead" style="margin-top:0">What you write is signed — no one can alter it. The network lives as long as a Pehredaar runs a relay. <b>The more Pehredaars, the more it survives.</b></p>
 
-        <div class="hero-actions single">
+        <div class="hero-actions">
           <a class="action-card primary" href="client/index.html">
-            <span class="action-title">Open it now →</span>
-            <span class="action-sub">Phone or laptop, you just need a browser. No signup, no email, no app — just a link.</span>
+            <span class="action-title">Enter the network →</span>
+            <span class="action-sub">Phone or laptop, just a browser. Write, verify, read.</span>
+          </a>
+          <a class="action-card ghost" href="#pehredaar">
+            <span class="action-title">Become a Pehredaar →</span>
+            <span class="action-sub">Run a relay. Keep the network alive. 3 minutes. No code.</span>
           </a>
         </div>
       </div>
@@ -302,6 +310,69 @@
       </div>
     </section>
 
+    <!-- ─── BECOME A PEHREDAAR ─────────────────────────────────────────── -->
+    <section id="pehredaar">
+      <div data-lang-content="hi">
+        <h2>Cockroach Pehredaar baniye</h2>
+
+        <p class="warn-callout">
+          <b>Sach baat:</b> aaj sirf <b>ek public Pehredaar</b> hai — Mumbai mein. Agar woh band ho aur koi naya nahi banta, jo aap likh chuke hain, kahin nahi pahunchega. <b>Network khatam.</b><br>
+          Isiliye Pehredaar chahiye. Jitne zyada, utna mazboot.
+        </p>
+
+        <h3>Pehredaar kya karte hain?</h3>
+        <p>Bas ek server chalu rakhte hain. Wahi network ka kaam karta hai — har report receive, store, doosron tak forward. Code samajhne ki zaroorat nahi.</p>
+
+        <h3>3 minute mein Pehredaar baniye — koi credit card nahi</h3>
+        <ol class="ol-steps">
+          <li><b>Deploy to Render</b> button neeche click kariye.</li>
+          <li>Render.com par account banaiye — free, koi card nahi.</li>
+          <li>Apne Pehredaar ka naam rakhiye, jaise <code>cockroach-relay-yourname</code>.</li>
+          <li><b>"Apply"</b> click kariye. Render apne aap deploy karega.</li>
+          <li>~3 minute baad URL milega: <code>https://[yourname].onrender.com</code>.</li>
+          <li>Yeh URL share kariye — Twitter, WhatsApp, kahin bhi. Doosre clients aapke relay use karenge.</li>
+        </ol>
+
+        <p style="margin-top:18px">
+          <a class="btn" href="https://render.com/deploy?repo=https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener" style="font-size:16px;padding:14px 26px">Deploy to Render →</a>
+        </p>
+
+        <p class="muted" style="font-size:14px;margin-top:18px">
+          Aapke pas apna server / Mac / Linux laptop hai? Direct binary download kariye — <a href="build/#download">yahan se</a>. Ya Fly / Docker / Tor / Termux — saare options <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/relay/RUN.md" target="_blank" rel="noopener">RUN.md</a> mein.
+        </p>
+      </div>
+
+      <div data-lang-content="en" hidden>
+        <h2>Become a Cockroach Pehredaar</h2>
+
+        <p class="warn-callout">
+          <b>The truth:</b> there is <b>only one public Pehredaar</b> today, in Mumbai. If it goes down and nobody else has set one up, everything you have written becomes unreachable. <b>The network dies.</b><br>
+          That is why Pehredaars are needed. The more there are, the stronger the network.
+        </p>
+
+        <h3>What does a Pehredaar do?</h3>
+        <p>Keeps a server running. That's it. The server receives every report, stores it, forwards it to others. No code knowledge needed.</p>
+
+        <h3>3 minutes to become a Pehredaar — no credit card</h3>
+        <ol class="ol-steps">
+          <li>Click the <b>Deploy to Render</b> button below.</li>
+          <li>Sign in or create a Render.com account — free, no card.</li>
+          <li>Name your Pehredaar, like <code>cockroach-relay-yourname</code>.</li>
+          <li>Click <b>"Apply"</b>. Render deploys it automatically.</li>
+          <li>After ~3 minutes you get a URL: <code>https://[yourname].onrender.com</code>.</li>
+          <li>Share that URL — Twitter, WhatsApp, anywhere. Other clients will use your relay.</li>
+        </ol>
+
+        <p style="margin-top:18px">
+          <a class="btn" href="https://render.com/deploy?repo=https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener" style="font-size:16px;padding:14px 26px">Deploy to Render →</a>
+        </p>
+
+        <p class="muted" style="font-size:14px;margin-top:18px">
+          Have your own server / Mac / Linux laptop? Download the binary <a href="build/#download">here</a>. Or use Fly, Docker, Tor, Termux — all options in <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/relay/RUN.md" target="_blank" rel="noopener">RUN.md</a>.
+        </p>
+      </div>
+    </section>
+
     <!-- ─── FAQ ───────────────────────────────────────────────────────── -->
     <section id="faq">
       <div data-lang-content="hi">
@@ -324,8 +395,8 @@
         <h3>Kuch download karna hoga?</h3>
         <p>Nahi. Bas browser. Phone ho ya laptop, koi app install nahi. thecockroachnetwork.com kholiye — bas.</p>
 
-        <h3>Kahan hosted hai? Kya band ho sakta hai?</h3>
-        <p>Code GitHub par hai. Pehla relay Mumbai mein. Aur log bhi relays chala sakte hain — ek band ho to doosra chalega. Aapka phone bhi ek relay hai (peer mode). Pura network band karna asambhav hai.</p>
+        <h3>Agar saare Pehredaar band ho gaye to?</h3>
+        <p>Network mein jo events the, woh khatam ho jaayenge — kyunki host karne wala koi nahi. Aapki gupt chaabi safe hai (woh aapke browser mein), lekin reports khoja sakte hain. <b>Yahi reason hai ki Pehredaar chahiye.</b> <a href="#pehredaar">Aap khud Pehredaar baniye</a>.</p>
 
         <h3>Mujhe code dekhna hai / fork karna hai?</h3>
         <p>Saari cheez open hai. <a href="build/">Developer page</a> dekhiye — spec, source, run-your-own guides. Apna relay chalaiye, apna mirror host kariye, kuch naya banaiye.</p>
@@ -351,8 +422,8 @@
         <h3>Do I need to download anything?</h3>
         <p>No. Just a browser. Phone or laptop, no app to install. Open thecockroachnetwork.com — that's it.</p>
 
-        <h3>Where is it hosted? Can it be shut down?</h3>
-        <p>Code is on GitHub. The first relay is in Mumbai. Anyone can run relays — if one shuts down, another runs. Your phone is also a relay (peer mode). Shutting down the whole network is essentially impossible.</p>
+        <h3>What if every Pehredaar goes offline?</h3>
+        <p>Every event in the network becomes unreachable — nobody is hosting it anymore. Your secret key is safe (it lives in your browser) but the reports are lost. <b>That is why Pehredaars matter.</b> <a href="#pehredaar">Become one yourself</a>.</p>
 
         <h3>I want to read the code / fork it?</h3>
         <p>Everything is open. See the <a href="build/">developer page</a> — spec, source, run-your-own guides. Run your own relay, host your own mirror, build something new on top.</p>

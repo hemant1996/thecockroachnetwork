@@ -376,6 +376,37 @@ ul li { margin-bottom: 6px; }
 /* Single-card hero variant (one big primary CTA). */
 .hero-actions.single { grid-template-columns: 1fr; }
 
+/* Honest "this network will die without operators" warning callout. */
+.warn-callout {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 0 0 22px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #fecaca;
+}
+.warn-callout b { color: #fff; }
+
+/* Ordered step list for the "become a Pehredaar" guide. */
+.ol-steps {
+  margin: 14px 0 0;
+  padding-left: 22px;
+}
+.ol-steps li {
+  margin-bottom: 8px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.ol-steps li code {
+  background: var(--bg-2);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
 /* ─── Live wall ──────────────────────────────────────────────────────────
    Real-time feed below the hero showing the network breathing.  Connects
    directly to the relay over WebSocket; renders stats + a streaming feed
