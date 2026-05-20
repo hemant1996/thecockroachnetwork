@@ -104,6 +104,21 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
   margin-bottom: 8px;
 }
 .report-card .meta .pub { font-family: ui-monospace, monospace; }
+.report-card .meta .loc {
+  color: var(--muted);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-bottom: 1px dashed transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.report-card .meta .loc:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.report-card .meta .loc-pin { font-size: 11px; opacity: 0.85; }
+.report-card .meta .loc-name { font-weight: 500; }
 .report-card .content { white-space: pre-wrap; word-wrap: break-word; margin-bottom: 10px; }
 .report-card .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .report-card .tags span {

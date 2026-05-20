@@ -64,6 +64,96 @@ function geohashEncode(lat, lon, precision = 7) {
   return out;
 }
 
+function geohashDecode(hash) {
+  if (!hash || typeof hash !== "string") return null;
+  let latMin = -90, latMax = 90, lonMin = -180, lonMax = 180;
+  let even = true;
+  for (const c of hash.toLowerCase()) {
+    const idx = BASE32.indexOf(c);
+    if (idx < 0) return null;
+    for (let mask = 16; mask > 0; mask >>= 1) {
+      const bit = (idx & mask) ? 1 : 0;
+      if (even) {
+        const mid = (lonMin + lonMax) / 2;
+        if (bit) lonMin = mid; else lonMax = mid;
+      } else {
+        const mid = (latMin + latMax) / 2;
+        if (bit) latMin = mid; else latMax = mid;
+      }
+      even = !even;
+    }
+  }
+  return {
+    lat: (latMin + latMax) / 2,
+    lon: (lonMin + lonMax) / 2,
+    latErr: (latMax - latMin) / 2,
+    lonErr: (lonMax - lonMin) / 2,
+  };
+}
+
+function formatLatLon(d) {
+  const lat = d.lat.toFixed(2);
+  const lon = d.lon.toFixed(2);
+  return `${Math.abs(lat)}°${d.lat >= 0 ? "N" : "S"}, ${Math.abs(lon)}°${d.lon >= 0 ? "E" : "W"}`;
+}
+
+// ─── place-name resolver (OpenStreetMap Nominatim) ───────────────────────
+//
+// Decoded lat/lon is always available client-side.  Place names ("Mumbai",
+// "Bandra West") are a nice-to-have — fetched lazily from Nominatim,
+// cached forever in memory + localStorage, and rate-limited to OSM's
+// stated 1-request-per-second policy.  The feed re-renders when a name
+// arrives so it slots in without page reloads.
+
+const PLACE_CACHE_KEY = "cockroach.places";
+const placeCache = (() => {
+  try { return new Map(Object.entries(JSON.parse(localStorage.getItem(PLACE_CACHE_KEY) || "{}"))); }
+  catch { return new Map(); }
+})();
+function persistPlaceCache() {
+  try { localStorage.setItem(PLACE_CACHE_KEY, JSON.stringify(Object.fromEntries(placeCache))); } catch {}
+}
+
+const placeQueue = [];
+const placeInFlight = new Set();
+let placeQueueRunning = false;
+
+async function processPlaceQueue() {
+  if (placeQueueRunning) return;
+  placeQueueRunning = true;
+  while (placeQueue.length) {
+    const key = placeQueue.shift();
+    if (placeCache.has(key)) continue;
+    const d = geohashDecode(key);
+    if (!d) { placeCache.set(key, null); continue; }
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${d.lat}&lon=${d.lon}&zoom=10&accept-language=${encodeURIComponent(navigator.language || "en")}`;
+      const r = await fetch(url, { headers: { "Accept": "application/json" } });
+      if (r.ok) {
+        const j = await r.json();
+        const a = j.address || {};
+        const name = a.city || a.town || a.village || a.suburb || a.county || a.state || a.country || (j.display_name?.split(",")[0]) || null;
+        const region = a.country_code ? ` · ${a.country_code.toUpperCase()}` : "";
+        placeCache.set(key, name ? `${name}${region}` : null);
+      } else {
+        placeCache.set(key, null);
+      }
+    } catch { placeCache.set(key, null); }
+    placeInFlight.delete(key);
+    persistPlaceCache();
+    renderFeedDebounced();
+    await new Promise(r => setTimeout(r, 1100)); // honor OSM's 1 req/sec policy
+  }
+  placeQueueRunning = false;
+}
+
+function requestPlaceName(geohash) {
+  if (!geohash || placeCache.has(geohash) || placeInFlight.has(geohash)) return;
+  placeInFlight.add(geohash);
+  placeQueue.push(geohash);
+  processPlaceQueue();
+}
+
 // ─── identity ────────────────────────────────────────────────────────────
 
 const KEY_STORAGE = "cockroach.sk";
@@ -553,6 +643,21 @@ function renderFeed() {
   container.innerHTML = reports.map(r => {
     const tags = r.tags.filter(t => t[0] === "t").map(t => t[1]);
     const geo = r.tags.find(t => t[0] === "g")?.[1] || "";
+    const decoded = geo ? geohashDecode(geo) : null;
+    const cachedPlace = geo ? placeCache.get(geo) : null;
+    // Trigger background resolution; result updates the feed when ready.
+    if (geo && decoded && cachedPlace === undefined) requestPlaceName(geo);
+
+    let locHTML = "";
+    if (decoded) {
+      const label = cachedPlace || formatLatLon(decoded);
+      const mapUrl = `https://www.openstreetmap.org/?mlat=${decoded.lat.toFixed(5)}&mlon=${decoded.lon.toFixed(5)}#map=14/${decoded.lat.toFixed(5)}/${decoded.lon.toFixed(5)}`;
+      const titleAttr = `${formatLatLon(decoded)} · geohash ${geo} · open in OpenStreetMap`;
+      locHTML = `<span>·</span><a class="loc" data-geo="${escapeHTML(geo)}" href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener" title="${escapeHTML(titleAttr)}"><span class="loc-pin">📍</span><span class="loc-name">${escapeHTML(label)}</span></a>`;
+    } else if (geo) {
+      locHTML = `<span>·</span><span title="geohash">${escapeHTML(geo)}</span>`;
+    }
+
     const counts = verdictCounts(r.id);
     const cv = consensusVerdict(r.id);
     return `
@@ -561,8 +666,7 @@ function renderFeed() {
           <span class="pub" title="${r.pubkey}">${r.pubkey.slice(0, 8)}…</span>
           <span>·</span>
           <span>${fmtTimeAgo(r.created_at)}</span>
-          <span>·</span>
-          <span title="geohash">${escapeHTML(geo)}</span>
+          ${locHTML}
           ${r.pubkey === pkHex ? `<span>·</span><span style="color:var(--accent)">${escapeHTML(t("feed.you"))}</span>` : ""}
         </div>
         <div class="content">${escapeHTML(r.content)}</div>
