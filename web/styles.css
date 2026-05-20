@@ -18,9 +18,9 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); }
 .topbar {
   background: var(--bg-2);
   border-bottom: 1px solid var(--line);
-  padding: 10px 20px;
+  padding: 8px 20px;
   text-align: center;
-  font-size: 13px;
+  font-size: 12.5px;
 }
 .topbar-link {
   display: inline-flex;
@@ -42,17 +42,21 @@ body {
 a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed transparent; }
 a:hover { border-bottom-color: var(--accent); }
 
-main { max-width: 760px; margin: 0 auto; padding: 24px; }
-section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+main { max-width: 880px; margin: 0 auto; padding: 20px 28px; }
+section { padding: 44px 0; border-bottom: 1px solid var(--line); }
 section:last-child { border-bottom: none; }
+@media (max-width: 600px) {
+  main { padding: 16px 18px; }
+  section { padding: 36px 0; }
+}
 
-h1, h2, h3 { font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; }
-h1 { font-size: clamp(40px, 7vw, 64px); margin: 0 0 16px; }
-h2 { font-size: clamp(26px, 4vw, 34px); margin: 0 0 16px; }
-h3 { font-size: 19px; margin: 24px 0 8px; }
+h1, h2, h3 { font-weight: 700; line-height: 1.1; letter-spacing: -0.015em; }
+h1 { font-size: clamp(38px, 6vw, 60px); margin: 0 0 18px; line-height: 1.05; }
+h2 { font-size: clamp(26px, 3.6vw, 32px); margin: 0 0 14px; }
+h3 { font-size: 18px; margin: 22px 0 8px; }
+p.lead { font-size: clamp(17px, 1.8vw, 20px); line-height: 1.5; color: var(--fg); }
 
 p { color: #e4e4e7; margin: 0 0 14px; }
-p.lead { font-size: 22px; line-height: 1.45; color: var(--fg); }
 p.muted { color: var(--muted); }
 small, .small { font-size: 14px; color: var(--muted); }
 
@@ -60,13 +64,17 @@ small, .small { font-size: 14px; color: var(--muted); }
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-top: 80px;
+  padding-top: 28px;
 }
 .hero .mark {
-  width: 96px;
-  height: 96px;
+  width: 84px;
+  height: 84px;
   color: var(--accent);
-  margin-bottom: 24px;
+  margin-bottom: 22px;
+}
+@media (max-width: 600px) {
+  .hero { padding-top: 16px; }
+  .hero .mark { width: 68px; height: 68px; margin-bottom: 18px; }
 }
 .hero h1 .accent { color: var(--accent); }
 .hero .ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
