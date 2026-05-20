@@ -1,12 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="hi-Latn">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Main bhi cockroach — janta ka network</title>
-  <meta name="description" content="Jo bolo woh hamesha rahega. Koi mita nahi sakta. Koi sarkar band nahi kar sakti. Janta ka apna network. CJP movement." />
+  <meta name="description" content="Jo likha gaya, woh hamesha rahega. Koi mita nahi sakta. Janta ka apna network." />
   <meta name="theme-color" content="#0a0a0a" />
-  <meta name="keywords" content="cockroach janta party, main bhi cockroach, paper leak, naukri, civic reporting, India, decentralized" />
   <link rel="canonical" href="https://thecockroachnetwork.com/" />
   <link rel="icon" href="web/assets/cockroach.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="web/styles.css" />
@@ -14,17 +13,32 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="The Cockroach Network" />
   <meta property="og:title" content="Main bhi cockroach." />
-  <meta property="og:description" content="Jo bolo woh hamesha rahega. Janta ka network. Koi mita nahi sakta." />
+  <meta property="og:description" content="Jo likha gaya, woh hamesha rahega. Janta ka network." />
   <meta property="og:url" content="https://thecockroachnetwork.com/" />
   <meta property="og:image" content="https://thecockroachnetwork.com/web/assets/og-cover.svg" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Main bhi cockroach." />
-  <meta name="twitter:description" content="Jo bolo woh hamesha rahega. Janta ka network." />
+  <meta name="twitter:description" content="Jo likha gaya, woh hamesha rahega. Janta ka network." />
   <meta name="twitter:image" content="https://thecockroachnetwork.com/web/assets/og-cover.svg" />
 </head>
 <body>
+  <!-- Top strip: GitHub link on the left, prominent language toggle on the right -->
+  <div class="topbar topbar-flex">
+    <a class="topbar-link" href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor">
+        <path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.1.83-.26.83-.58v-2.04c-3.34.73-4.04-1.41-4.04-1.41-.54-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.84 2.8 1.31 3.49 1 .1-.78.42-1.31.76-1.61-2.66-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.31-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.87.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.38.82 1.11.82 2.23v3.3c0 .32.22.69.83.58A12 12 0 0 0 12 .3"/>
+      </svg>
+      <span>Source on GitHub</span>
+    </a>
+    <div class="lang-toggle" role="group" aria-label="Language toggle">
+      <button type="button" data-lang="hi" class="active">हिं · Hinglish</button>
+      <button type="button" data-lang="en">English</button>
+    </div>
+  </div>
+
   <main>
+    <!-- ─── HERO ──────────────────────────────────────────────────────── -->
     <section class="hero">
       <svg class="mark" viewBox="0 0 200 200" aria-hidden="true">
         <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
@@ -39,167 +53,310 @@
         <path d="M 135 150 Q 162 162 174 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
       </svg>
 
-      <h1>Main bhi <span class="accent">cockroach</span>.</h1>
-      <p class="lead">CJI ne kaha cockroach. Theek hai. Hum cockroach hi sahi.</p>
-      <p class="lead" style="margin-top:0">Ab humara apna network. Jo bolo, hamesha rahega. Koi mita nahi sakta. Koi sarkar band nahi kar sakti.</p>
+      <!-- Hindi-Latin (Hinglish) version -->
+      <div data-lang-content="hi">
+        <h1>Main bhi <span class="accent">cockroach</span>.</h1>
+        <p class="lead">CJI ne hume cockroach kaha. Ye naam ab humara hai.</p>
+        <p class="lead" style="margin-top:0">Ab humara apna network hai. Aap jo likhenge, woh hamesha rahega. Koi mita nahi sakta. Koi sarkar band nahi kar sakti.</p>
 
-      <div class="hero-actions single">
-        <a class="action-card primary" href="client/index.html">
-          <span class="action-title">Phone par kholo →</span>
-          <span class="action-sub">Bas itna. Na signup, na email, na app. Browser mein hi sab chalega.</span>
-        </a>
+        <div class="hero-actions single">
+          <a class="action-card primary" href="client/index.html">
+            <span class="action-title">Phone par kholiye →</span>
+            <span class="action-sub">Bas itni si baat. Na signup, na email, na app. Browser mein hi sab kuch.</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- English version -->
+      <div data-lang-content="en" hidden>
+        <h1>I am also <span class="accent">cockroach</span>.</h1>
+        <p class="lead">The Chief Justice called us cockroaches. We have made the name our own.</p>
+        <p class="lead" style="margin-top:0">We have our own network now. Whatever you write here stays forever. No one can erase it. No government can shut it down.</p>
+
+        <div class="hero-actions single">
+          <a class="action-card primary" href="client/index.html">
+            <span class="action-title">Open it on your phone →</span>
+            <span class="action-sub">That's all. No signup, no email, no app. Everything runs in your browser.</span>
+          </a>
+        </div>
       </div>
     </section>
 
-    <!-- Live wall — connects directly to the relay over WebSocket and shows
-         the network breathing in real time. -->
+    <!-- ─── LIVE WALL — labels switch with language ─────────────────────── -->
     <section id="live-wall" class="live-wall" hidden>
       <div class="live-head">
         <span class="live-pulse"></span>
-        <span class="live-label">LIVE — abhi ka network</span>
+        <span class="live-label" data-i18n="live.label">LIVE — abhi ka network</span>
       </div>
       <div class="live-stats">
         <div class="live-stat">
           <b id="live-reports">—</b>
-          <span>reports aaj</span>
+          <span data-i18n="live.reports">reports aaj</span>
         </div>
         <div class="live-stat">
           <b id="live-cockroaches">—</b>
-          <span>"main bhi cockroach"</span>
+          <span data-i18n="live.cockroaches">"main bhi cockroach"</span>
         </div>
         <div class="live-stat">
           <b id="live-cities">—</b>
-          <span>shehron se</span>
+          <span data-i18n="live.cities">shehron se</span>
         </div>
       </div>
-      <div class="live-feed" id="live-feed">
-        <p class="live-empty">Network se connect ho rahe hain…</p>
-      </div>
+      <div class="live-feed" id="live-feed"></div>
     </section>
 
+    <!-- ─── WHAT YOU CAN DO ───────────────────────────────────────────── -->
     <section id="kya-karein">
-      <h2>Yahan kya kar sakte ho</h2>
-      <p class="lead" style="font-size:18px">Jo bigda hai, jo galat hua hai — yahan likh de. Signature apne aap lagega. Permanent ho jaayega. Koi mita nahi sakta.</p>
+      <div data-lang-content="hi">
+        <h2>Aap yahan kya kar sakte hain</h2>
+        <p class="lead" style="font-size:18px">Jo bhi galat hua hai, yahan likhiye. Aapka signature apne aap lagega. Hamesha rahega. Koi mita nahi sakta.</p>
 
-      <div class="action-list">
-        <div class="action-item">
-          <h3>📝 Paper leak</h3>
-          <p>Konsa exam, kab, kahan. Photo URL ho to daal de. Doosre students sign karenge — saboot ban jaayega.</p>
-          <p class="action-tag"><code>#paperleak</code></p>
+        <div class="action-list">
+          <div class="action-item">
+            <h3>📝 Paper leak</h3>
+            <p>Konsa exam, kab, kahan. Photo URL ho to saath dein. Doosre students sign karenge — saath milkar saboot ban jaata hai.</p>
+            <p class="action-tag"><code>#paperleak</code></p>
+          </div>
+          <div class="action-item">
+            <h3>💼 Naukri ka jhaansa</h3>
+            <p>Kis ne promise tooda, kab. Sarkari scheme, private company, coaching — sab record par. Kal phir koi inkar nahi kar sakta.</p>
+            <p class="action-tag"><code>#unemployment</code> <code>#ghosted</code></p>
+          </div>
+          <div class="action-item">
+            <h3>🛣️ Sadak, paani, bijli</h3>
+            <p>Tooti sadak, gayab paani, bijli ki gadbad. Yahan likhiye. Permanent rahega. Apne MLA ke samne saboot.</p>
+            <p class="action-tag"><code>#road</code> <code>#water</code> <code>#electricity</code></p>
+          </div>
+          <div class="action-item">
+            <h3>👮 Harassment</h3>
+            <p>Police ne kuch kiya. Kisi ne "cockroach" bola. Yahan record kariye. Witnesses sign karenge. Aap akele nahi hain.</p>
+            <p class="action-tag"><code>#harassment</code> <code>#atrocity</code></p>
+          </div>
+          <div class="action-item">
+            <h3>🗳️ Election gadbad</h3>
+            <p>Booth number, time, kya dekha. Permanent record. Kal koi inkar nahi kar sakta.</p>
+            <p class="action-tag"><code>#election</code></p>
+          </div>
+          <div class="action-item">
+            <h3>🤝 Main bhi cockroach</h3>
+            <p>Apni kahani share kariye. Kahan se hain, kya karte hain, kya hua. Solidarity bhi record par jaati hai.</p>
+            <p class="action-tag"><code>#mainbhicockroach</code></p>
+          </div>
         </div>
-        <div class="action-item">
-          <h3>💼 Naukri ka jhaansa</h3>
-          <p>Kisne ghaayb kiya, pehle kya promise tha. Government scheme, private company, coaching — sab record par. Kal phir koi ghaayb nahi kar sakta.</p>
-          <p class="action-tag"><code>#unemployment</code> <code>#ghosted</code></p>
-        </div>
-        <div class="action-item">
-          <h3>🛣️ Sadak, paani, bijli</h3>
-          <p>Tooti sadak, gayab paani, bijli ka khel — likh de. Permanent. Apne MLA ke samne saboot ban jaayega.</p>
-          <p class="action-tag"><code>#road</code> <code>#water</code> <code>#electricity</code></p>
-        </div>
-        <div class="action-item">
-          <h3>👮 Harassment</h3>
-          <p>Police ne kuch kiya. Kisi ne "cockroach" bola. Yahan likh de — witnesses sign karenge. Akele nahi ho.</p>
-          <p class="action-tag"><code>#harassment</code> <code>#atrocity</code></p>
-        </div>
-        <div class="action-item">
-          <h3>🗳️ Election gadbad</h3>
-          <p>Booth number, time, kya dekha. Permanent record. Kal koi inkar nahi kar sakta.</p>
-          <p class="action-tag"><code>#election</code></p>
-        </div>
-        <div class="action-item">
-          <h3>🤝 Main bhi cockroach</h3>
-          <p>Apni kahani bata. Kahan se ho, kya karte ho, kya hua. Solidarity ka bhi record. Hum dekh rahe hain.</p>
-          <p class="action-tag"><code>#mainbhicockroach</code></p>
-        </div>
+
+        <p class="muted" style="margin-top:24px;font-size:15px">
+          Aap likhenge, doosre cockroach verify karenge. Saath milkar sachhai ban jaati hai. <b>Akele kuch mushkil, saath sab mumkin.</b>
+        </p>
       </div>
 
-      <p class="muted" style="margin-top:24px;font-size:15px">
-        Tu likhega — doosre cockroach verify karenge. Saath milkar sachhai ban jaati hai. Akele kuch mushkil hai. <b>Saath sab mumkin hai.</b>
-      </p>
+      <div data-lang-content="en" hidden>
+        <h2>What you can do here</h2>
+        <p class="lead" style="font-size:18px">Whatever has gone wrong, write it here. Your signature is attached automatically. It stays forever. No one can erase it.</p>
+
+        <div class="action-list">
+          <div class="action-item">
+            <h3>📝 Paper leak</h3>
+            <p>Which exam, when, where. Add a photo URL if you have one. Other students will co-sign — together it becomes evidence.</p>
+            <p class="action-tag"><code>#paperleak</code></p>
+          </div>
+          <div class="action-item">
+            <h3>💼 Broken job promise</h3>
+            <p>Who broke the promise, when. Government scheme, private company, coaching institute — all on record. No one can deny it later.</p>
+            <p class="action-tag"><code>#unemployment</code> <code>#ghosted</code></p>
+          </div>
+          <div class="action-item">
+            <h3>🛣️ Roads, water, electricity</h3>
+            <p>Broken roads, missing water, power failures. Write it here. It stays permanent — evidence in front of your MLA.</p>
+            <p class="action-tag"><code>#road</code> <code>#water</code> <code>#electricity</code></p>
+          </div>
+          <div class="action-item">
+            <h3>👮 Harassment</h3>
+            <p>Police did something. Someone called you "cockroach." Document it here. Witnesses will co-sign. You are not alone.</p>
+            <p class="action-tag"><code>#harassment</code> <code>#atrocity</code></p>
+          </div>
+          <div class="action-item">
+            <h3>🗳️ Election irregularity</h3>
+            <p>Booth number, time, what you witnessed. Permanent record. No one can deny it later.</p>
+            <p class="action-tag"><code>#election</code></p>
+          </div>
+          <div class="action-item">
+            <h3>🤝 I am cockroach</h3>
+            <p>Share your story. Where you are from, what you do, what happened. Solidarity goes on record too.</p>
+            <p class="action-tag"><code>#mainbhicockroach</code></p>
+          </div>
+        </div>
+
+        <p class="muted" style="margin-top:24px;font-size:15px">
+          You write — others verify. Together, truth gets built. <b>Difficult alone. Possible together.</b>
+        </p>
+      </div>
     </section>
 
+    <!-- ─── HOW ───────────────────────────────────────────────────────── -->
     <section id="kaise">
-      <h2>Kaise — teen tap, network mein.</h2>
+      <div data-lang-content="hi">
+        <h2>Kaise — teen tap, aap network mein.</h2>
 
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <h3>Phone par kholo</h3>
-          <p>Bas itna. Phone apne aap pehchaan bana lega — sirf aapke paas, kahin nahi jaayegi. Signup, email, OTP — kuch nahi.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <h3>Phone par kholiye</h3>
+            <p>Bas itni si baat. Phone apne aap pehchaan banata hai — sirf aapke paas rahegi. <b>Signup, email, OTP — kuch nahi.</b></p>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <h3>Jo bigda hai, likhiye</h3>
+            <p>Kya hua, kab hua. Photo URL ho to daaliye — Imgur, Drive, kahin se bhi. Location apne aap aati hai. Sensitive content ho to coarse precision rakhiye.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <h3>Sign karke bhejiye</h3>
+            <p>Phone signature lagayega. Network par chala jaayega. <b>Hamesha.</b> Doosron ki reports bhi verify kar sakte hain — saath milkar sachhai ban jaati hai.</p>
+          </div>
         </div>
 
-        <div class="step">
-          <div class="step-num">2</div>
-          <h3>Jo bigda hai woh bata</h3>
-          <p>Kya hua, kab hua. Photo ho to URL paste kar de — Imgur, Drive, kuch bhi. Location apne aap aati hai. Sensitive cheez ho to dhundla rakh, tu decide.</p>
-        </div>
-
-        <div class="step">
-          <div class="step-num">3</div>
-          <h3>Sign karke daal de</h3>
-          <p>Phone signature lagaayega. Network par chala jaayega. <b>Hamesha.</b> Dusron ki reports bhi verify kar — saath milkar sachhai ban jaati hai.</p>
-        </div>
+        <p style="margin-top:28px;text-align:center">
+          <a class="btn" href="client/index.html" style="font-size:17px;padding:16px 32px">Phone par abhi kholiye →</a>
+        </p>
       </div>
 
-      <p style="margin-top:28px;text-align:center">
-        <a class="btn" href="client/index.html" style="font-size:17px;padding:16px 32px">Phone par abhi kholo →</a>
-      </p>
+      <div data-lang-content="en" hidden>
+        <h2>How — three taps and you are in.</h2>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <h3>Open it on your phone</h3>
+            <p>That's all. Your phone creates an identity automatically — and it stays only with you. <b>No signup, no email, no OTP.</b></p>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <h3>Write what has gone wrong</h3>
+            <p>What happened, when. Add a photo URL if you have one — Imgur, Drive, anywhere. Location is automatic. For sensitive content, use a coarser precision.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <h3>Sign and send</h3>
+            <p>Your phone signs it. It goes onto the network. <b>Forever.</b> You can verify others' reports too — together, truth gets built.</p>
+          </div>
+        </div>
+
+        <p style="margin-top:28px;text-align:center">
+          <a class="btn" href="client/index.html" style="font-size:17px;padding:16px 32px">Open on your phone now →</a>
+        </p>
+      </div>
     </section>
 
+    <!-- ─── WHY DIFFERENT ─────────────────────────────────────────────── -->
     <section id="alag">
-      <h2>Yeh Twitter / Insta / WhatsApp se alag kyun?</h2>
-
-      <div class="compare-grid">
-        <div class="compare-item bad">
-          <h3>Twitter</h3>
-          <p>Algorithm bhula deta. Likes ke baad gayab. Maalik Elon. Account band ho sakta.</p>
+      <div data-lang-content="hi">
+        <h2>Yeh Twitter / Insta / WhatsApp se alag kyun?</h2>
+        <div class="compare-grid">
+          <div class="compare-item bad">
+            <h3>Twitter</h3>
+            <p>Algorithm 24 ghante mein bhula deta. Likes ke baad gayab. Account band ho sakta. Maalik: Elon.</p>
+          </div>
+          <div class="compare-item bad">
+            <h3>Instagram</h3>
+            <p>Story 24 ghante mein gayab. Post buried. Suspend ho sakte hain kabhi bhi. Maalik: Meta.</p>
+          </div>
+          <div class="compare-item bad">
+            <h3>WhatsApp</h3>
+            <p>Sirf aapke group mein. Forward chain mein context kho jaata. Saboot nahi banta.</p>
+          </div>
+          <div class="compare-item good">
+            <h3>Yahan</h3>
+            <p>Jo likha, woh <b>permanent</b>. <b>Signed</b>. Sab ke liye. Mita nahi sakta. Koi company nahi chala rahi. Koi sarkar band nahi kar sakti.</p>
+          </div>
         </div>
-        <div class="compare-item bad">
-          <h3>Instagram</h3>
-          <p>Story 24 ghante mein gayab. Post nahi dikha to gaya. Suspended ho sakte ho kabhi bhi. Maalik Meta.</p>
-        </div>
-        <div class="compare-item bad">
-          <h3>WhatsApp</h3>
-          <p>Sirf group mein. Forward mein context khojaata. Saboot nahi banta. Tracking alag.</p>
-        </div>
-        <div class="compare-item good">
-          <h3>Yahan</h3>
-          <p>Jo likh diya woh <b>permanent</b>. <b>Signed</b>. Sab ke liye. Koi mita nahi sakta. Koi company nahi chala rahi. Koi sarkar band nahi kar sakti.</p>
-        </div>
+        <p class="callout" style="margin-top:24px;background:#1a1a1c;border-left-color:var(--accent)">
+          <b>Janta ka network. Janta ke liye.</b><br>
+          Kisi company ka nahi. Kisi sarkar ka nahi. Kisi NGO ka nahi. <em>Aapka.</em>
+        </p>
       </div>
 
-      <p class="callout" style="margin-top:24px;background:#1a1a1c;border-left-color:var(--accent)">
-        <b>Janta ka network. Janta ke liye.</b><br>
-        Koi company ka nahi. Koi sarkar ka nahi. Koi NGO ka nahi. <em>Tera.</em>
-      </p>
+      <div data-lang-content="en" hidden>
+        <h2>Why is this different from Twitter / Instagram / WhatsApp?</h2>
+        <div class="compare-grid">
+          <div class="compare-item bad">
+            <h3>Twitter</h3>
+            <p>Algorithm forgets in 24 hours. Buried after the like spike. Account can be banned. Owner: Elon.</p>
+          </div>
+          <div class="compare-item bad">
+            <h3>Instagram</h3>
+            <p>Story disappears in 24 hours. Posts buried. Account can be suspended anytime. Owner: Meta.</p>
+          </div>
+          <div class="compare-item bad">
+            <h3>WhatsApp</h3>
+            <p>Only reaches your group. Context lost in forwards. Doesn't become evidence.</p>
+          </div>
+          <div class="compare-item good">
+            <h3>Here</h3>
+            <p>What you write is <b>permanent</b>. <b>Signed</b>. For everyone. Cannot be erased. No company runs it. No government can shut it down.</p>
+          </div>
+        </div>
+        <p class="callout" style="margin-top:24px;background:#1a1a1c;border-left-color:var(--accent)">
+          <b>The people's network. For the people.</b><br>
+          Not a company's. Not a government's. Not an NGO's. <em>Yours.</em>
+        </p>
+      </div>
     </section>
 
+    <!-- ─── FAQ ───────────────────────────────────────────────────────── -->
     <section id="faq">
-      <h2>Sawal-jawab</h2>
+      <div data-lang-content="hi">
+        <h2>Sawaal aur jawaab</h2>
 
-      <h3>Kya yeh free hai?</h3>
-      <p>Haan. Hamesha. Code CC0 — public domain. Koi paid plan, koi ads, koi pay-to-win. Server ka kharcha jo run karta hai woh dekhta hai, aapko kuch nahi.</p>
+        <h3>Kya yeh free hai?</h3>
+        <p>Haan, hamesha. Code CC0 — public domain. Koi paid plan nahi, koi ads nahi. Server cost jo run karta hai woh personally afford karta hai — aapko kuch nahi dena.</p>
 
-      <h3>Mera data leak ho jayega?</h3>
-      <p>Aapki gupt chaabi sirf phone mein hai. Kahin server par nahi. Password reset nahi hota. Phone gaya = pehchaan gayi — yeh tradeoff hai. (Backup feature aa raha hai.)</p>
-      <p>Naam-pata nahi dete, sirf ek random key hoti hai. Lekin jo report karte ho woh public hai — woh toh point hai.</p>
+        <h3>Kya mera data leak ho sakta hai?</h3>
+        <p>Aapki gupt chaabi sirf aapke phone mein hai — kisi server par nahi. Password reset nahi hota. Phone kho gaya = pehchaan kho gayi. Yeh ek tradeoff hai — encrypted backup feature v0.2 mein aa raha hai.</p>
+        <p>Aap apna naam-pata nahi dete, sirf ek random key hoti hai. Lekin jo report karte hain woh public hai — woh toh point hi hai.</p>
 
-      <h3>Kya police mujhe identify kar sakti hai?</h3>
-      <p>Honest baat: relay se connect karte ho, relay aapka IP dekh sakta hai. Sensitive cheez likhni ho to Tor browser ya VPN se kholo. Location bhi dhundli rakh — precision 5 ya kam.</p>
-      <p>Phone-key se asli naam connect nahi hai. Pseudonymous ho — pakka anonymous nahi. Soch ke daal.</p>
+        <h3>Kya police mujhe identify kar sakti hai?</h3>
+        <p>Honest answer: aap relay se connect karte hain, relay aapka IP dekh sakta hai. Sensitive reports ke liye Tor browser ya VPN se kholiye. Location precision bhi kam rakhiye (5 ya kam).</p>
+        <p>Phone-key se asli naam directly connect nahi hai. Pseudonymous hain — pakka anonymous nahi. Soch ke daaliye.</p>
 
-      <h3>Kya sirf Cockroach Janta Party walon ke liye hai?</h3>
-      <p>Nahi. Yeh ek protocol hai, kisi ka private nahi. Koi bhi use kar sakta hai — citizens, journalists, activists, students, jo bhi. CJP ne yeh moment banaya, tool sab ka hai.</p>
+        <h3>Kya sirf Cockroach Janta Party walon ke liye hai?</h3>
+        <p>Nahi. Yeh ek protocol hai, kisi ka private nahi. Koi bhi use kar sakta hai — citizens, journalists, activists, students, jo bhi. CJP movement ne yeh moment banaya; tool sab ka hai.</p>
 
-      <h3>Kya phone storage chahiye?</h3>
-      <p>Bas browser. Koi app nahi download karna. thecockroachnetwork.com kholo, bas.</p>
+        <h3>Kya phone storage chahiye?</h3>
+        <p>Bas browser. Koi app download nahi karna. thecockroachnetwork.com kholiye — bas.</p>
 
-      <h3>Kahan hosted hai? Kya band ho sakta hai?</h3>
-      <p>Code GitHub par. Pehla relay Mumbai mein. Aur log bhi relay chala sakte hain — agar ek band ho, doosra chalega. Aapka phone bhi ek relay hai (peer mode). Pura network band karna asambhav.</p>
+        <h3>Kahan hosted hai? Kya band ho sakta hai?</h3>
+        <p>Code GitHub par hai. Pehla relay Mumbai mein. Aur log bhi relays chala sakte hain — ek band ho to doosra chalega. Aapka phone bhi ek relay hai (peer mode). Pura network band karna asambhav hai.</p>
 
-      <h3>Mujhe code samajhna hai / fork karna hai?</h3>
-      <p>Saari cheez open hai. <a href="build/">Developer page</a> dekh — spec, source, run-your-own. Apna relay chalao, apna mirror host karo, naya kuch banao.</p>
+        <h3>Mujhe code dekhna hai / fork karna hai?</h3>
+        <p>Saari cheez open hai. <a href="build/">Developer page</a> dekhiye — spec, source, run-your-own guides. Apna relay chalaiye, apna mirror host kariye, kuch naya banaiye.</p>
+      </div>
+
+      <div data-lang-content="en" hidden>
+        <h2>Questions</h2>
+
+        <h3>Is this free?</h3>
+        <p>Yes, always. Code is CC0 — public domain. No paid plans, no ads. Whoever runs a server personally affords the cost — you pay nothing.</p>
+
+        <h3>Can my data leak?</h3>
+        <p>Your secret key stays only on your phone — never on a server. There is no password reset. If you lose the phone, you lose the identity. This is the tradeoff — an encrypted backup feature is coming in v0.2.</p>
+        <p>You don't provide a real name, just a random key. But what you report is public — that's the point.</p>
+
+        <h3>Can the police identify me?</h3>
+        <p>Honest answer: you connect to a relay, and the relay can see your IP. For sensitive reports, open it via Tor browser or a VPN. Keep the location precision low (5 or less).</p>
+        <p>Your phone key is not directly linked to your real name. You are pseudonymous — not fully anonymous. Think before you post.</p>
+
+        <h3>Is this only for Cockroach Janta Party members?</h3>
+        <p>No. This is a protocol, not anyone's private tool. Anyone can use it — citizens, journalists, activists, students, anyone. The CJP movement created this moment; the tool belongs to everyone.</p>
+
+        <h3>Do I need to download anything?</h3>
+        <p>Just a browser. No app to install. Open thecockroachnetwork.com on your phone — that's it.</p>
+
+        <h3>Where is it hosted? Can it be shut down?</h3>
+        <p>Code is on GitHub. The first relay is in Mumbai. Anyone can run relays — if one shuts down, another runs. Your phone is also a relay (peer mode). Shutting down the whole network is essentially impossible.</p>
+
+        <h3>I want to read the code / fork it?</h3>
+        <p>Everything is open. See the <a href="build/">developer page</a> — spec, source, run-your-own guides. Run your own relay, host your own mirror, build something new on top.</p>
+      </div>
     </section>
 
     <footer>
@@ -209,11 +366,16 @@
             <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
             <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
           </svg>
-          <span>cockroach v0.2 · CC0 public domain · janta ka network</span>
+          <span data-lang-content="hi">cockroach v0.2 · CC0 public domain · janta ka network</span>
+          <span data-lang-content="en" hidden>cockroach v0.2 · CC0 public domain · the people's network</span>
         </div>
         <div>
-          <a href="client/index.html">phone par kholo</a> &nbsp;·&nbsp;
-          <a href="build/">developer page</a> &nbsp;·&nbsp;
+          <a href="client/index.html" data-lang-content="hi">phone par kholiye</a>
+          <a href="client/index.html" data-lang-content="en" hidden>open the client</a>
+          &nbsp;·&nbsp;
+          <a href="build/" data-lang-content="hi">developer page</a>
+          <a href="build/" data-lang-content="en" hidden>for developers</a>
+          &nbsp;·&nbsp;
           <a href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">source</a>
         </div>
       </div>
@@ -221,13 +383,87 @@
   </main>
 
   <script>
-  // ─── Live wall — the network breathes in real time on the landing page.
-  //
-  // Connects directly to the public relay over WebSocket, counts reports +
-  // "main bhi cockroach" declarations + unique cities seen in the last 24h,
-  // and streams the 5 most recent #mainbhicockroach declarations into a
-  // small feed below the counters.  Visitors don't read about a network —
-  // they see one alive.
+  // ─── Language toggle ─────────────────────────────────────────────────
+  // EN ↔ Hinglish (Hindi in Latin script — what the audience actually
+  // reads and writes in messages).  Default Hinglish; auto-detect Hindi
+  // browser locales; persist choice in localStorage.
+  (function () {
+    const STORAGE = "cockroach.lang";
+    const LANGS = ["hi", "en"];
+
+    // Live-wall i18n labels: keyed by element data-i18n attribute.
+    const LIVE_LABELS = {
+      hi: {
+        "live.label": "LIVE — abhi ka network",
+        "live.reports": "reports aaj",
+        "live.cockroaches": '"main bhi cockroach"',
+        "live.cities": "shehron se",
+        "live.empty": 'Abhi tak koi "main bhi cockroach" nahi. <a href="client/index.html">Pehla aap hi baniye</a>.',
+        "live.connecting": "Network se connect ho rahe hain…",
+        "live.ago_now": "abhi",
+        "live.ago_s": "{n}s pehle",
+        "live.ago_m": "{n}m pehle",
+        "live.ago_h": "{n}h pehle",
+        "live.ago_d": "{n}d pehle",
+      },
+      en: {
+        "live.label": "LIVE — network right now",
+        "live.reports": "reports today",
+        "live.cockroaches": '"I am cockroach"',
+        "live.cities": "cities",
+        "live.empty": 'No "I am cockroach" declarations yet. <a href="client/index.html">Be the first</a>.',
+        "live.connecting": "Connecting to network…",
+        "live.ago_now": "now",
+        "live.ago_s": "{n}s ago",
+        "live.ago_m": "{n}m ago",
+        "live.ago_h": "{n}h ago",
+        "live.ago_d": "{n}d ago",
+      },
+    };
+    window.__LIVE_LABELS = LIVE_LABELS;
+    window.__currentLang = "hi";
+
+    function detectLang() {
+      const stored = localStorage.getItem(STORAGE);
+      if (LANGS.includes(stored)) return stored;
+      const b = (navigator.language || "en").toLowerCase();
+      // Treat any India-locale or Hindi/Urdu/Punjabi browser as Hinglish default.
+      if (b.startsWith("hi") || b.startsWith("ur") || b.startsWith("pa") || b.endsWith("-in")) return "hi";
+      return "en";
+    }
+
+    function applyLang(lang) {
+      if (!LANGS.includes(lang)) lang = "hi";
+      window.__currentLang = lang;
+      document.documentElement.lang = lang === "hi" ? "hi-Latn" : "en";
+      // Show/hide all dual-content blocks.
+      document.querySelectorAll("[data-lang-content]").forEach((el) => {
+        el.hidden = el.dataset.langContent !== lang;
+      });
+      // Update toggle button state.
+      document.querySelectorAll(".lang-toggle button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.lang === lang);
+      });
+      // Apply data-i18n labels (for the live wall counters etc).
+      const labels = LIVE_LABELS[lang];
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const v = labels[el.dataset.i18n];
+        if (v) el.textContent = v;
+      });
+      // Tell the live wall to re-render its feed in the new language.
+      if (window.__renderLiveFeed) window.__renderLiveFeed();
+      localStorage.setItem(STORAGE, lang);
+    }
+
+    document.querySelectorAll(".lang-toggle button").forEach((b) => {
+      b.addEventListener("click", () => applyLang(b.dataset.lang));
+    });
+    applyLang(detectLang());
+  })();
+
+  // ─── Live wall ───────────────────────────────────────────────────────
+  // (Same WebSocket+Nominatim machinery as before, but now its labels and
+  // empty-state copy switch with the language toggle.)
   (function () {
     const RELAY = "wss://cockroach-relay-hemant1996.fly.dev";
     const wall = document.getElementById("live-wall");
@@ -240,11 +476,10 @@
     let reports24h = 0;
     let cockroaches7d = 0;
     const cities = new Set();
-    const declarations = []; // recent #mainbhicockroach events
+    const declarations = [];
     const seenIds = new Set();
     let connected = false;
 
-    // Tiny base32 geohash decoder (5-char precision is "city-ish").
     const BASE32 = "0123456789bcdefghjkmnpqrstuvwxyz";
     function geohashCenter(hash) {
       let latMin = -90, latMax = 90, lonMin = -180, lonMax = 180, even = true;
@@ -260,9 +495,8 @@
       }
       return { lat: (latMin + latMax) / 2, lon: (lonMin + lonMax) / 2 };
     }
-    function shortGeo(hash) { return (hash || "").slice(0, 5); } // city-ish bucket
+    function shortGeo(h) { return (h || "").slice(0, 5); }
 
-    // Place-name cache for the feed (Nominatim, rate-limited).
     const placeCache = (() => {
       try { return new Map(Object.entries(JSON.parse(localStorage.getItem("cockroach.places") || "{}"))); }
       catch { return new Map(); }
@@ -274,7 +508,7 @@
       placeRunning = true;
       while (placeQueue.length) {
         const key = placeQueue.shift();
-        if (placeCache.has(key)) continue;
+        if (placeCache.get(key) !== undefined && placeCache.get(key) !== null) continue;
         const c = geohashCenter(key);
         if (!c) { placeCache.set(key, null); continue; }
         try {
@@ -285,26 +519,28 @@
             const name = a.city || a.town || a.village || a.suburb || a.state || a.country || null;
             placeCache.set(key, name);
             try { localStorage.setItem("cockroach.places", JSON.stringify(Object.fromEntries(placeCache))); } catch {}
-            renderFeed();
+            window.__renderLiveFeed && window.__renderLiveFeed();
           } else placeCache.set(key, null);
         } catch { placeCache.set(key, null); }
         await new Promise(r => setTimeout(r, 1100));
       }
       placeRunning = false;
     }
-    function requestPlace(geo) {
-      if (!geo || placeCache.has(geo)) return;
-      placeCache.set(geo, undefined);
-      placeQueue.push(geo);
+    function requestPlace(g) {
+      if (!g || placeCache.get(g)) return;
+      placeCache.set(g, undefined);
+      placeQueue.push(g);
       runPlaceQueue();
     }
 
     function fmtAgo(secs) {
-      if (secs < 5)    return "abhi";
-      if (secs < 60)   return Math.floor(secs) + "s pehle";
-      if (secs < 3600) return Math.floor(secs / 60) + "m pehle";
-      if (secs < 86400)return Math.floor(secs / 3600) + "h pehle";
-      return Math.floor(secs / 86400) + "d pehle";
+      const lang = window.__currentLang || "hi";
+      const L = window.__LIVE_LABELS[lang];
+      if (secs < 5) return L["live.ago_now"];
+      if (secs < 60) return L["live.ago_s"].replace("{n}", Math.floor(secs));
+      if (secs < 3600) return L["live.ago_m"].replace("{n}", Math.floor(secs / 60));
+      if (secs < 86400) return L["live.ago_h"].replace("{n}", Math.floor(secs / 3600));
+      return L["live.ago_d"].replace("{n}", Math.floor(secs / 86400));
     }
 
     function renderStats() {
@@ -315,10 +551,10 @@
 
     function renderFeed() {
       if (!connected) return;
+      const lang = window.__currentLang || "hi";
+      const L = window.__LIVE_LABELS[lang];
       if (declarations.length === 0) {
-        elFeed.innerHTML = `<div class="live-empty">
-          Abhi tak koi "main bhi cockroach" nahi. <a href="client/index.html">Pehla tu hi bana</a>.
-        </div>`;
+        elFeed.innerHTML = `<div class="live-empty">${L["live.empty"]}</div>`;
         return;
       }
       const now = Date.now() / 1000;
@@ -327,19 +563,20 @@
         const placeKey = shortGeo(geo);
         const place = placeCache.get(placeKey);
         const c = geohashCenter(geo);
-        const locLabel = place || (c ? `${c.lat.toFixed(1)}°, ${c.lon.toFixed(1)}°` : "anywhere");
+        const locLabel = place || (c ? `${c.lat.toFixed(1)}°, ${c.lon.toFixed(1)}°` : "—");
         const ago = fmtAgo(now - ev.created_at);
         const content = (ev.content || "main bhi cockroach.").trim();
         const truncated = content.length > 140 ? content.slice(0, 137).trim() + "…" : content;
         return `<div class="live-row">
-          <span class="live-loc">📍 ${escapeHTML(locLabel)}</span>
-          <span class="live-when">${escapeHTML(ago)}</span>
-          <div class="live-content">${escapeHTML(truncated)}</div>
+          <span class="live-loc">📍 ${esc(locLabel)}</span>
+          <span class="live-when">${esc(ago)}</span>
+          <div class="live-content">${esc(truncated)}</div>
         </div>`;
       }).join("");
     }
+    window.__renderLiveFeed = renderFeed;
 
-    function escapeHTML(s) {
+    function esc(s) {
       return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
     }
 
@@ -349,15 +586,10 @@
       const tags = ev.tags || [];
       const ageSec = Date.now() / 1000 - ev.created_at;
       if (ageSec < 86400) reports24h++;
-      // Track which city buckets we've seen.
       const geo = (tags.find(t => t[0] === "g") || [])[1];
-      if (geo) {
-        cities.add(shortGeo(geo));
-        requestPlace(shortGeo(geo));
-      }
-      // Main bhi cockroach feed (last 7 days).
-      const hasCockroachTag = tags.some(t => t[0] === "t" && (t[1] === "mainbhicockroach" || t[1] === "main-bhi-cockroach" || t[1] === "main_bhi_cockroach"));
-      if (hasCockroachTag && ageSec < 7 * 86400) {
+      if (geo) { cities.add(shortGeo(geo)); requestPlace(shortGeo(geo)); }
+      const isCockroach = tags.some(t => t[0] === "t" && /^main[-_]?bhi[-_]?cockroach$/i.test(t[1]));
+      if (isCockroach && ageSec < 7 * 86400) {
         cockroaches7d++;
         declarations.push(ev);
         declarations.sort((a, b) => b.created_at - a.created_at);
@@ -374,24 +606,20 @@
         connected = true;
         wall.hidden = false;
         const since24h = Math.floor(Date.now() / 1000) - 86400;
-        const since7d  = Math.floor(Date.now() / 1000) - 7 * 86400;
-        ws.send(JSON.stringify(["REQ", "wall-reports", { kinds: [1], since: since24h, limit: 500 }]));
-        ws.send(JSON.stringify(["REQ", "wall-cockroach", { kinds: [1], "#t": ["mainbhicockroach", "main-bhi-cockroach", "main_bhi_cockroach"], since: since7d, limit: 100 }]));
+        const since7d = Math.floor(Date.now() / 1000) - 7 * 86400;
+        ws.send(JSON.stringify(["REQ", "wall-r", { kinds: [1], since: since24h, limit: 500 }]));
+        ws.send(JSON.stringify(["REQ", "wall-c", { kinds: [1], "#t": ["mainbhicockroach", "main-bhi-cockroach", "main_bhi_cockroach"], since: since7d, limit: 100 }]));
         renderStats();
         renderFeed();
       });
       ws.addEventListener("message", (e) => {
         let msg; try { msg = JSON.parse(e.data); } catch { return; }
         if (!Array.isArray(msg)) return;
-        if (msg[0] === "EVENT") {
-          const ev = msg[2];
-          if (ev && ev.kind === 1) ingest(ev);
-        }
-        // EOSE: even if nothing came back, the wall is now in the right state.
+        if (msg[0] === "EVENT") { const ev = msg[2]; if (ev && ev.kind === 1) ingest(ev); }
         if (msg[0] === "EOSE") renderFeed();
       });
       ws.addEventListener("close", () => { connected = false; scheduleReconnect(); });
-      ws.addEventListener("error", () => { /* close will fire */ });
+      ws.addEventListener("error", () => { /* close fires next */ });
     }
     let reconnectDelay = 2000;
     function scheduleReconnect() {
@@ -399,8 +627,6 @@
       reconnectDelay = Math.min(reconnectDelay * 2, 30000);
     }
     connect();
-
-    // Refresh "X pehle" labels every 10s without re-querying the relay.
     setInterval(renderFeed, 10000);
   })();
   </script>
