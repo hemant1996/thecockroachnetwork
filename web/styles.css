@@ -336,6 +336,119 @@ ul li { margin-bottom: 6px; }
 /* Single-card hero variant (one big primary CTA). */
 .hero-actions.single { grid-template-columns: 1fr; }
 
+/* ─── Live wall ──────────────────────────────────────────────────────────
+   Real-time feed below the hero showing the network breathing.  Connects
+   directly to the relay over WebSocket; renders stats + a streaming feed
+   of recent "main bhi cockroach" declarations.  Hidden until the WS opens
+   so we never show a confusing "0 reports" empty state at page load.
+*/
+.live-wall {
+  margin-top: 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.04), rgba(34, 197, 94, 0.01));
+}
+.live-wall[hidden] { display: none !important; }
+.live-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.live-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--good);
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+  animation: live-pulse 1.6s ease-out infinite;
+}
+@keyframes live-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+  70%  { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+.live-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--good);
+  text-transform: uppercase;
+}
+.live-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.live-stat {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.live-stat b {
+  display: block;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.live-stat span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+@media (max-width: 520px) { .live-stats { grid-template-columns: 1fr 1fr; } .live-stat:last-child { grid-column: 1 / -1; } }
+
+.live-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.live-feed .live-empty {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  padding: 14px 0;
+}
+.live-feed .live-empty a { color: var(--accent); }
+.live-row {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  animation: live-row-in 0.4s ease-out;
+}
+@keyframes live-row-in {
+  from { transform: translateY(-6px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.live-row .live-loc {
+  font-size: 13px;
+  color: var(--fg);
+  font-weight: 600;
+}
+.live-row .live-when {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+}
+.live-row .live-content {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  word-wrap: break-word;
+}
+
 .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
 .how-card {
   border: 1px solid var(--line);
