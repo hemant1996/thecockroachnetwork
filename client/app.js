@@ -4,6 +4,7 @@
 
 import * as ed from "https://esm.sh/@noble/ed25519@2.3.0";
 import { sha256, sha512 } from "https://esm.sh/@noble/hashes@1.8.0/sha2";
+import { PeerPool } from "./peers.js";
 
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
@@ -273,7 +274,64 @@ function ingest(e) {
   return true;
 }
 
+// Verify an event's id + signature.  Relays validate on receipt, but events
+// gossiped over WebRTC peer channels haven't been through a relay, so the
+// peer mesh must verify locally before ingesting.  Otherwise a malicious peer
+// could inject arbitrary events into our store.
+function verifyEvent(e) {
+  if (!e || typeof e !== "object") return false;
+  if (typeof e.id !== "string" || e.id.length !== 64 || !/^[0-9a-f]+$/.test(e.id)) return false;
+  if (typeof e.pubkey !== "string" || e.pubkey.length !== 64 || !/^[0-9a-f]+$/.test(e.pubkey)) return false;
+  if (typeof e.sig !== "string" || e.sig.length !== 128 || !/^[0-9a-f]+$/.test(e.sig)) return false;
+  if (typeof e.created_at !== "number" || !Number.isInteger(e.created_at) || e.created_at < 0) return false;
+  if (typeof e.kind !== "number" || !Number.isInteger(e.kind) || e.kind < 0) return false;
+  if (typeof e.content !== "string") return false;
+  if (!Array.isArray(e.tags)) return false;
+  for (const t of e.tags) {
+    if (!Array.isArray(t) || !t.every(x => typeof x === "string")) return false;
+  }
+  if (eventId(e) !== e.id) return false;
+  try {
+    return ed.verify(hexToBytes(e.sig), hexToBytes(e.id), hexToBytes(e.pubkey));
+  } catch { return false; }
+}
+
+// Sign an event and return it (synchronous wrapper used by PeerPool for
+// signaling events — kinds 10001/10002/10003).
+function signEventReturn(kind, tags, content) {
+  return signEvent({
+    pubkey: pkHex,
+    created_at: Math.floor(Date.now() / 1000),
+    kind,
+    tags,
+    content,
+  }, sk);
+}
+
+// WebRTC peer-relay mesh.  Off by default (IP exposure risk).  Users opt in
+// via the Identity tab with explicit consent.  Peers find each other via
+// signaling events broadcast through the relay layer (kinds 10001 offer,
+// 10002 answer, 10003 ice — see SPEC §4.3 and docs/v0.2-webrtc-peer-relay.md).
+const peers = new PeerPool({
+  pubkeyHex: pkHex,
+  signAndReturn: async (kind, tags, content) => signEventReturn(kind, tags, content),
+  publishToRelays: (event) => pool.publish(event),
+  onEventFromPeer: (event) => {
+    if (!verifyEvent(event)) return;       // never trust an unverified peer event
+    if (event.kind === 10001 || event.kind === 10002 || event.kind === 10003) return; // peer-layer events stay peer-layer
+    if (ingest(event)) {
+      renderFeedDebounced();
+      pool.publish(event);                 // gossip to relays too — closes the mesh-to-relay bridge
+    }
+  },
+});
+
 pool.onEvent = (e) => {
+  // Route signaling kinds to the peer pool; everything else into the local store.
+  if (e.kind === 10001 || e.kind === 10002 || e.kind === 10003) {
+    peers.handleSignaling(e);
+    return;
+  }
   if (ingest(e)) renderFeedDebounced();
 };
 pool.onOk = (id, accepted, reason, url) => {
@@ -298,6 +356,7 @@ function publishReport({ content, tags, lat, lon, precision }) {
   const event = signEvent(partial, sk);
   ingest(event);
   const sent = pool.publish(event);
+  peers.broadcast(event);              // fan out to WebRTC peers as well
   if (sent === 0) toast(t("toast.published_0"));
   else if (sent === 1) toast(t("toast.published_1", { n: sent }));
   else toast(t("toast.published_n", { n: sent }));
@@ -315,6 +374,7 @@ function publishVerification(reportId, verdict, note = "") {
   const event = signEvent(partial, sk);
   ingest(event);
   pool.publish(event);
+  peers.broadcast(event);              // fan out to WebRTC peers as well
   return event;
 }
 
@@ -726,6 +786,61 @@ window.addEventListener("DOMContentLoaded", async () => {
     navigator.serviceWorker.register("sw.js").catch(() => { /* offline support is best-effort */ });
   }
 
+  // ─── Peer mode toggle (v0.2 WebRTC mesh) ──────────────────────────────
+  const PEER_PREF_KEY = "cockroach.peer_enabled";
+  const peerToggle = $("#peer-toggle");
+  const peerStatusEl = $("#peer-status");
+  const peerIndicator = $("#peer-indicator");
+  const peerDot = $("#peer-dot");
+  const peerCount = $("#peer-count");
+
+  function updatePeerStatus() {
+    const s = peers.status();
+    if (peerStatusEl) {
+      peerStatusEl.textContent = !s.enabled ? "off"
+        : s.connected > 0 ? `connected to ${s.connected} of ${s.total} peers`
+        : s.total > 0 ? `connecting to ${s.total} peers…`
+        : "searching for peers…";
+    }
+    if (peerIndicator) peerIndicator.style.display = s.enabled ? "" : "none";
+    if (peerCount) peerCount.textContent = `${s.connected} peer${s.connected === 1 ? "" : "s"}`;
+    if (peerDot) {
+      peerDot.classList.toggle("live", s.connected > 0);
+      peerDot.classList.toggle("warn", s.enabled && s.connected === 0);
+    }
+  }
+  peers.on(updatePeerStatus);
+
+  if (peerToggle) {
+    peerToggle.addEventListener("change", async () => {
+      if (peerToggle.checked) {
+        const consented = localStorage.getItem(PEER_PREF_KEY) === "1" || confirm(
+          "Enable WebRTC peer mode?\n\n" +
+          "Peer mode opens direct connections from your browser to other peers, which exposes your IP address to them (not just to your relay's operator).\n\n" +
+          "Don't enable this from a hostile network or when reporting sensitive content. You can turn it off any time."
+        );
+        if (!consented) { peerToggle.checked = false; return; }
+        localStorage.setItem(PEER_PREF_KEY, "1");
+        try { await peers.enable(); } catch (e) { toast("peer mode failed: " + (e?.message || e)); peerToggle.checked = false; }
+      } else {
+        peers.disable();
+        localStorage.removeItem(PEER_PREF_KEY);
+      }
+      updatePeerStatus();
+    });
+    if (localStorage.getItem(PEER_PREF_KEY) === "1") {
+      peerToggle.checked = true;
+      // Defer enable until we have at least one relay connected, otherwise the
+      // offer publish lands nowhere.
+      const tryEnable = () => {
+        if (pool.connectedCount() > 0) peers.enable().catch(() => {});
+        else setTimeout(tryEnable, 1000);
+      };
+      tryEnable();
+    }
+    updatePeerStatus();
+  }
+
   // Boot
   showScreen("compose");
   refreshGeo().catch(() => {});
@@ -738,5 +853,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   pool.subscribe(SUB_FEED, [
     { kinds: [1], since, limit: 200 },
     { kinds: [2], since, limit: 500 },
+    // WebRTC signaling — see SPEC §4.3 and peers.js.  Limit window to the
+    // last hour since offers expire fast; 10002/10003 only when addressed to us.
+    { kinds: [10001], since: Math.floor(Date.now() / 1000) - 3600 },
+    { kinds: [10002, 10003], "#p": [pkHex] },
   ]);
 });

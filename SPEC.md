@@ -150,6 +150,43 @@ Implementations MUST NOT count more than one verification per `(verifier_pubkey,
 | 1000–9999 | Reserved. |
 | 10000+ | Application-specific, ephemeral or experimental. |
 
+### 4.4 `kind: 10001` — peer offer (v0.2)
+
+A signed WebRTC connection offer, broadcast through relays so other peers can discover and connect. Ephemeral: relays MAY drop these after the offer expires.
+
+Required tags:
+- `["sdp", "<SDP offer text>"]` — the WebRTC session description.
+- `["expires", "<unix timestamp>"]` — after this time, peers MUST NOT attempt to connect.
+
+Optional tags:
+- `["g", "<geohash>"]` — coarse geohash (precision 5 recommended) for locality-based peer selection. Privacy-conscious peers use lower precision or omit.
+
+### 4.5 `kind: 10002` — peer answer (v0.2)
+
+A signed WebRTC answer addressed to the author of a specific `kind:10001` event.
+
+Required tags:
+- `["p", "<offerer-pubkey-hex>"]` — the offer author this answer is for.
+- `["e", "<offer-event-id>"]` — the offer being answered.
+- `["sdp", "<SDP answer text>"]` — the WebRTC answer.
+
+### 4.6 `kind: 10003` — ICE candidate (v0.2)
+
+A trickle-ICE candidate addressed to a specific peer. Reserved; the v0.2 reference client gathers ICE fully before publishing the offer/answer, so it does not produce or consume these. Implementations supporting trickle-ICE for faster connection establishment use this kind.
+
+Required tags:
+- `["p", "<other-peer-pubkey-hex>"]`
+- `["e", "<offer-or-answer-event-id>"]`
+- `["ice", "<ICE candidate>"]`
+
+### 4.7 Peer mesh behavior
+
+A peer-enabled client publishes a `kind:10001` offer through its relays, subscribes to incoming offers and to answers addressed to itself (`#p` = own pubkey), and uses any data channels it establishes to gossip events of kinds `1` and `2` with deduplication by event id.
+
+Implementations MUST NOT trust the contents of events received over peer connections without verifying the signature. The peer layer is a transport, not a trust boundary; signature verification is the trust boundary.
+
+The peer layer is OPT-IN. Implementations expose this to the user with explicit disclosure of the IP-address-exposure consequence.
+
 ## 5. Relay wire protocol
 
 The wire protocol runs over WebSocket. Messages are JSON arrays. A relay MUST accept connections on `ws://` and SHOULD also serve `wss://`.

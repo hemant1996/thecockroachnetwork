@@ -263,6 +263,79 @@ describe("end-to-end against a live relay", () => {
     expect(og.headers.get("content-type")).toContain("image/svg");
   });
 
+  test("v0.2 signaling kinds 10001/10002/10003 flow through the relay unchanged", async () => {
+    // Sanity check: the relay imposes no code changes for the WebRTC peer
+    // mesh.  Any non-negative kind passes through; single-letter tags index
+    // and filter normally.
+    const alice = makeSigner();
+    const bob = makeSigner();
+    const c = await connect();
+
+    // kind:10001 — peer offer broadcast
+    const offer = alice.sign({
+      created_at: Math.floor(Date.now() / 1000),
+      kind: 10001,
+      tags: [
+        ["sdp", "v=0\r\no=- 1 2 IN IP4 0.0.0.0\r\ns=-\r\nt=0 0\r\n"],
+        ["expires", String(Math.floor(Date.now() / 1000) + 3600)],
+        ["g", geohashEncode(19.076, 72.8777, 5)],
+      ],
+      content: "",
+    });
+    const okOffer = c.okPromise(offer.id);
+    c.send(["EVENT", offer]);
+    expect((await okOffer).accepted).toBe(true);
+
+    // kind:10002 — peer answer addressed to alice
+    const answer = bob.sign({
+      created_at: Math.floor(Date.now() / 1000),
+      kind: 10002,
+      tags: [
+        ["p", alice.pkHex],
+        ["e", offer.id],
+        ["sdp", "v=0\r\no=- 3 4 IN IP4 0.0.0.0\r\ns=-\r\nt=0 0\r\n"],
+      ],
+      content: "",
+    });
+    const okAnswer = c.okPromise(answer.id);
+    c.send(["EVENT", answer]);
+    expect((await okAnswer).accepted).toBe(true);
+
+    // kind:10003 — ICE candidate
+    const ice = bob.sign({
+      created_at: Math.floor(Date.now() / 1000),
+      kind: 10003,
+      tags: [
+        ["p", alice.pkHex],
+        ["e", offer.id],
+        ["ice", "candidate:1 1 udp 2113929471 192.0.2.1 50000 typ host"],
+      ],
+      content: "",
+    });
+    const okIce = c.okPromise(ice.id);
+    c.send(["EVENT", ice]);
+    expect((await okIce).accepted).toBe(true);
+
+    // Subscriptions: alice should be able to retrieve all three by their
+    // intended filters.
+    const offersSub = c.collectSub("offers", 400);
+    c.send(["REQ", "offers", { kinds: [10001] }]);
+    const offersGot = await offersSub;
+    expect(offersGot.some(g => g.id === offer.id)).toBe(true);
+
+    const answersSub = c.collectSub("answers", 400);
+    c.send(["REQ", "answers", { kinds: [10002], "#p": [alice.pkHex] }]);
+    const answersGot = await answersSub;
+    expect(answersGot.some(g => g.id === answer.id)).toBe(true);
+
+    const iceSub = c.collectSub("ice", 400);
+    c.send(["REQ", "ice", { kinds: [10003], "#p": [alice.pkHex] }]);
+    const iceGot = await iceSub;
+    expect(iceGot.some(g => g.id === ice.id)).toBe(true);
+
+    c.close();
+  });
+
   test("geohash prefix filter matches nearby reports", async () => {
     const alice = makeSigner();
     const c = await connect();

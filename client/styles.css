@@ -176,6 +176,38 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
 .relay-row .relay-url { flex: 1; font-size: 13px; overflow-wrap: anywhere; }
 .relay-row .remove-relay { padding: 4px 10px; font-size: 16px; line-height: 1; }
 
+.peer-toggle-row { display: flex; align-items: center; gap: 14px; margin: 12px 0; }
+.peer-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.peer-switch input { display: none; }
+.peer-switch-track {
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  background: var(--line);
+  border-radius: 11px;
+  position: relative;
+  transition: background 0.15s;
+}
+.peer-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: var(--fg);
+  border-radius: 50%;
+  transition: left 0.15s;
+}
+.peer-switch input:checked + .peer-switch-track { background: var(--accent); }
+.peer-switch input:checked + .peer-switch-track .peer-switch-thumb { left: 21px; background: #0a0a0a; }
+.peer-switch-label { font-size: 14px; }
+
 .empty { padding: 60px 20px; text-align: center; color: var(--muted); }
 .empty svg { width: 64px; height: 64px; opacity: 0.3; margin-bottom: 12px; }
 

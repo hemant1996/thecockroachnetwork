@@ -27,8 +27,9 @@
       </svg>
       <span>cockroach</span>
     </div>
-    <div style="font-size:13px;color:var(--muted)">
-      <span id="live-dot" class="dot"></span><span id="status" data-i18n="status.starting">starting…</span>
+    <div style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:14px">
+      <span><span id="live-dot" class="dot"></span><span id="status" data-i18n="status.starting">starting…</span></span>
+      <span id="peer-indicator" style="display:none"><span id="peer-dot" class="dot"></span><span id="peer-count">0 peers</span></span>
     </div>
   </header>
 
@@ -96,6 +97,18 @@
       </div>
       <div class="row" style="gap:8px;margin-top:8px">
         <button id="reset-relays" class="ghost small" data-i18n="identity.reset_relays">Reset to seed list</button>
+      </div>
+
+      <h2>Peer mode <span style="font-size:13px;color:var(--muted);font-weight:400">— v0.2 mesh</span></h2>
+      <p>Opt-in WebRTC peer-to-peer mesh. When enabled, your browser opens direct connections to other peers and gossips events with them. The network survives any single relay going offline; the cost is one less hop between you and other people's reports.</p>
+      <p style="font-size:13px;color:var(--warn)"><b>Privacy:</b> peer mode exposes your IP address to other peers (not just to your relay's operator). Off by default. <b>Do not enable on hostile networks</b> or when reporting sensitive content. You can turn it off any time.</p>
+      <div class="peer-toggle-row">
+        <label class="peer-switch">
+          <input type="checkbox" id="peer-toggle" />
+          <span class="peer-switch-track"><span class="peer-switch-thumb"></span></span>
+          <span class="peer-switch-label">Enable peer mode</span>
+        </label>
+        <span id="peer-status" class="muted small"></span>
       </div>
 
       <h2 data-i18n="identity.language">Language</h2>

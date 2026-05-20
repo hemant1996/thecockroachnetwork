@@ -4,6 +4,37 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.2.0 — WebRTC peer-relay mesh (2026-05-20)
+
+### Added
+
+- **WebRTC peer-relay mesh in the reference client** (opt-in, default off). Every PWA install can now connect directly to other peers and gossip events over RTCDataChannels. The network survives any single relay going offline; events fan out across both relays and peer connections; new clients can warm-start from existing peers without needing relays first.
+- **New event kinds for peer signaling** — SPEC §4.4–4.7:
+  - `kind:10001` — peer offer (SDP, expires, optional geohash)
+  - `kind:10002` — peer answer (addressed to a specific offerer)
+  - `kind:10003` — ICE candidate (reserved for trickle-ICE; the v0.2 reference client gathers all ICE before publishing offers/answers)
+- **Peer mode toggle in Identity tab** with explicit IP-exposure disclosure on first enable. Preference persists across reloads; defers enabling until at least one relay is connected.
+- **Header peer indicator** next to the relay status, showing live peer count when peer mode is on.
+- **Client-side signature verification** of peer-sourced events. Relays validate events on receipt, but events arriving over WebRTC haven't been through a relay; the client now re-verifies before ingesting. Untrusted-source defense.
+- **`client/peers.js`** — new file, self-contained `PeerPool` class (~270 LoC). Implements the offer / answer / ICE dance, channel wiring, fan-out, dedupe, and the 12-peer soft cap. Uses public STUN servers (Google, Cloudflare); no TURN for v0.2 — peers behind symmetric NATs stay relay-only.
+
+### Reference relay
+
+- No code changes required. The relay accepts any non-negative kind and indexes by single-letter tags. `kind:10001/10002/10003` events route through the existing storage and filter paths unchanged.
+- The new client subscription includes the signaling kinds (10001 globally with a 1-hour window; 10002/10003 only when addressed to the user's pubkey).
+
+### Documentation
+
+- SPEC §4.4–4.7 formalize the three new kinds and the peer mesh trust model.
+- WebRTC design doc at `docs/v0.2-webrtc-peer-relay.md` is now backed by working code.
+
+### Known limits in v0.2
+
+- No TURN servers shipped. Peers behind symmetric NATs cannot establish direct connections; they remain relay-only. Operators or interested users can configure their own TURN list later.
+- ICE is gathered fully before publishing the offer/answer (slower first-connection latency in exchange for simpler signaling). Trickle ICE via `kind:10003` is a future enhancement.
+- Subscription to `kind:10001` is global — scales to small networks. At larger scale, geohash-prefix filtering on the `#g` tag will be required.
+- Mobile background tabs throttle aggressively; peer connections drop on iOS Safari / Chrome backgrounding. Peer mesh is most useful while the app is in the foreground.
+
 ## v0.1.2 — runs out of the box (2026-05-20)
 
 ### Added
