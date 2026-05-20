@@ -3,14 +3,42 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cockroach — a protocol, not an app</title>
-  <meta name="description" content="A decentralized civic signal protocol. Released to the network. Owned by no one." />
+  <title>Cockroach — a public network for civic signal, owned by no one</title>
+  <meta name="description" content="A decentralized civic signal protocol. Citizens publish signed reports of real-world civic problems through dumb relays they run themselves. No central server, no company, no token, CC0 public domain." />
   <meta name="theme-color" content="#0a0a0a" />
+  <meta name="keywords" content="cockroach, civic signal, decentralized protocol, signed reports, ed25519, peer-to-peer, owned by no one, CC0, public infrastructure" />
+  <link rel="canonical" href="https://hemant1996.github.io/thecockroachnetwork/" />
   <link rel="icon" href="assets/cockroach.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Cockroach" />
   <meta property="og:title" content="Cockroach — a protocol, not an app" />
   <meta property="og:description" content="A decentralized civic signal protocol. Released to the network. Owned by no one." />
-  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://hemant1996.github.io/thecockroachnetwork/" />
+  <meta property="og:image" content="https://hemant1996.github.io/thecockroachnetwork/web/assets/og-cover.svg" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Cockroach — a protocol, not an app" />
+  <meta name="twitter:description" content="A decentralized civic signal protocol. Released to the network. Owned by no one." />
+  <meta name="twitter:image" content="https://hemant1996.github.io/thecockroachnetwork/web/assets/og-cover.svg" />
+
+  <!-- JSON-LD: structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "Cockroach Relay Protocol",
+    "description": "A decentralized civic signal protocol. Citizens publish signed reports of real-world civic problems through dumb relays. Owned by no one.",
+    "url": "https://hemant1996.github.io/thecockroachnetwork/",
+    "codeRepository": "https://github.com/hemant1996/thecockroachnetwork",
+    "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "programmingLanguage": "TypeScript",
+    "version": "0.1.1"
+  }
+  </script>
 </head>
 <body>
   <main>
@@ -31,19 +59,28 @@
       <h1>Cockroach is a <span class="accent">protocol</span>, not an app.</h1>
       <p class="lead">A public network for reporting and verifying real-world civic problems. Identity is a keypair on your phone. Truth is computed at the edges. <b>Nobody owns this. Nobody can shut it down.</b></p>
 
-      <div class="ctas three">
-        <a class="btn" href="#use">Use a client</a>
-        <a class="btn ghost" href="#run">Run a relay</a>
-        <a class="btn ghost" href="../SPEC.md">Read the spec</a>
+      <div class="hero-actions">
+        <a class="action-card primary" href="../client/index.html">
+          <span class="action-title">Open the client →</span>
+          <span class="action-sub">No download. No install. Tap to start. Mobile-first PWA, auto-generated keypair, works offline.</span>
+        </a>
+        <a class="action-card ghost" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest" target="_blank" rel="noopener">
+          <span class="action-title">Run a relay →</span>
+          <span class="action-sub">For operators. Mac · Windows · Linux executables, or Docker / Render / Replit. Light terminal use.</span>
+        </a>
       </div>
 
-      <p class="muted" style="margin-top:18px;font-size:15px">
+      <p class="tertiary-links">
+        Or read the <a href="../SPEC.md">spec</a> · <a href="../WHITEPAPER.md">whitepaper</a> · <a href="#how">how it works</a> · <a href="#faq">FAQ</a>
+      </p>
+
+      <p class="muted" style="margin-top:14px;font-size:15px">
         This site does not host the network. It releases the protocol and points you at the people who do.
       </p>
 
-      <div class="skip" style="margin-top:20px;font-size:14px">
+      <div class="skip" style="margin-top:18px;font-size:14px">
         <a href="#how">How it works</a>
-        <a href="#use">Use a client</a>
+        <a href="#use">Use the client</a>
         <a href="#run">Run a relay</a>
         <a href="#verbs">Five verbs</a>
         <a href="#why">Why locality</a>

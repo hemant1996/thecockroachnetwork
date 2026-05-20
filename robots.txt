@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hemant1996.github.io/thecockroachnetwork/sitemap.xml

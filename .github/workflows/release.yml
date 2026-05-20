@@ -54,15 +54,25 @@ jobs:
             server.ts \
             --outfile ../${{ matrix.artifact }}
 
-      - name: SHA256 checksum
-        run: shasum -a 256 ${{ matrix.artifact }} > ${{ matrix.artifact }}.sha256
+      - name: Set executable bit (Unix targets only)
+        if: matrix.target != 'bun-windows-x64'
+        run: chmod +x ${{ matrix.artifact }}
+
+      - name: Archive as .tar.gz (preserves +x bit on Mac/Linux)
+        if: matrix.target != 'bun-windows-x64'
+        run: tar -czvf ${{ matrix.artifact }}.tar.gz ${{ matrix.artifact }}
+
+      - name: Archive as .zip (Windows)
+        if: matrix.target == 'bun-windows-x64'
+        run: zip ${{ matrix.artifact }}.zip ${{ matrix.artifact }}
+
+      - name: SHA256 checksums (binary + archive)
+        run: shasum -a 256 ${{ matrix.artifact }}* > ${{ matrix.artifact }}.sha256
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: |
-            ${{ matrix.artifact }}
-            ${{ matrix.artifact }}.sha256
+          name: ${{ matrix.artifact }}-bundle
+          path: ${{ matrix.artifact }}*
 
   release:
     needs: build
@@ -83,33 +93,56 @@ jobs:
           body: |
             Standalone executables for the Cockroach Relay reference implementation.
 
-            **Pick your platform and download. No install needed.**
+            **Operator path.** If you just want to USE the network, open the [client PWA](https://hemant1996.github.io/thecockroachnetwork/) on your phone instead — zero download, zero install, auto-generated keypair. Binaries are for people running their own relay.
 
-            | Platform | Binary |
-            |---|---|
-            | Mac (Apple Silicon — M1/M2/M3/M4) | `cockroach-relay-darwin-arm64` |
-            | Mac (Intel) | `cockroach-relay-darwin-x64` |
-            | Windows | `cockroach-relay-windows-x64.exe` |
-            | Linux (x86_64) | `cockroach-relay-linux-x64` |
-            | Linux (ARM — Raspberry Pi 4/5) | `cockroach-relay-linux-arm64` |
+            ## Download for your platform
 
-            Each binary is ~70 MB and bundles the Bun runtime, SQLite, and the relay code into a single file.
+            | Platform | Archive (recommended) | Raw binary |
+            |---|---|---|
+            | Mac (Apple Silicon — M1/M2/M3/M4) | `cockroach-relay-darwin-arm64.tar.gz` | `cockroach-relay-darwin-arm64` |
+            | Mac (Intel) | `cockroach-relay-darwin-x64.tar.gz` | `cockroach-relay-darwin-x64` |
+            | Windows | `cockroach-relay-windows-x64.zip` | `cockroach-relay-windows-x64.exe` |
+            | Linux (x86_64) | `cockroach-relay-linux-x64.tar.gz` | `cockroach-relay-linux-x64` |
+            | Linux (ARM — Raspberry Pi 4/5) | `cockroach-relay-linux-arm64.tar.gz` | `cockroach-relay-linux-arm64` |
 
-            **Run from terminal:**
+            **Download the archive, not the raw binary.** Archives preserve the executable bit, so you skip `chmod +x`. Each binary is ~70 MB and bundles Bun + SQLite + the relay code into a single file.
+
+            ## Mac and Linux
+
             ```
+            tar -xzf cockroach-relay-darwin-arm64.tar.gz
             ./cockroach-relay-darwin-arm64
             ```
 
-            Or double-click from Finder/Explorer.
+            (Or double-click the `.tar.gz` to extract via Archive Utility on Mac.)
 
-            The relay listens on `ws://localhost:7447`. Database lives at `~/.cockroach-relay/relay.db`.
+            ## Windows
 
-            **First-run warnings:**
-            - **macOS Gatekeeper** blocks unsigned binaries. Allow with `xattr -d com.apple.quarantine cockroach-relay-darwin-arm64`, or right-click → Open → Open.
-            - **Windows SmartScreen** warns about an unrecognized publisher. Click "More info" → "Run anyway."
+            Double-click the `.zip` to extract. Double-click the `.exe` inside.
 
-            Verify your download with the `.sha256` file shipped alongside each binary.
+            ## First-run warnings (unsigned binaries — v0.1)
 
-            **Caveat:** running on `localhost` reaches only your own machine. To be part of the public network, either put a TLS reverse proxy in front + open a port, or run as a Tor hidden service. See `relay/RUN.md` for both recipes.
+            - **macOS Gatekeeper:** the first run is blocked because the binary isn't signed. Allow with `xattr -d com.apple.quarantine cockroach-relay-darwin-arm64`, or right-click the file in Finder → **Open** → **Open**.
+            - **Windows SmartScreen:** warns *"Windows protected your PC."* Click **More info** → **Run anyway**.
 
-            Binaries are unsigned in v0.1 because Apple ($99/yr) and Microsoft ($200–500/yr) developer certificates aren't in the v0.1 budget. The protocol and source are CC0 — anyone with a certificate can build and sign their own.
+            These steps cannot be eliminated without Apple ($99/yr) and Microsoft ($200–500/yr) developer certificates, which aren't in the v0.1 budget. v0.2 ships a WebRTC peer-relay mode (every PWA install = a relay, no download).
+
+            ## Verify your download
+
+            Each archive ships with a `.sha256` checksum file:
+
+            ```
+            shasum -a 256 -c cockroach-relay-darwin-arm64.sha256
+            ```
+
+            Don't trust the build pipeline? Reproduce the binaries locally:
+
+            ```
+            git clone https://github.com/hemant1996/thecockroachnetwork
+            cd thecockroachnetwork
+            ./relay/scripts/build-binaries.sh
+            ```
+
+            ## Joining the public network
+
+            Running on `localhost` reaches only your own machine. To be part of the network: TLS reverse proxy + open port, or Tor hidden service. Both recipes in [`relay/RUN.md`](https://github.com/hemant1996/thecockroachnetwork/blob/main/relay/RUN.md).

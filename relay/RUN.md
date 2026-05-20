@@ -8,50 +8,68 @@ This guide walks the friction ladder, from zero-install to bare-metal. Pick whic
 
 ---
 
-## Option 0 — Download the executable (~30 seconds, no install at all)
+## Option 0 — Download the executable (operators, ~1 minute)
 
-**[Releases page →](https://github.com/hemant1996/thecockroachnetwork/releases)**
+**[Releases page →](https://github.com/hemant1996/thecockroachnetwork/releases/latest)**
 
-Pick the binary for your platform:
+> If you just want to **use** the network, open the client at `https://hemant1996.github.io/thecockroachnetwork/client/` on your phone — zero download, zero install. The relay binary is for people running their own node.
 
-| Platform | Binary |
+Pick the archive for your platform. Archives preserve the executable bit so you don't need `chmod`.
+
+| Platform | Archive |
 |---|---|
-| Mac (Apple Silicon — M1/M2/M3/M4) | `cockroach-relay-darwin-arm64` |
-| Mac (Intel) | `cockroach-relay-darwin-x64` |
-| Windows | `cockroach-relay-windows-x64.exe` |
-| Linux (x86_64) | `cockroach-relay-linux-x64` |
-| Linux (ARM — Raspberry Pi 4/5) | `cockroach-relay-linux-arm64` |
+| Mac (Apple Silicon — M1/M2/M3/M4) | `cockroach-relay-darwin-arm64.tar.gz` |
+| Mac (Intel) | `cockroach-relay-darwin-x64.tar.gz` |
+| Windows | `cockroach-relay-windows-x64.zip` |
+| Linux (x86_64) | `cockroach-relay-linux-x64.tar.gz` |
+| Linux (ARM — Raspberry Pi 4/5) | `cockroach-relay-linux-arm64.tar.gz` |
 
 Each binary is ~70 MB and bundles Bun + SQLite + the relay code into a single file. No dependencies. No install.
 
-Run from terminal:
+### Mac and Linux
+
+Double-click the `.tar.gz` to extract (Archive Utility on macOS, `tar -xzf` on Linux), then from a terminal in the same folder:
 
 ```sh
-chmod +x cockroach-relay-darwin-arm64    # mac/linux only
 ./cockroach-relay-darwin-arm64
 ```
 
-Or double-click from Finder / Explorer. The relay listens on `ws://localhost:7447`. Database lives at `~/.cockroach-relay/relay.db`.
+### Windows
 
-**First-run warnings (unsigned binaries — v0.1 budget):**
+Double-click the `.zip` to extract. Double-click the `.exe` inside.
 
-- **macOS Gatekeeper** blocks unsigned binaries. To allow:
+### First-run warnings (unsigned binaries)
+
+These cannot be avoided without code signing ($99/yr Apple, $200–500/yr Microsoft — not in v0.1 budget).
+
+- **macOS Gatekeeper** blocks unsigned binaries the first time. To allow:
   ```sh
   xattr -d com.apple.quarantine cockroach-relay-darwin-arm64
   ```
   Or right-click → **Open** → **Open** in the confirmation dialog.
-
 - **Windows SmartScreen** warns *"Windows protected your PC."* Click **More info** → **Run anyway**.
 
-Verify your download with the `.sha256` checksum file shipped beside each binary:
+The truly zero-warning operator path lands in v0.2 as the WebRTC peer-relay mesh: every PWA install of the client becomes a relay automatically, no binary, no install. See [`docs/v0.2-webrtc-peer-relay.md`](../docs/v0.2-webrtc-peer-relay.md).
+
+### Verify and reproduce
+
+Each archive ships with a `.sha256` checksum file:
 
 ```sh
 shasum -a 256 -c cockroach-relay-darwin-arm64.sha256
 ```
 
-**Caveat:** running on `localhost` reaches only your own machine. To be part of the public network, you need either (a) a TLS reverse proxy + open port (see *Option 7*), or (b) a Tor hidden service (see *Behind Tor*). Both work with the same downloaded binary; no rebuild needed.
+Don't trust the prebuilt archives? Reproduce them locally with the same source and same Bun version:
 
-**Build from source instead:** if you don't want to trust the prebuilt binary, you can reproduce it locally with `relay/scripts/build-binaries.sh`. Same Bun version, same source, byte-identical output.
+```sh
+./relay/scripts/build-binaries.sh
+```
+
+### Joining the public network
+
+The relay listens on `ws://localhost:7447`. Database lives at `~/.cockroach-relay/relay.db`.
+
+Running on `localhost` reaches only your own machine. To be part of the public network: TLS reverse proxy + open port (see *Option 7*), or Tor hidden service (see *Behind Tor*). Both work with the same downloaded binary — no rebuild needed.
 
 ---
 
