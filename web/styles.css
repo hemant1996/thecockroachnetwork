@@ -145,6 +145,44 @@ ul li { margin-bottom: 6px; }
 .tertiary-links a { color: var(--muted); border-bottom: 1px dashed transparent; }
 .tertiary-links a:hover { color: var(--fg); }
 
+/* Direct-download grid — inline platform buttons that link to GitHub Release assets. */
+.download-section { padding-top: 36px; padding-bottom: 36px; }
+.downloads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+}
+.download-btn {
+  display: block;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-2);
+  color: var(--fg);
+  text-decoration: none;
+  position: relative;
+  transition: border-color 0.15s, transform 0.05s, background 0.15s;
+}
+.download-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+.download-btn.recommended { border-color: var(--accent); background: rgba(249, 115, 22, 0.06); }
+.download-btn.recommended::after {
+  content: "recommended for you";
+  position: absolute;
+  top: -9px;
+  right: 14px;
+  background: var(--accent);
+  color: #0a0a0a;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.download-btn .download-platform { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+.download-btn .download-detail { color: var(--muted); font-size: 13px; }
+
 .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
 .how-card {
   border: 1px solid var(--line);

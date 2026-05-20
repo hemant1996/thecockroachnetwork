@@ -64,9 +64,9 @@
           <span class="action-title">Open the client →</span>
           <span class="action-sub">No download. No install. Tap to start. Mobile-first PWA, auto-generated keypair, works offline.</span>
         </a>
-        <a class="action-card ghost" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest" target="_blank" rel="noopener">
+        <a class="action-card ghost" href="#download">
           <span class="action-title">Run a relay →</span>
-          <span class="action-sub">For operators. Mac · Windows · Linux executables, or Docker / Render / Replit. Light terminal use.</span>
+          <span class="action-sub">For operators. Direct binary download for Mac · Windows · Linux. Light terminal use.</span>
         </a>
       </div>
 
@@ -87,6 +87,43 @@
         <a href="#faq">FAQ</a>
         <a href="#release">Release</a>
       </div>
+    </section>
+
+    <section id="download" class="download-section">
+      <h2>Download a relay</h2>
+      <p class="muted" style="margin-bottom:8px">
+        Standalone executables. ~70 MB. Extract and run — no install. <span id="detected-platform-note"></span>
+      </p>
+
+      <div class="downloads-grid">
+        <a class="download-btn" data-platform="darwin-arm64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-darwin-arm64.tar.gz">
+          <div class="download-platform">Mac · Apple Silicon</div>
+          <div class="download-detail">M1 / M2 / M3 / M4 · .tar.gz</div>
+        </a>
+        <a class="download-btn" data-platform="darwin-x64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-darwin-x64.tar.gz">
+          <div class="download-platform">Mac · Intel</div>
+          <div class="download-detail">Older Macs · .tar.gz</div>
+        </a>
+        <a class="download-btn" data-platform="windows-x64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-windows-x64.zip">
+          <div class="download-platform">Windows</div>
+          <div class="download-detail">Windows 10 / 11 · x86_64 · .zip</div>
+        </a>
+        <a class="download-btn" data-platform="linux-x64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-linux-x64.tar.gz">
+          <div class="download-platform">Linux · x86_64</div>
+          <div class="download-detail">Most distros · .tar.gz</div>
+        </a>
+        <a class="download-btn" data-platform="linux-arm64" href="https://github.com/hemant1996/thecockroachnetwork/releases/latest/download/cockroach-relay-linux-arm64.tar.gz">
+          <div class="download-platform">Linux · ARM</div>
+          <div class="download-detail">Raspberry Pi 4 / 5 · .tar.gz</div>
+        </a>
+      </div>
+
+      <p class="muted" style="font-size:14px;margin-top:14px">
+        After download: extract the archive, then run <code>./cockroach-relay-...</code> from a terminal. Mac may show a Gatekeeper warning the first time — right-click → Open → Open, or see <a href="relay/RUN.md#option-0--download-the-executable-operators-1-minute">RUN.md</a> for the one-liner. Windows: extract the .zip, double-click the .exe.
+      </p>
+      <p class="muted" style="font-size:13px;margin-top:6px">
+        Prefer Docker, Render, Replit, Termux, or a bare VPS? <a href="#run">Full options ↓</a>. All release assets and SHA-256 checksums: <a href="https://github.com/hemant1996/thecockroachnetwork/releases/latest" target="_blank" rel="noopener">releases page</a>.
+      </p>
     </section>
 
     <section id="how">
@@ -297,5 +334,52 @@ HiddenServicePort 80 127.0.0.1:7447</code></pre>
       </div>
     </footer>
   </main>
+
+  <script>
+  // Platform detection — highlight the user's likely platform among the download buttons.
+  // Best-effort: navigator.userAgentData.architecture gives "arm" vs "x86" on Chromium;
+  // Safari is silent on Apple Silicon vs Intel, so we mark both Mac buttons in that case.
+  (function () {
+    const note = document.getElementById("detected-platform-note");
+    if (!note) return;
+    const p = (navigator.platform || "").toLowerCase();
+    const ua = (navigator.userAgent || "").toLowerCase();
+    const set = (key, label) => {
+      const btn = document.querySelector('[data-platform="' + key + '"]');
+      if (btn) btn.classList.add("recommended");
+      if (label) note.innerHTML = ' Recommended for your system: <b>' + label + '</b>.';
+    };
+    if (/iphone|ipad|ipod/.test(ua)) {
+      note.innerHTML = ' On iOS? <a href="client/index.html">Open the client</a> instead — the binary is the operator path.';
+      return;
+    }
+    if (/android/.test(ua)) {
+      note.innerHTML = ' On Android? <a href="client/index.html">Open the client</a>, or <a href="relay/RUN.md">run a relay via Termux</a>.';
+      return;
+    }
+    if (/win/.test(p)) { set("windows-x64", "Windows"); return; }
+    if (/linux/.test(p)) {
+      // No reliable arm detection from userAgent on Linux; default to x64.
+      set("linux-x64", "Linux x86_64");
+      return;
+    }
+    if (/mac/.test(p)) {
+      if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+        navigator.userAgentData.getHighEntropyValues(["architecture"]).then((d) => {
+          const arch = (d.architecture || "").toLowerCase();
+          if (arch === "arm") set("darwin-arm64", "Mac · Apple Silicon");
+          else set("darwin-x64", "Mac · Intel");
+        }).catch(() => {
+          set("darwin-arm64", "Mac (pick Apple Silicon or Intel)");
+          set("darwin-x64", "");
+        });
+      } else {
+        // Safari path — can't tell arm vs x86 reliably.
+        set("darwin-arm64", "Mac (pick Apple Silicon or Intel)");
+        set("darwin-x64", "");
+      }
+    }
+  })();
+  </script>
 </body>
 </html>
