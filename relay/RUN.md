@@ -69,7 +69,46 @@ Don't trust the prebuilt archives? Reproduce them locally with the same source a
 
 The relay listens on `ws://localhost:7447`. Database lives at `~/.cockroach-relay/relay.db`.
 
-Running on `localhost` reaches only your own machine. To be part of the public network: TLS reverse proxy + open port (see *Option 7*), or Tor hidden service (see *Behind Tor*). Both work with the same downloaded binary — no rebuild needed.
+Running on `localhost` reaches only your own machine. Three ways to make a local relay publicly reachable, in order of effort:
+
+#### A. Cloudflare Quick Tunnel (fastest, ~30 seconds, no account)
+
+```sh
+# macOS
+brew install cloudflared
+
+# Linux/WSL — pick one matching your distro from
+# https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+
+# Windows — winget install --id Cloudflare.cloudflared
+```
+
+With the relay already running on `localhost:7447`, in a second terminal:
+
+```sh
+cloudflared tunnel --url http://localhost:7447
+```
+
+Within a few seconds cloudflared prints a public HTTPS URL:
+
+```
++------------------------------------------------------------+
+|  Your quick Tunnel has been created! Visit it at:          |
+|  https://random-name-words.trycloudflare.com               |
++------------------------------------------------------------+
+```
+
+That URL — with `wss://` prefix instead of `https://` — is your public relay address. Cloudflare auto-upgrades the WebSocket. Add it to a client's relay list and the world can connect.
+
+**Caveats:** the URL changes every time you restart `cloudflared`. Free quick tunnels are anonymous (no account) but unauthenticated and ephemeral. Good for a launch demo or short-lived experiment; for a relay you want online for weeks, use Option 1 (Render) or run a named tunnel with `cloudflared tunnel create` (free, requires a Cloudflare account).
+
+#### B. Tor hidden service
+
+See *Behind Tor* further down. Works without any third-party provider, behind any NAT, in any country — but only reachable to clients using Tor.
+
+#### C. TLS reverse proxy + port forward
+
+See *Option 7*. Requires a public IP (or port-forwarded router) and a domain name. The right answer for a permanent operator setup; overkill for tonight.
 
 ---
 

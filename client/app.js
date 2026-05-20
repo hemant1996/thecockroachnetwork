@@ -811,27 +811,40 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
   peers.on(updatePeerStatus);
 
+  // Peer mode is ON by default — every PWA install joins the mesh on first
+  // load.  Users can explicitly disable in the Identity tab; the explicit
+  // disable persists across reloads.  The localStorage value semantics:
+  //   "0"  → explicitly disabled (do not auto-enable)
+  //   "1"  → explicitly enabled
+  //   null → default (auto-enable)
+  const PEER_DISCLOSED_KEY = "cockroach.peer_disclosed";
+
   if (peerToggle) {
     peerToggle.addEventListener("change", async () => {
       if (peerToggle.checked) {
-        const consented = localStorage.getItem(PEER_PREF_KEY) === "1" || confirm(
-          "Enable WebRTC peer mode?\n\n" +
-          "Peer mode opens direct connections from your browser to other peers, which exposes your IP address to them (not just to your relay's operator).\n\n" +
-          "Don't enable this from a hostile network or when reporting sensitive content. You can turn it off any time."
-        );
-        if (!consented) { peerToggle.checked = false; return; }
         localStorage.setItem(PEER_PREF_KEY, "1");
         try { await peers.enable(); } catch (e) { toast("peer mode failed: " + (e?.message || e)); peerToggle.checked = false; }
       } else {
         peers.disable();
-        localStorage.removeItem(PEER_PREF_KEY);
+        localStorage.setItem(PEER_PREF_KEY, "0"); // explicit off, won't auto-enable
       }
       updatePeerStatus();
     });
-    if (localStorage.getItem(PEER_PREF_KEY) === "1") {
+
+    const peerPref = localStorage.getItem(PEER_PREF_KEY);
+    const shouldAutoEnable = peerPref !== "0"; // null or "1" → on
+
+    if (shouldAutoEnable) {
       peerToggle.checked = true;
-      // Defer enable until we have at least one relay connected, otherwise the
-      // offer publish lands nowhere.
+      // First-time disclosure as a non-blocking toast.
+      if (!localStorage.getItem(PEER_DISCLOSED_KEY)) {
+        setTimeout(() => {
+          toast("Peer mode on — your device is now part of the mesh. IP exposed to peers. Disable in Identity tab anytime.");
+          localStorage.setItem(PEER_DISCLOSED_KEY, "1");
+        }, 1800);
+      }
+      // Defer enable until at least one relay is connected; signaling rides
+      // on the relay layer.
       const tryEnable = () => {
         if (pool.connectedCount() > 0) peers.enable().catch(() => {});
         else setTimeout(tryEnable, 1000);

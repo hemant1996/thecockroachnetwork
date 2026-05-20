@@ -100,8 +100,8 @@
       </div>
 
       <h2>Peer mode <span style="font-size:13px;color:var(--muted);font-weight:400">— v0.2 mesh</span></h2>
-      <p>Opt-in WebRTC peer-to-peer mesh. When enabled, your browser opens direct connections to other peers and gossips events with them. The network survives any single relay going offline; the cost is one less hop between you and other people's reports.</p>
-      <p style="font-size:13px;color:var(--warn)"><b>Privacy:</b> peer mode exposes your IP address to other peers (not just to your relay's operator). Off by default. <b>Do not enable on hostile networks</b> or when reporting sensitive content. You can turn it off any time.</p>
+      <p>WebRTC peer-to-peer mesh. Your browser opens direct connections to other peers and gossips events with them. The network survives any single relay going offline; you participate in carrying the load.</p>
+      <p style="font-size:13px;color:var(--warn)"><b>Privacy:</b> peer mode exposes your IP address to other peers (not just to your relay's operator). <b>On by default</b> so the mesh is alive from the first page load. <b>Turn it off here if you're on a hostile network or reporting sensitive content.</b></p>
       <div class="peer-toggle-row">
         <label class="peer-switch">
           <input type="checkbox" id="peer-toggle" />

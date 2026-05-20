@@ -4,6 +4,21 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.2.1 — peer mode on by default + Cloudflare Tunnel guide (2026-05-20)
+
+### Changed
+
+- **Peer mode now ON by default** in the reference client. Previous v0.2.0 default was off-with-opt-in dialog. The mesh is now alive from the first page load. Users who don't want IP exposure can explicitly disable in the Identity tab; that disable persists across reloads. Trade-off documented in WHITEPAPER §7 — operators in hostile jurisdictions should disable.
+- First-time peer enablement now surfaces as a **non-blocking toast** ("Peer mode on — your device is now part of the mesh. IP exposed to peers. Disable in Identity tab anytime.") rather than a confirm dialog.
+
+### Added
+
+- `relay/RUN.md` — new subsection on **Cloudflare Quick Tunnel**, the fastest way to make a local relay binary publicly reachable. ~30 seconds, no account, no TLS cert, no port forwarding. URL is ephemeral and resets when cloudflared restarts; good for launch demos and short-lived experiments. Sits alongside Tor hidden service and TLS reverse proxy as the third pathway from a localhost relay to the public network.
+
+### Known still-open
+
+- IP exposure on first load is no longer behind a consent dialog. Users in hostile contexts should be onboarded to disable peer mode before publishing sensitive reports.
+
 ## v0.2.0 — WebRTC peer-relay mesh (2026-05-20)
 
 ### Added

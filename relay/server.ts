@@ -424,7 +424,7 @@ try {
 }
 
 console.log("");
-console.log("  cockroach-relay v0.2.0 running");
+console.log("  cockroach-relay v0.2.1 running");
 console.log("");
 console.log(`  WebSocket:  ws://localhost:${server.port}`);
 console.log(`  Info:       http://localhost:${server.port}/`);
