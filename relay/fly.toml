@@ -1,0 +1,31 @@
+# Cockroach Relay — Fly.io deployment template.
+# fly launch --copy-config --name cockroach-relay-<your-handle>
+# fly volumes create cockroach_data --size 1
+# fly deploy
+
+app = "cockroach-relay-CHANGEME"
+primary_region = "bom"  # Mumbai — change to whichever region you want to be close to
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "7447"
+  DB = "/data/relay.db"
+  RETENTION_DAYS = "90"
+
+[[mounts]]
+  source = "cockroach_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 7447
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory_mb = 256

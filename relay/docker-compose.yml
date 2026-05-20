@@ -1,0 +1,16 @@
+# docker-compose up -d  →  relay on ws://localhost:7447
+
+services:
+  relay:
+    build: .
+    image: cockroach-relay:latest
+    container_name: cockroach-relay
+    restart: unless-stopped
+    ports:
+      - "7447:7447"
+    volumes:
+      - ./data:/data
+    environment:
+      PORT: 7447
+      DB: /data/relay.db
+      RETENTION_DAYS: 90

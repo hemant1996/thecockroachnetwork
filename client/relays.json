@@ -1,0 +1,4 @@
+{
+  "comment": "Seed list of relays this mirror of the client trusts by default. Each mirror of the client can ship its own seed list; users can add, remove, or replace these in the Identity tab.",
+  "relays": []
+}

@@ -1,0 +1,32 @@
+# Render.com one-click deploy blueprint for the Cockroach reference relay.
+#
+# Click "Deploy to Render" on the landing page, connect your GitHub fork,
+# Render reads this file and provisions the service.  ~3 minutes start to
+# finish.  Free tier, no credit card, no CLI.
+#
+# Note: Render's free Web Service tier has no persistent disk, so the SQLite
+# file lives in /tmp and is lost when the service restarts (which happens
+# after 15 min of inactivity).  That's fine for a small relay or for
+# testing.  For long-term retention, upgrade to a paid plan and uncomment
+# the `disk:` block below.
+
+services:
+  - type: web
+    name: cockroach-relay
+    runtime: docker
+    dockerfilePath: ./relay/Dockerfile
+    dockerContext: ./relay
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: "10000"            # Render assigns the public port via PORT env
+      - key: DB
+        value: /tmp/relay.db      # ephemeral on free tier — see note above
+      - key: RETENTION_DAYS
+        value: "90"
+    # Uncomment for paid-tier persistent storage:
+    # disk:
+    #   name: cockroach-data
+    #   mountPath: /opt/render/project/data
+    #   sizeGB: 1

@@ -1,0 +1,27 @@
+# Replit one-click run configuration.
+#
+# Visit https://replit.com/github/<your-fork-of-cockroachparty> and Replit
+# will clone, install, and run the relay in a browser-based runtime in
+# under two minutes.  No local install, no CLI, runs on any device that
+# can open a webpage.
+
+modules = ["bun-1.1", "nodejs-20"]
+run = "cd relay && bun install --production && bun run server.ts"
+entrypoint = "relay/server.ts"
+hidden = ["**/.git", "**/node_modules", "**/relay.db*", "**/*.db-journal"]
+
+[nix]
+channel = "stable-23_11"
+
+[env]
+PORT = "7447"
+DB = "/tmp/relay.db"
+RETENTION_DAYS = "90"
+
+[[ports]]
+localPort = 7447
+externalPort = 80
+
+[deployment]
+run = ["sh", "-c", "cd relay && bun install --production && bun run server.ts"]
+deploymentTarget = "cloudrun"

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cockroach — a protocol, not an app</title>
+  <meta name="description" content="A decentralized civic signal protocol. Released to the network. Owned by no one." />
+  <meta name="theme-color" content="#0a0a0a" />
+  <link rel="icon" href="assets/cockroach.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta property="og:title" content="Cockroach — a protocol, not an app" />
+  <meta property="og:description" content="A decentralized civic signal protocol. Released to the network. Owned by no one." />
+  <meta property="og:type" content="website" />
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <svg class="mark" viewBox="0 0 200 200" aria-hidden="true">
+        <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
+        <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
+        <path d="M 88 42 Q 70 18 50 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 112 42 Q 130 18 150 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 65 90  Q 35 80 18 60" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 60 120 Q 28 122 12 110" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 65 150 Q 38 162 26 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 135 90  Q 165 80 182 60" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 140 120 Q 172 122 188 110" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        <path d="M 135 150 Q 162 162 174 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+
+      <h1>Cockroach is a <span class="accent">protocol</span>, not an app.</h1>
+      <p class="lead">A public network for reporting and verifying real-world civic problems. Identity is a keypair on your phone. Truth is computed at the edges. <b>Nobody owns this. Nobody can shut it down.</b></p>
+
+      <div class="ctas three">
+        <a class="btn" href="#use">Use a client</a>
+        <a class="btn ghost" href="#run">Run a relay</a>
+        <a class="btn ghost" href="../SPEC.md">Read the spec</a>
+      </div>
+
+      <p class="muted" style="margin-top:18px;font-size:15px">
+        This site does not host the network. It releases the protocol and points you at the people who do.
+      </p>
+
+      <div class="skip" style="margin-top:20px;font-size:14px">
+        <a href="#how">How it works</a>
+        <a href="#use">Use a client</a>
+        <a href="#run">Run a relay</a>
+        <a href="#verbs">Five verbs</a>
+        <a href="#why">Why locality</a>
+        <a href="#faq">FAQ</a>
+        <a href="#release">Release</a>
+      </div>
+    </section>
+
+    <section id="how">
+      <h2>How this works</h2>
+      <p>There is no <em>cockroach.com</em>. There is no company. There is no central server you log into. There is a specification, two reference implementations, and a set of operators — many of them, run by different people in different places — who chose to bring up nodes on the network.</p>
+
+      <div class="how-grid">
+        <div class="how-card">
+          <h3>You hold your identity</h3>
+          <p>Your phone or browser generates an ed25519 keypair the first time you open a client. The secret key never leaves your device. No signup, no email, no profile server. You are your key.</p>
+        </div>
+        <div class="how-card">
+          <h3>Reports are signed events</h3>
+          <p>A small JSON object — pubkey, timestamp, geohash, tags, description, signature. Around 300–500 bytes. Media is referenced by content-hash, never embedded.</p>
+        </div>
+        <div class="how-card">
+          <h3>Relays are dumb brokers</h3>
+          <p>A relay verifies your signature, indexes the event, and serves it. It does not decide what is true. Anyone can run one — anyone can ignore one.</p>
+        </div>
+        <div class="how-card">
+          <h3>Truth is computed at the edges</h3>
+          <p>No central <code>verified=true</code>. There is only a stream of signed verifications. Different clients aggregate them differently. That's the point.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="use">
+      <h2>Use a client</h2>
+      <p>The client is a static web app. Multiple people host it at different URLs. Pick one you trust, or grab the source and host it yourself.</p>
+
+      <div class="mirror-list">
+        <div class="mirror">
+          <div class="mirror-name">This mirror</div>
+          <div class="mirror-host muted">hosted by whoever brought up this page</div>
+          <a class="btn small" href="../client/index.html">Open &rarr;</a>
+        </div>
+        <div class="mirror placeholder">
+          <div class="mirror-name">Other mirrors</div>
+          <div class="mirror-host muted">Independent operators host the same client at their own URLs. The launch coordinator will list the known mirrors here.</div>
+          <a class="btn small ghost" href="#host-your-own">Host your own &rarr;</a>
+        </div>
+      </div>
+
+      <p class="muted" style="margin-top:18px;font-size:14px">
+        Every mirror runs identical code. Your keypair is created in your browser; switching mirrors does not change your identity (as long as you use the same browser profile or export the key).
+      </p>
+
+      <h3 id="host-your-own">Host your own client</h3>
+      <p>The client is plain HTML, CSS, and JavaScript. No build step. Drop the <code>client/</code> directory on any static host — GitHub Pages, Cloudflare Pages, Netlify, Vercel, an S3 bucket, an IPFS gateway, your own nginx box.</p>
+      <pre><code>git clone &lt;your fork&gt;
+cd cockroachparty/client
+# any static server:
+bunx serve .                          # → http://localhost:3000
+# or:
+python3 -m http.server 8080
+# or:
+ipfs add -r .                         # → /ipfs/&lt;cid&gt;</code></pre>
+      <p>Edit <code>client/relays.json</code> to ship a default seed list of relays you trust. Users can add, remove, or replace these in the Identity tab.</p>
+    </section>
+
+    <section id="run">
+      <h2>Run a relay</h2>
+      <p>A relay is a single process. ~400 lines of TypeScript. SQLite for storage. Runs on a $5 VPS, a Raspberry Pi, a phone under Termux, or a hosted runtime you spin up in three clicks. There is no admin console — your job ends at <em>keep the process running</em>.</p>
+
+      <p class="callout" style="background:#1a1a1c;border-left-color:var(--good)">
+        <b>Coming in v0.2:</b> every PWA install of the reference client will join a WebRTC peer-relay mesh automatically. Opening the client will make your device part of the network — no setup at all. The options below remain valid; v0.2 complements them, doesn't replace them.
+      </p>
+
+      <h3>Easiest paths (zero install)</h3>
+      <div class="deploys">
+        <a class="deploy-card" href="https://render.com/deploy?repo=https://github.com/dcodedaily/cockroachparty" target="_blank" rel="noopener">
+          <div class="deploy-name">Deploy to Render</div>
+          <div class="deploy-detail">~3 min · free tier · no credit card · works from phone</div>
+        </a>
+        <a class="deploy-card" href="https://replit.com/github/dcodedaily/cockroachparty" target="_blank" rel="noopener">
+          <div class="deploy-name">Run on Replit</div>
+          <div class="deploy-detail">~2 min · free tier · runs in the browser · works from phone</div>
+        </a>
+      </div>
+
+      <h3>On your phone — Termux (Android, on-device)</h3>
+      <pre><code>pkg install git curl
+curl -fsSL https://bun.sh/install | bash
+git clone https://github.com/dcodedaily/cockroachparty
+cd cockroachparty/relay
+~/.bun/bin/bun install
+~/.bun/bin/bun run server.ts</code></pre>
+
+      <h3>On a laptop — Docker</h3>
+      <pre><code>git clone https://github.com/dcodedaily/cockroachparty
+cd cockroachparty/relay
+docker compose up -d
+# → ws://localhost:7447</code></pre>
+
+      <h3>Behind Tor (for hostile environments)</h3>
+      <pre><code># /etc/tor/torrc
+HiddenServiceDir /var/lib/tor/cockroach-relay/
+HiddenServicePort 80 127.0.0.1:7447</code></pre>
+
+      <p>
+        Full friction ladder including Fly.io, bare-VPS systemd, and TLS reverse-proxy notes: <a href="../relay/RUN.md">relay/RUN.md</a>. Operator content-policy template: <a href="../relay/POLICY.example.md">POLICY.example.md</a>.
+      </p>
+
+      <p class="muted" style="font-size:14px">
+        There is nothing to register with. The moment your relay accepts a connection and a client adds your URL, you are part of the network.
+      </p>
+    </section>
+
+    <section id="verbs">
+      <h2>The five verbs</h2>
+      <p>A report on its own is one person's claim. The network's value comes from <em>others observing the same reality and signing what they see</em>. A verification is a signed event referencing a report, carrying exactly one verdict:</p>
+      <div class="verbs">
+        <div class="verb green">true</div>
+        <div class="verb">duplicate</div>
+        <div class="verb green">resolved</div>
+        <div class="verb red">fake</div>
+        <div class="verb yellow">needs-more-proof</div>
+      </div>
+      <p style="margin-top:16px">That's the entire vocabulary. No global <code>verified=true</code> is stamped on a report. Different clients aggregate the stream of verifications differently — by locality, by trust list, by recency. The protocol surfaces the evidence; the consumer computes the conclusion.</p>
+    </section>
+
+    <section id="why">
+      <h2>Why locality, not vouching, not proof-of-personhood</h2>
+      <p>If anyone can sign a verification, what stops one person from spinning up ten thousand keys?</p>
+      <p>Not a central registry of "real" users — that reintroduces the authority we just eliminated. Not proof-of-personhood — that hands the kill switch to whoever runs the verifier. Not vouching — that creates a social graph that becomes a kill list under a hostile regime.</p>
+      <p>The answer is <b>locality</b>. A key's verification of a report counts in proportion to that key's sustained signed presence in the area where the report was filed. Building influence costs <em>being there over time</em>, not money, not social capital, not external attestation. A sybil farm cannot cheaply pay that cost. A real crowd suddenly appearing in a place is recognized as a high-confidence signal by the burst-tolerance rule, not as suspected sybil activity.</p>
+      <p>The full reasoning, with the reference algorithm, is in <a href="../SPEC.md#8-reputation-reference-algorithm">SPEC §8</a> and <a href="../WHITEPAPER.md#6-reputation--locality--accuracy">WHITEPAPER §6</a>.</p>
+    </section>
+
+    <section id="release">
+      <h2>This is a release, not a service</h2>
+      <p>You will not find a "log in" button. There is no support email. There is no "upgrade your plan." There is a specification, two reference implementations, and a set of independent operators.</p>
+      <p>If you want to use the network, pick a client mirror you trust and use it. If you don't trust any of them, host your own. If a relay you depend on goes offline, your client tries the next one. If every relay you know is gone, run one yourself.</p>
+      <p>The artifacts of this release — the spec, the whitepaper, the client source, the relay source — are CC0 public domain. Mirrored to multiple Git hosts and pinned on IPFS so they can be retrieved even if any individual mirror goes down. See <a href="../RELEASE.md">RELEASE.md</a> for the locations.</p>
+    </section>
+
+    <section id="faq">
+      <h2>FAQ</h2>
+
+      <h3>Is this an app?</h3>
+      <p>No. It is a protocol. The thing on your phone is a <em>client</em> — one of several that can talk to the network. The thing accepting your reports is a <em>relay</em> — one of several run by different people. If any client or relay disappears, others continue.</p>
+
+      <h3>Who runs this?</h3>
+      <p>Whoever stood up a relay or hosts a client. Their names and contact details should be on each relay's <code>/policy</code> page and at the top of each client mirror. The protocol's authors do not operate the network.</p>
+
+      <h3>Is there a token?</h3>
+      <p>No. No issuance, no transfer, no chain. Reputation is a non-transferable score that clients compute from the event log; it has no monetary semantics and cannot be bought or sold.</p>
+
+      <h3>How is this funded?</h3>
+      <p>Mostly it isn't. The reference code is CC0. Each operator pays for their own server (usually $5/month or less). Anyone who wants to support the network does so by running a relay, hosting a client mirror, or contributing improvements — not by paying anyone.</p>
+
+      <h3>Can I attach a photo?</h3>
+      <p>Not directly in v0.1. For now: upload the photo to any host you trust (a free image host, your own server, IPFS), and paste the URL into the report description. v0.2 adds in-client upload to user-configurable IPFS pinning services.</p>
+
+      <h3>What if I lose my phone?</h3>
+      <p>You lose that identity and its reputation. In v0.1, the only backup is exporting your secret key (Identity tab) and storing it somewhere safe. v0.2 will add an encrypted seed-phrase backup flow. This is the same tradeoff Bitcoin makes: your keys, your responsibility.</p>
+
+      <h3>Is this anonymous?</h3>
+      <p>It is <em>pseudonymous</em>. A pubkey is not a real-world identity, but the relay you publish through sees your IP. For sensitive reporting use Tor or a VPN, and use a lower geohash precision (5 or below) to coarsen your location. The protocol can defend the content; you defend the channel.</p>
+
+      <h3>Can the government shut this down?</h3>
+      <p>They can take individual relays offline through whatever legal means exist in their jurisdiction. They cannot take the protocol offline — it is just JSON over WebSocket plus standard cryptography. As long as one relay anywhere in the world is online, the network continues. Most operators also publish their relay as a Tor hidden service, which is much harder to disrupt.</p>
+
+      <h3>What's the difference from Twitter / Reddit / WhatsApp?</h3>
+      <p>Three things. <b>Signed</b> — every report is cryptographically signed by its author and cannot be edited after publication. <b>Durable</b> — reports are stored on relays for at least 90 days by default, often longer; no algorithmic feed pushes them out of view. <b>Owned by no one</b> — there is no company that can be acquired, pressured, or shut down. Twitter is for engagement; this is for civic memory.</p>
+
+      <h3>Can I use this for my city, my issue, my movement?</h3>
+      <p>Yes. The protocol is CC0 public domain. Tag your reports with anything that fits — <code>#mumbai</code>, <code>#chennai-water</code>, <code>#election-2027</code>, <code>#yourmovement</code>. If you want a curated view for a community, run your own relay with a content policy that fits, or run a client mirror with a default tag filter. Nobody needs your permission to do any of this. Nobody can stop you either.</p>
+
+      <h3>Why "Cockroach"?</h3>
+      <p>Cockroaches survive everything. They cannot be stamped out by any single boot. They are, biologically, decentralized — no queen, no nest, no head of organization, just resilient distributed copies of the same blueprint. A protocol for surfacing civic problems that survives hostile actors, censorship, and the failure of any single participant is — in the metaphor — a cockroach.</p>
+
+      <h3>Where do I report bugs in the protocol?</h3>
+      <p>Open an issue on any mirror of the source repository, or publish a signed report on the network itself with the tag <code>#cockroach-bug</code>. The author of the spec follows that tag.</p>
+    </section>
+
+    <section id="not">
+      <h2>What this is not</h2>
+      <ul>
+        <li><b>Not a token.</b> No issuance, no transfer, no chain. Reputation is a non-transferable score recomputed by clients from the event log.</li>
+        <li><b>Not a DAO.</b> No treasury, no proposal, no on-chain vote.</li>
+        <li><b>Not a company.</b> Nobody is paid to maintain this. Nobody can be fired. Nobody can be subpoenaed for a user database, because there is no user database.</li>
+        <li><b>Not a Nostr NIP.</b> The wire shape is similar — JSON over WebSocket, signed events, dumb relays — because that shape works. Cockroach is its own protocol with its own event kinds, tag vocabulary, and threat model.</li>
+        <li><b>Not a complaint queue.</b> Whether a government acts on these reports is, literally, none of the protocol's business. The protocol's job is to make the observations exist, irrevocably, in public.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <div class="row">
+        <div>
+          <svg class="mark" viewBox="0 0 200 200" aria-hidden="true">
+            <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
+            <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
+          </svg>
+          <span>cockroach v0.1 · CC0 · fork freely</span>
+        </div>
+        <div>
+          <a href="../SPEC.md">spec</a> &nbsp; <a href="../WHITEPAPER.md">whitepaper</a> &nbsp; <a href="../RELEASE.md">release</a> &nbsp; <a href="../relay/RUN.md">run a relay</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

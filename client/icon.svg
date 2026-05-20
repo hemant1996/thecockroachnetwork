@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Body -->
+  <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor" stroke="none"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor" stroke="none"/>
+  <!-- Antennae -->
+  <path d="M 88 42 Q 70 18 50 14"/>
+  <path d="M 112 42 Q 130 18 150 14"/>
+  <!-- Legs left -->
+  <path d="M 65 90  Q 35 80 18 60"/>
+  <path d="M 60 120 Q 28 122 12 110"/>
+  <path d="M 65 150 Q 38 162 26 178"/>
+  <!-- Legs right -->
+  <path d="M 135 90  Q 165 80 182 60"/>
+  <path d="M 140 120 Q 172 122 188 110"/>
+  <path d="M 135 150 Q 162 162 174 178"/>
+  <!-- Wing divide line -->
+  <line x1="100" y1="75" x2="100" y2="170" stroke-width="3" stroke="rgba(0,0,0,0.35)"/>
+</svg>
