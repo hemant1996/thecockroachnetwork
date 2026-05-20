@@ -1,4 +1,6 @@
 {
-  "comment": "Seed list of relays this mirror of the client trusts by default. Each mirror of the client can ship its own seed list; users can add, remove, or replace these in the Identity tab.",
-  "relays": []
+  "comment": "Seed list of relays this mirror trusts by default. Includes ws://localhost:7447 so anyone running a relay binary locally connects with zero config. Other relays — the public ones run by operators — should be appended here as their wss:// URLs become known. Users can add, remove, or replace these in the Identity tab.",
+  "relays": [
+    "ws://localhost:7447"
+  ]
 }

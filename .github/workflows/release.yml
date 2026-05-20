@@ -58,13 +58,50 @@ jobs:
         if: matrix.target != 'bun-windows-x64'
         run: chmod +x ${{ matrix.artifact }}
 
-      - name: Archive as .tar.gz (preserves +x bit on Mac/Linux)
+      - name: Create start.command (Mac/Linux double-click launcher)
         if: matrix.target != 'bun-windows-x64'
-        run: tar -czvf ${{ matrix.artifact }}.tar.gz ${{ matrix.artifact }}
+        run: |
+          cat > start.command <<'EOF'
+          #!/bin/bash
+          # Cockroach Relay — double-click to run.
+          # Strips the macOS quarantine flag, sets +x, then execs the binary.
+          cd "$(dirname "$0")"
+          BINARY="$(ls cockroach-relay-* 2>/dev/null | grep -Ev '\.(command|sha256|sh|bat)$' | head -1)"
+          if [ -z "$BINARY" ]; then
+            echo "✗ Cannot find cockroach-relay binary in $(pwd)"
+            read -p "Press Enter to close..." _
+            exit 1
+          fi
+          xattr -cr "./$BINARY" 2>/dev/null || true
+          chmod +x "./$BINARY" || true
+          clear
+          exec "./$BINARY"
+          EOF
+          chmod +x start.command
 
-      - name: Archive as .zip (Windows)
+      - name: Create start.bat (Windows double-click launcher)
         if: matrix.target == 'bun-windows-x64'
-        run: zip ${{ matrix.artifact }}.zip ${{ matrix.artifact }}
+        run: |
+          cat > start.bat <<'EOF'
+          @echo off
+          cd /d "%~dp0"
+          for %%f in (cockroach-relay-*.exe) do (
+            "%%f"
+            goto :done
+          )
+          echo Could not find cockroach-relay .exe
+          pause
+          :done
+          pause
+          EOF
+
+      - name: Archive as .tar.gz (Mac/Linux — includes binary + launcher)
+        if: matrix.target != 'bun-windows-x64'
+        run: tar -czvf ${{ matrix.artifact }}.tar.gz ${{ matrix.artifact }} start.command
+
+      - name: Archive as .zip (Windows — includes binary + launcher)
+        if: matrix.target == 'bun-windows-x64'
+        run: zip ${{ matrix.artifact }}.zip ${{ matrix.artifact }} start.bat
 
       - name: SHA256 checksums (binary + archive)
         run: shasum -a 256 ${{ matrix.artifact }}* > ${{ matrix.artifact }}.sha256
