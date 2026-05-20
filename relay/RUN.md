@@ -10,7 +10,7 @@ This guide walks the friction ladder, from zero-install to bare-metal. Pick whic
 
 ## Option 1 — Render.com (~3 minutes, zero install)
 
-[Deploy to Render →](https://render.com/deploy?repo=https://github.com/dcodedaily/cockroachparty)
+[Deploy to Render →](https://render.com/deploy?repo=https://github.com/hemant1996/thecockroachnetwork)
 
 Click the link, sign in with GitHub or email, click "Apply." Render reads [`render.yaml`](../render.yaml), builds the Docker image, and gives you `wss://cockroach-relay-yourname.onrender.com` with TLS already configured.
 
@@ -20,7 +20,7 @@ Click the link, sign in with GitHub or email, click "Apply." Render reads [`rend
 
 ## Option 2 — Replit (~2 minutes, browser-based)
 
-[Run on Replit →](https://replit.com/github/dcodedaily/cockroachparty)
+[Run on Replit →](https://replit.com/github/hemant1996/thecockroachnetwork)
 
 Click the link, fork the project, click Run. Replit gives you a public URL while the workspace is open. Pin the project to keep it running.
 
@@ -33,7 +33,7 @@ Click the link, fork the project, click Run. Replit gives you a public URL while
 ```sh
 pkg install git curl
 curl -fsSL https://bun.sh/install | bash
-git clone https://github.com/dcodedaily/cockroachparty
+git clone https://github.com/hemant1996/thecockroachnetwork
 cd cockroachparty/relay
 ~/.bun/bin/bun install
 ~/.bun/bin/bun run server.ts
@@ -46,7 +46,7 @@ The relay listens on the phone's local network. Useful for testing, for running 
 ## Option 4 — Docker on your laptop (~5 minutes)
 
 ```sh
-git clone https://github.com/dcodedaily/cockroachparty
+git clone https://github.com/hemant1996/thecockroachnetwork
 cd cockroachparty/relay
 docker compose up -d
 # → ws://localhost:7447
@@ -72,7 +72,7 @@ Fly gives you `wss://cockroach-relay-yourname.fly.dev` with TLS and a persistent
 ## Option 6 — Bare VPS (~15 minutes, needs SSH skills)
 
 ```sh
-sudo SOURCE_URL=https://github.com/dcodedaily/cockroachparty/archive/refs/tags/v0.1.0.tar.gz \
+sudo SOURCE_URL=https://github.com/hemant1996/thecockroachnetwork/archive/refs/tags/v0.1.0.tar.gz \
   bash install.sh
 ```
 

@@ -6,8 +6,8 @@
   <title>Cockroach — a protocol, not an app</title>
   <meta name="description" content="A decentralized civic signal protocol. Released to the network. Owned by no one." />
   <meta name="theme-color" content="#0a0a0a" />
-  <link rel="icon" href="assets/cockroach.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="web/assets/cockroach.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="web/styles.css" />
   <meta property="og:title" content="Cockroach — a protocol, not an app" />
   <meta property="og:description" content="A decentralized civic signal protocol. Released to the network. Owned by no one." />
   <meta property="og:type" content="website" />
@@ -34,7 +34,7 @@
       <div class="ctas three">
         <a class="btn" href="#use">Use a client</a>
         <a class="btn ghost" href="#run">Run a relay</a>
-        <a class="btn ghost" href="../SPEC.md">Read the spec</a>
+        <a class="btn ghost" href="SPEC.md">Read the spec</a>
       </div>
 
       <p class="muted" style="margin-top:18px;font-size:15px">
@@ -84,7 +84,7 @@
         <div class="mirror">
           <div class="mirror-name">This mirror</div>
           <div class="mirror-host muted">hosted by whoever brought up this page</div>
-          <a class="btn small" href="../client/index.html">Open &rarr;</a>
+          <a class="btn small" href="client/index.html">Open &rarr;</a>
         </div>
         <div class="mirror placeholder">
           <div class="mirror-name">Other mirrors</div>
@@ -99,8 +99,8 @@
 
       <h3 id="host-your-own">Host your own client</h3>
       <p>The client is plain HTML, CSS, and JavaScript. No build step. Drop the <code>client/</code> directory on any static host — GitHub Pages, Cloudflare Pages, Netlify, Vercel, an S3 bucket, an IPFS gateway, your own nginx box.</p>
-      <pre><code>git clone &lt;your fork&gt;
-cd cockroachparty/client
+      <pre><code>git clone https://github.com/hemant1996/thecockroachnetwork
+cd thecockroachnetwork/client
 # any static server:
 bunx serve .                          # → http://localhost:3000
 # or:
@@ -134,13 +134,13 @@ ipfs add -r .                         # → /ipfs/&lt;cid&gt;</code></pre>
       <pre><code>pkg install git curl
 curl -fsSL https://bun.sh/install | bash
 git clone https://github.com/hemant1996/thecockroachnetwork
-cd cockroachparty/relay
+cd thecockroachnetwork/relay
 ~/.bun/bin/bun install
 ~/.bun/bin/bun run server.ts</code></pre>
 
       <h3>On a laptop — Docker</h3>
       <pre><code>git clone https://github.com/hemant1996/thecockroachnetwork
-cd cockroachparty/relay
+cd thecockroachnetwork/relay
 docker compose up -d
 # → ws://localhost:7447</code></pre>
 
@@ -150,7 +150,7 @@ HiddenServiceDir /var/lib/tor/cockroach-relay/
 HiddenServicePort 80 127.0.0.1:7447</code></pre>
 
       <p>
-        Full friction ladder including Fly.io, bare-VPS systemd, and TLS reverse-proxy notes: <a href="../relay/RUN.md">relay/RUN.md</a>. Operator content-policy template: <a href="../relay/POLICY.example.md">POLICY.example.md</a>.
+        Full friction ladder including Fly.io, bare-VPS systemd, and TLS reverse-proxy notes: <a href="relay/RUN.md">relay/RUN.md</a>. Operator content-policy template: <a href="relay/POLICY.example.md">POLICY.example.md</a>.
       </p>
 
       <p class="muted" style="font-size:14px">
@@ -176,14 +176,14 @@ HiddenServicePort 80 127.0.0.1:7447</code></pre>
       <p>If anyone can sign a verification, what stops one person from spinning up ten thousand keys?</p>
       <p>Not a central registry of "real" users — that reintroduces the authority we just eliminated. Not proof-of-personhood — that hands the kill switch to whoever runs the verifier. Not vouching — that creates a social graph that becomes a kill list under a hostile regime.</p>
       <p>The answer is <b>locality</b>. A key's verification of a report counts in proportion to that key's sustained signed presence in the area where the report was filed. Building influence costs <em>being there over time</em>, not money, not social capital, not external attestation. A sybil farm cannot cheaply pay that cost. A real crowd suddenly appearing in a place is recognized as a high-confidence signal by the burst-tolerance rule, not as suspected sybil activity.</p>
-      <p>The full reasoning, with the reference algorithm, is in <a href="../SPEC.md#8-reputation-reference-algorithm">SPEC §8</a> and <a href="../WHITEPAPER.md#6-reputation--locality--accuracy">WHITEPAPER §6</a>.</p>
+      <p>The full reasoning, with the reference algorithm, is in <a href="SPEC.md#8-reputation-reference-algorithm">SPEC §8</a> and <a href="WHITEPAPER.md#6-reputation--locality--accuracy">WHITEPAPER §6</a>.</p>
     </section>
 
     <section id="release">
       <h2>This is a release, not a service</h2>
       <p>You will not find a "log in" button. There is no support email. There is no "upgrade your plan." There is a specification, two reference implementations, and a set of independent operators.</p>
       <p>If you want to use the network, pick a client mirror you trust and use it. If you don't trust any of them, host your own. If a relay you depend on goes offline, your client tries the next one. If every relay you know is gone, run one yourself.</p>
-      <p>The artifacts of this release — the spec, the whitepaper, the client source, the relay source — are CC0 public domain. Mirrored to multiple Git hosts and pinned on IPFS so they can be retrieved even if any individual mirror goes down. See <a href="../RELEASE.md">RELEASE.md</a> for the locations.</p>
+      <p>The artifacts of this release — the spec, the whitepaper, the client source, the relay source — are CC0 public domain. Mirrored to multiple Git hosts and pinned on IPFS so they can be retrieved even if any individual mirror goes down. See <a href="RELEASE.md">RELEASE.md</a> for the locations.</p>
     </section>
 
     <section id="faq">
@@ -247,7 +247,7 @@ HiddenServicePort 80 127.0.0.1:7447</code></pre>
           <span>cockroach v0.1 · CC0 · fork freely</span>
         </div>
         <div>
-          <a href="../SPEC.md">spec</a> &nbsp; <a href="../WHITEPAPER.md">whitepaper</a> &nbsp; <a href="../RELEASE.md">release</a> &nbsp; <a href="../relay/RUN.md">run a relay</a>
+          <a href="SPEC.md">spec</a> &nbsp; <a href="WHITEPAPER.md">whitepaper</a> &nbsp; <a href="RELEASE.md">release</a> &nbsp; <a href="relay/RUN.md">run a relay</a>
         </div>
       </div>
     </footer>

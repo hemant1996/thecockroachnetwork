@@ -139,12 +139,12 @@ function renderPermalinkHTML(ev: SignedEvent, origin: string): string {
 
     <div class="cta">
       <a class="primary" href="/">About this relay</a>
-      <a class="ghost" href="https://github.com/dcodedaily/cockroachparty">Use a client</a>
+      <a class="ghost" href="https://github.com/hemant1996/thecockroachnetwork">Use a client</a>
     </div>
 
     <footer>
       This is a static rendering of a signed event served by one relay. The event itself is portable — copy the event id and any other relay holding it serves the same content.<br>
-      <a href="/policy">Relay policy</a> &nbsp;·&nbsp; <a href="https://github.com/dcodedaily/cockroachparty">Protocol</a>
+      <a href="/policy">Relay policy</a> &nbsp;·&nbsp; <a href="https://github.com/hemant1996/thecockroachnetwork">Protocol</a>
     </footer>
   </main>
 </body>
@@ -308,7 +308,7 @@ const server = Bun.serve({
       return new Response(JSON.stringify({
         name: "cockroach-relay",
         version: "0.1.0",
-        spec: "https://github.com/dcodedaily/cockroachparty/blob/main/SPEC.md",
+        spec: "https://github.com/hemant1996/thecockroachnetwork/blob/main/SPEC.md",
         retention_days: RETENTION_DAYS,
       }, null, 2), { headers: { "content-type": "application/json", "access-control-allow-origin": "*" } });
     }

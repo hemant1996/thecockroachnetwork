@@ -70,8 +70,8 @@ The client auto-creates an ed25519 keypair in your browser on first load. Genera
 
 Zero-install paths (work from a phone browser):
 
-- **[Deploy to Render](https://render.com/deploy?repo=https://github.com/dcodedaily/cockroachparty)** — ~3 min, free tier, no credit card, no CLI
-- **[Run on Replit](https://replit.com/github/dcodedaily/cockroachparty)** — ~2 min, runs in the browser
+- **[Deploy to Render](https://render.com/deploy?repo=https://github.com/hemant1996/thecockroachnetwork)** — ~3 min, free tier, no credit card, no CLI
+- **[Run on Replit](https://replit.com/github/hemant1996/thecockroachnetwork)** — ~2 min, runs in the browser
 
 Or locally:
 
@@ -81,7 +81,7 @@ cd relay && docker compose up -d
 
 # Termux on Android (on your phone)
 pkg install git curl && curl -fsSL https://bun.sh/install | bash
-git clone https://github.com/dcodedaily/cockroachparty
+git clone https://github.com/hemant1996/thecockroachnetwork
 cd cockroachparty/relay && ~/.bun/bin/bun install && ~/.bun/bin/bun run server.ts
 
 # Fly.io free tier (needs CC on file)
