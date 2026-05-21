@@ -390,10 +390,69 @@ function setPeerWatermark(url: string, watermark: number) {
   peerSetWater.run(watermark, Math.floor(Date.now() / 1000), url);
 }
 
-// Seed peers from environment on first start.
-const PEERS_ENV = (process.env.COCKROACH_PEERS || "")
-  .split(",").map(s => s.trim()).filter(u => /^wss?:\/\//.test(u));
-for (const url of PEERS_ENV) addPeer(url, "env");
+// Resolve the default peer list with three layers of fallback so a fresh
+// deploy (e.g., one-click Render) joins the mesh without any operator action:
+//
+//   1. COCKROACH_PEERS env var — explicit operator intent wins.
+//   2. relay/seeds.json — JSON file shipped alongside the binary; operators
+//      MAY edit before first start to peer with a different baseline.
+//   3. HARDCODED_DEFAULT_PEERS — last-resort backup constants in source so
+//      the relay never bricks on a missing/corrupted seeds.json.
+//
+// Once seeded, the peer set grows further via the PEERS verb (SPEC §4.9)
+// when clients connect.
+
+const HARDCODED_DEFAULT_PEERS = [
+  "wss://cockroach-relay-hemant1996.fly.dev",
+  "wss://cockroach-relay-singapore.fly.dev",
+  "wss://cockroach-relay-ovkg.onrender.com",
+];
+
+function loadDefaultPeersFromSeedsFile(): string[] | null {
+  // Look for seeds.json in a couple of conventional spots so the file works
+  // for `bun run server.ts` (dev), `bun --compile` binaries, and container
+  // deploys.  First hit wins.
+  const candidates = [
+    new URL("./seeds.json", import.meta.url).pathname,
+    "./seeds.json",
+    "./relay/seeds.json",
+    "/etc/cockroach-relay/seeds.json",
+  ];
+  for (const path of candidates) {
+    try {
+      const file = Bun.file(path);
+      if (!file.size) continue;
+      // syncRead via fileURLToPath isn't ergonomic; use Bun.file.text() resolved.
+      // We hop to fs for sync access since this happens once at boot.
+      const text = require("node:fs").readFileSync(path, "utf-8");
+      const parsed = JSON.parse(text);
+      if (parsed && Array.isArray(parsed.peers)) {
+        const valid = parsed.peers.filter(
+          (u: unknown) => typeof u === "string" && /^wss?:\/\//.test(u)
+        );
+        if (valid.length) return valid;
+      }
+    } catch { /* try next */ }
+  }
+  return null;
+}
+
+function resolveDefaultPeers(): { peers: string[]; source: "env" | "seeds-file" | "hardcoded" } {
+  const fromEnv = (process.env.COCKROACH_PEERS || "")
+    .split(",").map(s => s.trim()).filter(u => /^wss?:\/\//.test(u));
+  if (fromEnv.length) return { peers: fromEnv, source: "env" };
+  const fromFile = loadDefaultPeersFromSeedsFile();
+  if (fromFile && fromFile.length) return { peers: fromFile, source: "seeds-file" };
+  return { peers: HARDCODED_DEFAULT_PEERS, source: "hardcoded" };
+}
+
+const seeded = resolveDefaultPeers();
+for (const url of seeded.peers) {
+  // The SQL is INSERT OR IGNORE so re-seeding on every boot is idempotent.
+  // Source is recorded as "env" for env-supplied so subsequent reads know
+  // to skip verification; file/hardcoded entries get "default".
+  addPeer(url, seeded.source === "env" ? "env" : "default");
+}
 
 // HTTP-verify a candidate URL before opening a WebSocket subscription.
 // Defends against malicious clients pointing the relay at random services.
@@ -419,6 +478,8 @@ async function ensurePeerConnection(url: string) {
   // verify auto-discovered ones.
   const peers = loadPeers();
   const row = peers.find(p => p.url === url);
+  // Skip verification for env-configured peers (operator vouched).
+  // Verify all others (default, client, etc.) before opening a subscription.
   if (row && row.source !== "env") {
     const ok = await verifyPeer(url);
     if (!ok) return;
@@ -539,7 +600,7 @@ try {
     if (url.pathname === "/") {
       return new Response(JSON.stringify({
         name: "cockroach-relay",
-        version: "0.4.0",
+        version: "0.4.1",
         spec: "https://github.com/hemant1996/thecockroachnetwork/blob/main/SPEC.md",
         retention_days: RETENTION_DAYS,
         stats: getStats(),
@@ -671,7 +732,7 @@ try {
 }
 
 console.log("");
-console.log("  cockroach-relay v0.4.0 running");
+console.log("  cockroach-relay v0.4.1 running");
 console.log("");
 console.log(`  WebSocket:  ws://localhost:${server.port}`);
 console.log(`  Info:       http://localhost:${server.port}/`);

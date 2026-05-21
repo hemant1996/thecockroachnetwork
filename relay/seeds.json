@@ -1,0 +1,8 @@
+{
+  "comment": "Default peer list for a fresh relay deployment with no COCKROACH_PEERS env var set. This is the same shape as client/relays.json — a JSON file the relay loads on first start. Operators MAY edit before first start to peer with a different baseline; COCKROACH_PEERS env var still overrides at runtime. If this file is missing or unreadable the relay falls back to a hardcoded list in server.ts so deployment never bricks.",
+  "peers": [
+    "wss://cockroach-relay-hemant1996.fly.dev",
+    "wss://cockroach-relay-singapore.fly.dev",
+    "wss://cockroach-relay-ovkg.onrender.com"
+  ]
+}

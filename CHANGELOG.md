@@ -4,6 +4,22 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.4.1 — zero-config Render deploy: peers seeded from JSON + hardcoded backup (2026-05-21)
+
+### Fixed — the "every new Render operator needs to set COCKROACH_PEERS in their dashboard" friction
+
+A fresh deploy via the Render one-click button now joins the mesh automatically with **zero env vars**. Three-layer resolution at first boot:
+
+1. `COCKROACH_PEERS` env var (explicit operator intent, wins if set)
+2. `relay/seeds.json` shipped alongside the binary (editable before first start, idempotent re-seed on each boot via `INSERT OR IGNORE`)
+3. `HARDCODED_DEFAULT_PEERS` constants in `server.ts` — last-resort backup so the relay never bricks on a missing/corrupted seeds.json
+
+Default seed file now ships with Mumbai + Singapore + the Render Pehredaar — three independent jurisdictions / hosting providers. Operators editing `seeds.json` before first start get full control; everyone else just clicks Deploy and joins.
+
+This file lookup checks four conventional paths (`./seeds.json`, `./relay/seeds.json`, `/etc/cockroach-relay/seeds.json`, `import.meta.url`-relative) so the same code works for `bun run`, `bun --compile` binaries, Docker, and Render deploys.
+
+VERSION → 0.4.1. No protocol change, no SPEC change — operator-friction patch.
+
 ## v0.4.0 — share-URL discovery + relay-to-relay sync + storage compression (2026-05-21)
 
 The full anti-silo release.  Three coordinated pieces, all shipping in one
