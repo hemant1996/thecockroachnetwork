@@ -1,6 +1,7 @@
 {
   "comment": "Seed list of relays this mirror trusts by default. The deployed client at thecockroachnetwork.com uses this list on first load. Other operators running their own relays should append their wss:// URLs here. Users can add, remove, or replace these in the Identity tab.",
   "relays": [
-    "wss://cockroach-relay-hemant1996.fly.dev"
+    "wss://cockroach-relay-hemant1996.fly.dev",
+    "wss://cockroach-relay-singapore.fly.dev"
   ]
 }
