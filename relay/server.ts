@@ -206,16 +206,57 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_tags_event_id       ON tags(event_id);
 `);
 
+// SPEC §6.3 — opportunistic gzip compression for the raw event blob.
+// Civic-report text + tags compress 3-5× with no protocol change; the
+// `compressed` column is 0 for legacy/short rows, 1 for gzipped+base64.
+// Reads transparently decompress (see decompressRaw).
+function ensureCompressedColumn() {
+  try { db.exec("ALTER TABLE events ADD COLUMN compressed INTEGER NOT NULL DEFAULT 0"); }
+  catch { /* column already exists — older deployments hit this on every boot */ }
+}
+ensureCompressedColumn();
+
+const COMPRESS_THRESHOLD = 256; // bytes; below this gzip is net-negative
+function compressIfWorthwhile(rawJson: string): { raw: string, compressed: 0 | 1 } {
+  if (rawJson.length < COMPRESS_THRESHOLD) return { raw: rawJson, compressed: 0 };
+  try {
+    const bytes = new TextEncoder().encode(rawJson);
+    const gz = Bun.gzipSync(bytes);
+    // Base64-encode so we can keep the column TEXT-typed and avoid a
+    // schema migration to BLOB.  Compressed must actually be smaller
+    // including the b64 overhead; if not, store plain.
+    let b64 = "";
+    const chunk = 8192;
+    for (let i = 0; i < gz.length; i += chunk) {
+      b64 += String.fromCharCode(...gz.subarray(i, i + chunk));
+    }
+    const encoded = btoa(b64);
+    if (encoded.length >= rawJson.length) return { raw: rawJson, compressed: 0 };
+    return { raw: encoded, compressed: 1 };
+  } catch { return { raw: rawJson, compressed: 0 }; }
+}
+function decompressRaw(raw: string, compressed: number): string {
+  if (!compressed) return raw;
+  try {
+    const bin = atob(raw);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(Bun.gunzipSync(bytes));
+  } catch { return raw; }
+}
+
 const insertEventStmt = db.prepare(
-  "INSERT OR IGNORE INTO events (id, pubkey, created_at, kind, raw) VALUES (?, ?, ?, ?, ?)"
+  "INSERT OR IGNORE INTO events (id, pubkey, created_at, kind, raw, compressed) VALUES (?, ?, ?, ?, ?, ?)"
 );
 const insertTagStmt = db.prepare(
   "INSERT INTO tags (event_id, name, value) VALUES (?, ?, ?)"
 );
 
 function storeEvent(e: SignedEvent): boolean {
+  const rawJson = JSON.stringify(e);
+  const { raw, compressed } = compressIfWorthwhile(rawJson);
   const tx = db.transaction(() => {
-    const r = insertEventStmt.run(e.id, e.pubkey, e.created_at, e.kind, JSON.stringify(e));
+    const r = insertEventStmt.run(e.id, e.pubkey, e.created_at, e.kind, raw, compressed);
     if ((r.changes as number) === 0) return false;
     for (const t of e.tags) {
       if (t.length >= 2 && t[0].length === 1) insertTagStmt.run(e.id, t[0], t[1]);
@@ -268,13 +309,13 @@ function queryEvents(filters: Filter[]): SignedEvent[] {
     }
     const limit = Math.min(f.limit ?? DEFAULT_LIMIT, DEFAULT_LIMIT);
     const sql =
-      "SELECT raw FROM events" +
+      "SELECT raw, compressed FROM events" +
       (where.length ? " WHERE " + where.join(" AND ") : "") +
       " ORDER BY created_at DESC LIMIT ?";
     params.push(limit);
-    const rows = db.query(sql).all(...params) as { raw: string }[];
+    const rows = db.query(sql).all(...params) as { raw: string, compressed: number }[];
     for (const row of rows) {
-      const ev = JSON.parse(row.raw) as SignedEvent;
+      const ev = JSON.parse(decompressRaw(row.raw, row.compressed)) as SignedEvent;
       if (matchesFilter(ev, f)) results.set(ev.id, ev);
     }
   }
@@ -308,6 +349,142 @@ function broadcast(e: SignedEvent) {
 }
 
 const liveSockets = new Set<any>();
+
+// ──────────────────────────────────────────────────────────────────────────
+// SPEC §6 — Relay-to-relay sync (anti-silo)
+//
+// Each relay maintains an outgoing WebSocket subscription to every peer
+// relay it knows about, mirroring kind:1 (reports) and kind:2 (verifications)
+// since a per-peer watermark.  Storage dedups by event.id so loops are
+// single-hash no-ops; signed-event immutability does the work of TTL.
+//
+// Peer discovery sources:
+//   1. Manual baseline: env COCKROACH_PEERS=wss://a,wss://b (operator-set)
+//   2. Auto-discovery: clients send ["PEERS", "wss://x", ...] after connect
+//      (SPEC §4.9), telling the relay what other relays they know.  We
+//      verify each candidate's /info JSON before subscribing.
+//
+// Peer URLs and their provenance are stored in SQLite so they survive
+// restarts.
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS peers (
+    url         TEXT PRIMARY KEY,
+    source      TEXT NOT NULL,        -- 'env' | 'client' | 'config'
+    added_at    INTEGER NOT NULL,
+    last_seen   INTEGER NOT NULL DEFAULT 0,
+    watermark   INTEGER NOT NULL DEFAULT 0
+  );
+`);
+const peerSelectAll  = db.prepare("SELECT url, source, added_at, last_seen, watermark FROM peers");
+const peerInsert     = db.prepare("INSERT OR IGNORE INTO peers (url, source, added_at) VALUES (?, ?, ?)");
+const peerSetWater   = db.prepare("UPDATE peers SET watermark = ?, last_seen = ? WHERE url = ?");
+
+interface PeerRow { url: string; source: string; added_at: number; last_seen: number; watermark: number }
+
+function loadPeers(): PeerRow[] { return peerSelectAll.all() as PeerRow[]; }
+function addPeer(url: string, source: string) {
+  peerInsert.run(url, source, Math.floor(Date.now() / 1000));
+}
+function setPeerWatermark(url: string, watermark: number) {
+  peerSetWater.run(watermark, Math.floor(Date.now() / 1000), url);
+}
+
+// Seed peers from environment on first start.
+const PEERS_ENV = (process.env.COCKROACH_PEERS || "")
+  .split(",").map(s => s.trim()).filter(u => /^wss?:\/\//.test(u));
+for (const url of PEERS_ENV) addPeer(url, "env");
+
+// HTTP-verify a candidate URL before opening a WebSocket subscription.
+// Defends against malicious clients pointing the relay at random services.
+async function verifyPeer(wsUrl: string): Promise<boolean> {
+  try {
+    const httpUrl = wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 5000);
+    const r = await fetch(httpUrl, { signal: ctl.signal });
+    clearTimeout(timer);
+    if (!r.ok) return false;
+    const j = await r.json().catch(() => null);
+    return !!(j && typeof j === "object" && (j as any).name === "cockroach-relay");
+  } catch { return false; }
+}
+
+const peerConnections = new Map<string, { ws: WebSocket, reconnectTimer: any, reconnectDelay: number }>();
+
+async function ensurePeerConnection(url: string) {
+  if (peerConnections.has(url)) return;
+  if (url === selfAdvertisedUrl()) return;  // never peer with ourselves
+  // Skip verification for env-configured peers (operator vouched);
+  // verify auto-discovered ones.
+  const peers = loadPeers();
+  const row = peers.find(p => p.url === url);
+  if (row && row.source !== "env") {
+    const ok = await verifyPeer(url);
+    if (!ok) return;
+  }
+  openPeerSocket(url);
+}
+
+function openPeerSocket(url: string) {
+  let ws: WebSocket;
+  try { ws = new WebSocket(url); }
+  catch { schedulePeerReconnect(url, 5000); return; }
+  const entry = { ws, reconnectTimer: null as any, reconnectDelay: 1000 };
+  peerConnections.set(url, entry);
+
+  ws.addEventListener("open", () => {
+    entry.reconnectDelay = 1000;
+    const peers = loadPeers();
+    const watermark = peers.find(p => p.url === url)?.watermark || 0;
+    const since = Math.max(watermark - 60, Math.floor(Date.now() / 1000) - 7 * 86400);
+    // Subscribe to content events from this peer since our last seen.
+    // 60s overlap so events near the boundary aren't lost to clock skew.
+    try {
+      ws.send(JSON.stringify(["REQ", "peer-sync", { kinds: [1, 2], since, limit: 1000 }]));
+    } catch {}
+  });
+
+  ws.addEventListener("message", (ev) => {
+    let msg: unknown;
+    try { msg = JSON.parse(typeof ev.data === "string" ? ev.data : ""); }
+    catch { return; }
+    if (!Array.isArray(msg)) return;
+    if (msg[0] !== "EVENT") return;
+    const result = validateEvent(msg[2]);
+    if (!result.ok) return;
+    const stored = storeEvent(result.event);
+    if (stored) {
+      broadcast(result.event);
+      setPeerWatermark(url, Math.max(result.event.created_at, peerWatermarkOf(url)));
+    }
+  });
+
+  ws.addEventListener("close", () => {
+    peerConnections.delete(url);
+    schedulePeerReconnect(url, entry.reconnectDelay);
+    entry.reconnectDelay = Math.min(entry.reconnectDelay * 2, 60_000);
+  });
+  ws.addEventListener("error", () => { try { ws.close(); } catch {} });
+}
+
+function peerWatermarkOf(url: string): number {
+  const r = loadPeers().find(p => p.url === url);
+  return r?.watermark || 0;
+}
+
+function schedulePeerReconnect(url: string, delay: number) {
+  setTimeout(() => { ensurePeerConnection(url).catch(() => {}); }, delay);
+}
+
+// Best-effort self-URL detection so we don't try to peer with ourselves.
+// Operators can override via COCKROACH_SELF=wss://my-public-url.
+function selfAdvertisedUrl(): string {
+  return process.env.COCKROACH_SELF || "";
+}
+
+// Connect to all known peers on startup.
+for (const p of loadPeers()) ensurePeerConnection(p.url).catch(() => {});
 
 // ──────────────────────────────────────────────────────────────────────────
 // Public stats — exposed on GET /  so other relays / clients can aggregate
@@ -362,11 +539,25 @@ try {
     if (url.pathname === "/") {
       return new Response(JSON.stringify({
         name: "cockroach-relay",
-        version: "0.2.2",
+        version: "0.4.0",
         spec: "https://github.com/hemant1996/thecockroachnetwork/blob/main/SPEC.md",
         retention_days: RETENTION_DAYS,
         stats: getStats(),
       }, null, 2), { headers: { "content-type": "application/json", "access-control-allow-origin": "*" } });
+    }
+    // SPEC §6 — public list of peers this relay syncs with.  Operators
+    // and clients can inspect; no auth needed — peer URLs are not secret.
+    if (url.pathname === "/peers") {
+      const peers = loadPeers().map(p => ({
+        url: p.url,
+        source: p.source,
+        added_at: p.added_at,
+        last_seen: p.last_seen,
+        connected: peerConnections.has(p.url),
+      }));
+      return new Response(JSON.stringify({ peers }, null, 2), {
+        headers: { "content-type": "application/json", "access-control-allow-origin": "*" },
+      });
     }
     if (url.pathname === "/og.svg") {
       return new Response(OG_SVG, {
@@ -376,9 +567,9 @@ try {
     if (url.pathname.startsWith("/r/")) {
       const id = url.pathname.slice(3);
       if (!/^[0-9a-f]{64}$/.test(id)) return new Response("invalid event id", { status: 400 });
-      const row = db.query("SELECT raw FROM events WHERE id = ?").get(id) as { raw: string } | undefined;
+      const row = db.query("SELECT raw, compressed FROM events WHERE id = ?").get(id) as { raw: string, compressed: number } | undefined;
       if (!row) return new Response("not found on this relay — try another", { status: 404 });
-      const ev = JSON.parse(row.raw) as SignedEvent;
+      const ev = JSON.parse(decompressRaw(row.raw, row.compressed)) as SignedEvent;
       return new Response(renderPermalinkHTML(ev, url.origin), {
         headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60" },
       });
@@ -442,6 +633,26 @@ try {
         return;
       }
 
+      // SPEC §4.9 — client tells the relay about other relays it knows.
+      // We record each as a candidate peer; ensurePeerConnection verifies
+      // /info before opening a WebSocket subscription.  Bound by the
+      // client-cap below so a malicious client can't spam us.
+      if (verb === "PEERS") {
+        const urls = msg.slice(1).filter((u): u is string =>
+          typeof u === "string" && /^wss?:\/\//.test(u) && u.length < 256
+        );
+        let added = 0;
+        for (const u of urls) {
+          if (added >= 8) break;  // cap per message
+          if (peerConnections.has(u)) continue;
+          if (u === selfAdvertisedUrl()) continue;
+          addPeer(u, "client");
+          ensurePeerConnection(u).catch(() => {});
+          added++;
+        }
+        return;
+      }
+
       ws.send(JSON.stringify(["NOTICE", `unknown verb: ${verb}`]));
     },
   },
@@ -460,7 +671,7 @@ try {
 }
 
 console.log("");
-console.log("  cockroach-relay v0.2.2 running");
+console.log("  cockroach-relay v0.4.0 running");
 console.log("");
 console.log(`  WebSocket:  ws://localhost:${server.port}`);
 console.log(`  Info:       http://localhost:${server.port}/`);

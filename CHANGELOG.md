@@ -4,6 +4,66 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.4.0 — share-URL discovery + relay-to-relay sync + storage compression (2026-05-21)
+
+The full anti-silo release.  Three coordinated pieces, all shipping in one
+version, all using zero new dependencies.
+
+### Added — share-URL discovery (SPEC §4.8)
+
+- `client/app.js` parses `#relays=<wss-urls>` from the URL fragment on app
+  load.  Each URL is health-checked against `GET /` for the canonical
+  `name: "cockroach-relay"` response, then added to the relay pool with
+  provenance source `"share"` and the originating event id as detail.
+- `shareUrlFor(eventId)` now appends `#relays=<encoded primary>` so every
+  share is also a discovery hint.  Hash fragment, not query — keeps the
+  list out of HTTP logs and Referer headers.
+- Identity tab displays per-relay provenance: `via share #abcd · 5m ago`,
+  `seed list`, or `added manually · 2h ago`.  Per-source insight, per-relay
+  remove.
+
+### Added — `PEERS` wire verb (SPEC §4.9)
+
+- Client opportunistically sends `["PEERS", "wss://r1", "wss://r2", ...]`
+  after each relay connection, naming every other relay it knows about.
+  The receiving relay treats these as candidate peers for relay-to-relay
+  sync.
+
+### Added — relay-to-relay sync (SPEC §4a)
+
+- New `peers` SQLite table with source provenance + watermark per peer.
+- Operator baseline via `COCKROACH_PEERS` env (comma-separated wss:// URLs).
+- Auto-discovery via the `PEERS` verb (§4.9).  Every auto-discovered
+  candidate is HTTP-verified before any WebSocket connection is opened.
+- For each known peer, the relay maintains an outgoing WebSocket
+  subscription on `kinds: [1, 2]` since `watermark - 60s` (60-second
+  overlap absorbs clock skew).  Events arriving from peers go through the
+  same `storeEvent` path as direct client publishes; dedup-by-id makes
+  loops single hash-lookup no-ops.
+- Exponential reconnect backoff (1s → 60s cap) per peer.
+- `GET /peers` exposes the relay's known peer set with provenance and
+  current connected state, for operator inspection.
+
+### Added — gzip storage compression (SPEC §6)
+
+- `relay/server.ts` adds a `compressed` column to `events`; new events
+  whose raw JSON exceeds 256 bytes are gzipped via `Bun.gzipSync`,
+  base64-encoded, and stored compressed iff the encoded length is
+  strictly smaller than the original.  Older events keep `compressed=0`
+  and read unchanged.
+- Civic-text expected compression ratio is 3–5×.  No protocol change,
+  no client visibility — purely a storage optimization.
+- Zero new dependencies; Bun ships gzip in the runtime.
+
+### Notes
+
+- Version bump to v0.4.0.  Relay binary banner + `/info` reflect this.
+- All three pieces use only existing dependencies: `@noble/hashes` (already
+  present for ed25519), Bun built-ins (`gzipSync`, `gunzipSync`, `WebSocket`,
+  `sqlite`).
+- The `media.js` direction from v0.2.4.x stays pulled; SPEC §3.4 media tag
+  format remains valid for future implementations.
+
 ## v0.2.4.2 — pull media-upload feature (2026-05-21)
 
 ### Removed

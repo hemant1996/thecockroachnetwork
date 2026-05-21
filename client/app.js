@@ -174,7 +174,47 @@ let { sk, pkHex } = loadOrCreateKey();
 // arriving from three relays is one entry, three confirmations of reach.
 
 const RELAYS_STORAGE = "cockroach.relays";
+const RELAY_META_STORAGE = "cockroach.relays.meta";  // url -> { source, addedAt, sourceDetail }
 const LEGACY_RELAY_STORAGE = "cockroach.relay"; // pre-multi-relay key
+
+// ─── relay provenance ────────────────────────────────────────────────────
+//
+// Each known relay carries metadata about how it arrived in the user's
+// pool: "seed" (shipped with the client), "user" (manually added), or
+// "share" (auto-added when the user opened a share-URL with #relays=...).
+// Shown in the Identity tab so the user always knows why a relay is in
+// their list and can revoke any source individually.
+
+function loadRelayMeta() {
+  try {
+    const v = JSON.parse(localStorage.getItem(RELAY_META_STORAGE) || "{}");
+    return typeof v === "object" && v ? v : {};
+  } catch { return {}; }
+}
+function saveRelayMeta(meta) {
+  localStorage.setItem(RELAY_META_STORAGE, JSON.stringify(meta));
+}
+function setRelayProvenance(url, source, sourceDetail) {
+  const meta = loadRelayMeta();
+  if (!meta[url]) {
+    meta[url] = { source, addedAt: Date.now(), sourceDetail };
+    saveRelayMeta(meta);
+  }
+}
+function getRelayProvenance(url) { return loadRelayMeta()[url] || null; }
+function forgetRelayProvenance(url) {
+  const meta = loadRelayMeta();
+  if (meta[url]) { delete meta[url]; saveRelayMeta(meta); }
+}
+function formatAgoShort(ms) {
+  const s = Math.floor(Math.max(0, ms) / 1000);
+  if (s < 60) return s + "s";
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + "m";
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + "h";
+  return Math.floor(h / 24) + "d";
+}
 
 async function loadSeedList() {
   try {
@@ -207,6 +247,9 @@ async function loadRelayList() {
   const seeds = await loadSeedList();
   if (seeds.length) {
     localStorage.setItem(RELAYS_STORAGE, JSON.stringify(seeds));
+    const meta = loadRelayMeta();
+    for (const url of seeds) if (!meta[url]) meta[url] = { source: "seed", addedAt: Date.now() };
+    saveRelayMeta(meta);
     return seeds;
   }
   // 4. Local dev fallback.
@@ -276,6 +319,14 @@ class RelayPool {
       for (const [subId, sub] of this.subs) {
         try { ws.send(JSON.stringify(["REQ", subId, ...sub.filters])); } catch {}
       }
+      // SPEC §4.9: opportunistically tell the relay about every other relay we
+      // know.  The relay records these as candidate peers and (if configured
+      // to auto-discover) opens its own subscription to them — this is what
+      // prevents siloed feeds.  We don't include ourselves.
+      try {
+        const known = [...this.relays.keys()].filter(u => u !== url);
+        if (known.length) ws.send(JSON.stringify(["PEERS", ...known]));
+      } catch {}
     });
     ws.addEventListener("close", () => {
       r.state = "disconnected";
@@ -618,8 +669,57 @@ function shareableRelay() {
 
 function shareUrlFor(eventId) {
   const r = shareableRelay();
-  const origin = r ? relayHttpOrigin(r) : null;
-  return origin ? `${origin}/r/${eventId}` : null;
+  if (!r) return null;
+  const origin = relayHttpOrigin(r);
+  if (!origin) return null;
+  // SPEC §4.9: append #relays=<primary> so a recipient opening the link
+  // auto-discovers our primary relay.  Hash fragment is not sent in HTTP
+  // requests, so this stays out of server logs and Referer headers.
+  return `${origin}/r/${eventId}#relays=${encodeURIComponent(r)}`;
+}
+
+// SPEC §4.9 — parse the share-URL #relays=<comma-separated wss:// urls>
+// fragment on app load.  For each URL: health-check the relay's /info,
+// verify it returns the canonical cockroach-relay JSON, then add to the
+// pool tagged with provenance.  Clears the hash after processing so a
+// reload doesn't re-trigger the same add.
+async function processShareHashDiscovery() {
+  const hash = location.hash || "";
+  const m = hash.match(/relays=([^&]+)/);
+  if (!m) return;
+  history.replaceState(null, "", location.pathname + location.search);
+  let raw;
+  try { raw = decodeURIComponent(m[1]); } catch { return; }
+  const urls = raw.split(",").map(s => s.trim()).filter(u => /^wss?:\/\//.test(u));
+
+  // Try to pull a short event-id from /r/<id> in the path so the provenance
+  // line ("via share from #abcd") points at the actual content the user
+  // followed in.
+  const evMatch = location.pathname.match(/\/r\/([a-f0-9]{16,64})/);
+  const sourceDetail = evMatch ? "#" + evMatch[1].slice(0, 4) : "share";
+
+  for (const url of urls) {
+    if (pool.list().includes(url)) continue;
+    const ok = await verifyRelayUrl(url);
+    if (!ok) continue;
+    setRelayProvenance(url, "share", sourceDetail);
+    pool.add(url);
+  }
+}
+
+async function verifyRelayUrl(wsUrl) {
+  try {
+    const httpUrl = wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 5000);
+    const r = await fetch(httpUrl, { signal: ctl.signal, cache: "no-cache" });
+    clearTimeout(t);
+    if (!r.ok) return false;
+    const ct = (r.headers.get("content-type") || "").toLowerCase();
+    if (!ct.includes("application/json")) return false;
+    const j = await r.json();
+    return j && typeof j === "object" && j.name === "cockroach-relay";
+  } catch { return false; }
 }
 
 // ─── i18n ────────────────────────────────────────────────────────────────
@@ -811,13 +911,27 @@ function renderRelayList() {
     list.innerHTML = `<div style="color:var(--muted);font-size:14px">${escapeHTML(t("identity.no_relays_hint"))}</div>`;
     return;
   }
-  list.innerHTML = status.map(({ url, state }) => `
-    <div class="relay-row" data-url="${escapeHTML(url)}">
+  list.innerHTML = status.map(({ url, state }) => {
+    const prov = getRelayProvenance(url);
+    let provHtml = "";
+    if (prov) {
+      const ago = formatAgoShort(Date.now() - (prov.addedAt || Date.now()));
+      const label =
+        prov.source === "share" ? `via share ${prov.sourceDetail || ""} · ${ago} ago` :
+        prov.source === "seed"  ? "seed list" :
+        prov.source === "user"  ? `added manually · ${ago} ago` :
+        "";
+      if (label) provHtml = `<div class="relay-prov mono">${escapeHTML(label)}</div>`;
+    }
+    return `<div class="relay-row" data-url="${escapeHTML(url)}">
       <span class="dot ${state}" title="${state}"></span>
-      <span class="relay-url mono">${escapeHTML(url)}</span>
+      <div class="relay-info">
+        <div class="relay-url mono">${escapeHTML(url)}</div>
+        ${provHtml}
+      </div>
       <button class="remove-relay ghost small" aria-label="remove">×</button>
-    </div>
-  `).join("");
+    </div>`;
+  }).join("");
 }
 
 // ─── geo ─────────────────────────────────────────────────────────────────
@@ -977,6 +1091,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const url = input.value.trim();
     if (!url) return;
     if (!/^wss?:\/\//.test(url)) { toast(t("compose.error.invalid_relay_url")); return; }
+    setRelayProvenance(url, "user");
     pool.add(url);
     input.value = "";
     renderRelayList();
@@ -992,6 +1107,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (!url) return;
     if (!confirm(t("identity.remove_confirm", { url }))) return;
     pool.remove(url);
+    forgetRelayProvenance(url);
     renderRelayList();
   });
   $("#reset-relays").addEventListener("click", async () => {
@@ -1099,6 +1215,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   refreshGeo().catch(() => {});
   const relays = await loadRelayList();
   for (const url of relays) pool.add(url);
+
+  // SPEC §4.9 — pick up any relays handed over via a share-URL #relays=
+  // fragment.  Runs after the seed pool is up so health-checks see the
+  // user's already-known relays.
+  processShareHashDiscovery().catch(() => {});
 
   // Subscribe to the last 7 days once connections come online; the pool
   // re-issues subscriptions on each newly connected relay automatically.

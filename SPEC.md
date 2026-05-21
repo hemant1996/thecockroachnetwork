@@ -187,6 +187,81 @@ Implementations MUST NOT trust the contents of events received over peer connect
 
 The peer layer is OPT-IN. Implementations expose this to the user with explicit disclosure of the IP-address-exposure consequence.
 
+### 4.8 Share-URL relay discovery (v0.4)
+
+Implementations SHOULD make event permalinks shareable via a URL of the form:
+
+```
+https://<host>/r/<event-id>#relays=<comma-separated wss:// URLs>
+```
+
+The `#relays=` fragment is part of the URL fragment (NOT a query parameter), so it is never sent to the host in HTTP requests, Referer headers, or server logs.
+
+When a client opens such a URL, it SHOULD:
+1. Parse the fragment, URL-decode each comma-separated entry.
+2. For each URL, fetch `GET /` over HTTPS with a short timeout.
+3. Verify the response is JSON with `name === "cockroach-relay"`.
+4. Add the URL to the client's known relay pool, tagged with provenance source `"share"` and the originating event ID for user-facing transparency.
+5. Clear the fragment from the URL so a page reload does not reprocess the same hint.
+
+This mechanism is the protocol's answer to client-side bootstrap without a central registry: discovery propagates via human shares.
+
+### 4.9 `PEERS` verb — client-to-relay peer hints
+
+A client MAY send the following message to a relay it is connected to:
+
+```
+["PEERS", "<wss:// url 1>", "<wss:// url 2>", ...]
+```
+
+The relay treats each well-formed URL as a candidate peer for relay-to-relay sync (see §6). The relay MUST verify each candidate via `GET /` before opening any outgoing connection. A relay MAY bound the number of candidates per `PEERS` message (the reference implementation caps at 8). The verb has no acknowledgement; clients send it opportunistically after connecting.
+
+## 4a. Relay-to-relay sync (v0.4)
+
+To prevent siloed feeds — where users on one set of relays cannot see events published to a disjoint set — relays MAY synchronize with each other. The reference implementation does so by default.
+
+### 4a.1 Peer discovery
+
+A relay MAY learn about other relays from any of these sources:
+
+- **Operator configuration**: environment variable `COCKROACH_PEERS=wss://a,wss://b,...` or an equivalent config file entry, set at startup. Operator-vouched; not subject to `/info` verification.
+- **Client hints**: the `PEERS` verb (§4.9). The relay MUST verify each candidate via `GET /` before opening a subscription.
+- **Static config additions** at runtime (out of scope for the spec).
+
+Relays MUST persist their known peer set across restarts so the network does not need to rediscover itself.
+
+### 4a.2 Sync mechanism
+
+For each known peer, a relay maintains a single outgoing WebSocket subscription. On connection, the subscribing relay issues:
+
+```
+["REQ", "peer-sync", { "kinds": [1, 2], "since": <watermark - 60>, "limit": 1000 }]
+```
+
+The 60-second overlap defends against minor clock skew at watermark boundaries. Events received from a peer are validated (signature check) and inserted via the same `storeEvent` path the relay uses for direct client publishes; the insert is a no-op on duplicate ID. The watermark for each peer is the maximum `created_at` of any event accepted from that peer.
+
+Re-broadcast of an event the relay has already stored is a single hash-lookup no-op; signed-event immutability removes the need for TTL or loop-prevention counters.
+
+### 4a.3 Public peer inventory
+
+Relays SHOULD expose `GET /peers` returning JSON describing their known peer set, for operator inspection and for clients to surface in their UIs:
+
+```json
+{
+  "peers": [
+    { "url": "wss://relay-2.example.com",
+      "source": "env",
+      "added_at": 1716280000,
+      "last_seen": 1716290000,
+      "connected": true }
+  ]
+}
+```
+
+### 4a.4 Loops, partitions, eventual consistency
+
+Because storage is content-addressed by `id` and events are immutable, the sync forms a CRDT G-set (grow-only set) under set-union semantics. Any partition heals as connectivity is restored: each side will eventually see every event held by the other. Tag-based filters and `since` bounds shape *what* a sync mirrors, but never *how* — duplicates are always safe.
+
 ## 5. Relay wire protocol
 
 The wire protocol runs over WebSocket. Messages are JSON arrays. A relay MUST accept connections on `ws://` and SHOULD also serve `wss://`.
@@ -248,7 +323,11 @@ Notes:
 
 A relay SHOULD support at least 64 concurrent subscriptions per connection and SHOULD enforce a reasonable global event-rate ceiling.
 
-## 6. Geohash
+## 6. Storage (informative)
+
+Relays MAY compress event blobs at the storage layer. The reference implementation gzip-compresses the JSON representation of any event whose raw form exceeds 256 bytes, base64-encodes the gzipped bytes for TEXT-column storage, and falls back to uncompressed storage when the encoded length is not strictly smaller than the original. A boolean `compressed` column flag tells the read path whether decompression is required. Compression is invisible to clients — it affects only storage cost.
+
+## 6.5. Geohash
 
 Implementations MUST use the standard base-32 geohash alphabet:
 
