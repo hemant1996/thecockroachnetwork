@@ -4,6 +4,46 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.6.0 — web client redesign: typography, live preview, sort/filter rail (2026-05-22)
+
+A visual-only release. The protocol, signing, relay sync, peer mesh, geohash logic, verification consensus, and in-event media flow from v0.5.0 are unchanged byte-for-byte. The web client now wears the design that was prototyped in the Claude Design handoff and ported to the reference client.
+
+### Added
+
+- **Typography system** — Anton (display), Instrument Serif (italic counterpoint), JetBrains Mono (sigs/keys/labels), Inter (body). Self-hosted via Google Fonts with preconnect.
+- **Live preview pane on Report** — sticky right pane that mirrors what gets signed: body text, tags, geohash precision indicator, sig-strip with `kind / pubkey / created / tags / geohash / sig`. Updates on every keystroke, tag toggle, GPS fix, and photo attach.
+- **Precision pill grid** — six-pill picker (`9 ~5m` → `4 ~40km`) replacing the dropdown; drives the existing geohash logic.
+- **Feed sort + filter sidebar** — sort by newest / most verified / needs proof; filter chips derived from tags present in the live event store.
+- **Right rail on Feed** — live relay-mini list, trending-tag leaderboard computed from the last-7-day event window, and a Pehredaar CTA linking to the run-a-relay guide.
+- **Keyboard shortcuts** — `1` Report, `2` Feed, `3` Identity, with the standard input-focus guard.
+- **Identity grid layout** — 2-column card grid (Relays / Peer Mode / Language / Privacy), full-width Identity and About cards top and bottom; title shows `#<your-shortid>` from the live pubkey.
+
+### Changed
+
+- **Accent color** orange `#f97316` → red `#e63b2e`. Ink `#f4ead5` on bg `#0a0a0a`. The accent cascades to focus rings, primary buttons, status chips, verdict highlights, and the "broken" / "network" emphases in the page titles.
+- **Status chips** — header pills now mirror the dot state on their borders (live = green, warn = amber, off = neutral). Both the relay chip and the peer chip read live counts from `pool.connectedCount()` and `peers.status()`.
+
+### Deliberately not adopted from the design mock
+
+The handoff bundle contained a few decorative or regressive elements that would have shipped non-functional UI; they were dropped during the port:
+
+- A hardcoded `npub1c0ck7r…` pseudo-pubkey, `2 relays / 3 peers` counts, and a static feed seed — all replaced with live data.
+- A "Photo URL" text input — would have regressed the in-event base64 media flow from v0.5.0. The existing file-attach + auto-compress path is unchanged.
+- A header `हिं · EN` lang toggle button — duplicates the Identity-tab language selector which already drives the existing i18n bundle.
+- The Claude-Design tweaks panel overlay — a design-tool affordance, not a product feature.
+
+### Files touched
+
+- `client/styles.css` — rewritten around the new design system (~1000 lines).
+- `client/index.html` — restructured layout; all functional element IDs and `data-i18n` attributes preserved, so the existing `lang/en.json` and `lang/hi.json` bundles keep working.
+- `client/app.js` — added `renderLivePreview`, `renderRail`, `renderFilterChips`, precision-pill ↔ select sync, sort/filter state for the feed, kbd shortcut handler with input guard, sign-row meta wiring. The crypto path, relay pool, peer pool, event store, and verification consensus are untouched.
+
+### Operator action required
+
+None. The wire format is unchanged. Relays do not need redeployment.
+
+VERSION → 0.6.0.
+
 ## v0.5.0 — in-event base64 media: photos with zero operator (2026-05-21)
 
 The simpler answer that the Helia / IPFS detour was missing: civic thumbnails fit in 64 KiB if you downscale them, and the protocol already syncs events between relays. So the event itself can carry the photo.

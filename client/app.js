@@ -810,6 +810,16 @@ function updateStatus() {
   const dot = $("#live-dot");
   dot.classList.toggle("live", connected > 0);
   dot.classList.toggle("warn", connected === 0 && all.length > 0);
+  // Mirror the dot state onto the chip border (new design system).
+  const chip = dot.parentElement;
+  if (chip) {
+    chip.classList.toggle("live", connected > 0);
+    chip.classList.toggle("warn", connected === 0 && all.length > 0);
+  }
+  // Sign-row + rail need the same numbers — refresh both when relay state moves.
+  const sr = document.getElementById("signrow-relays");
+  if (sr) sr.textContent = connected + (connected === 1 ? " relay" : " relays");
+  renderRail();
 }
 
 pool.on(() => {
@@ -821,6 +831,15 @@ pool.on(() => {
 
 let renderTimer;
 function renderFeedDebounced() { clearTimeout(renderTimer); renderTimer = setTimeout(renderFeed, 80); }
+
+// ─── feed sort/filter state (web design) ────────────────────────────────
+let feedSort = "newest";       // newest | verified | needs-proof
+let feedFilter = "all";        // "all" or a tag string
+
+function tagsOf(e) { return e.tags.filter(t => t[0] === "t").map(t => t[1]); }
+function totalVerdicts(id) {
+  return Object.values(verdictCounts(id)).reduce((a, b) => a + b, 0);
+}
 
 // SPEC §3.4: render media tags inline.  Accepts data:, https:, ipfs: etc.
 // data: URLs render instantly with no network call.  https:/ipfs:/etc. fall
@@ -843,15 +862,41 @@ function renderMediaTags(r) {
 
 function renderFeed() {
   const container = $("#feed-list");
-  const reports = [...events.values()]
-    .filter(e => e.kind === 1)
-    .sort((a, b) => b.created_at - a.created_at);
+  let reports = [...events.values()].filter(e => e.kind === 1);
+
+  // Filter by selected tag chip.
+  if (feedFilter !== "all") {
+    reports = reports.filter(r => tagsOf(r).includes(feedFilter));
+  }
+
+  // Sort by mode. "verified" = highest total verdicts (any).
+  // "needs-proof" = most "needs-more-proof" verdicts.
+  if (feedSort === "verified") {
+    reports.sort((a, b) => (totalVerdicts(b.id) - totalVerdicts(a.id)) || (b.created_at - a.created_at));
+  } else if (feedSort === "needs-proof") {
+    reports.sort((a, b) => {
+      const an = (verdictCounts(a.id)["needs-more-proof"] || 0);
+      const bn = (verdictCounts(b.id)["needs-more-proof"] || 0);
+      return (bn - an) || (b.created_at - a.created_at);
+    });
+  } else {
+    reports.sort((a, b) => b.created_at - a.created_at);
+  }
+
+  // Side-effects that ride on every feed render.
+  renderFilterChips();
+  renderRail();
+  const fc = document.getElementById("feed-count");
+  if (fc) {
+    const totalCount = [...events.values()].filter(e => e.kind === 1).length;
+    if (totalCount > 0) { fc.textContent = totalCount; fc.hidden = false; }
+    else { fc.hidden = true; }
+  }
 
   if (reports.length === 0) {
-    container.innerHTML = `<div class="empty">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="12"/></svg>
-      <div>${escapeHTML(t("feed.empty"))}</div>
-    </div>`;
+    const label = feedFilter === "all" ? escapeHTML(t("feed.empty")) :
+      `No reports yet for <b>#${escapeHTML(feedFilter)}</b>. Be the first cockroach.`;
+    container.innerHTML = `<div class="empty">${label}</div>`;
     return;
   }
 
@@ -928,6 +973,149 @@ function renderFeed() {
         </div>
       </div>`;
   }).join("");
+}
+
+// ─── feed side rail + filter chips (web design) ──────────────────────────
+
+// Static seed filter list — augmented at render-time with any tag present in
+// the live event store, so the chips reflect what's actually in the feed.
+const SEED_FILTER_TAGS = ["paperleak", "road", "election", "harassment", "unemployment", "mainbhicockroach"];
+
+function renderFilterChips() {
+  const host = document.getElementById("filter-tags");
+  if (!host) return;
+  const seen = new Set();
+  for (const e of events.values()) if (e.kind === 1) for (const tg of tagsOf(e)) seen.add(tg);
+  const tags = [...new Set([...SEED_FILTER_TAGS, ...seen])];
+  host.innerHTML = `<span class="pill ${feedFilter === "all" ? "selected" : ""}" data-filter="all">all</span>` +
+    tags.map(tg => `<span class="pill ${feedFilter === tg ? "selected" : ""}" data-filter="${escapeHTML(tg)}">#${escapeHTML(tg)}</span>`).join("");
+}
+
+function renderRail() {
+  // Relay-mini list.
+  const relayHost = document.getElementById("rail-relays");
+  if (relayHost) {
+    const status = pool.status();
+    relayHost.innerHTML = status.length === 0
+      ? `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-faint)">no relays</div>`
+      : status.map(({ url, state }) => {
+        const cls = state === "connected" ? "" : (state === "error" ? "bad" : "off");
+        const dotColor = state === "connected" ? "var(--good)" : (state === "error" ? "var(--bad)" : "var(--warn)");
+        return `<div class="relay-mini ${cls}">
+          <span style="color:${dotColor}">●</span>
+          <span class="url">${escapeHTML(shortUrl(url))}</span>
+          <span class="ms">${escapeHTML(state)}</span>
+        </div>`;
+      }).join("");
+  }
+
+  // Trending tags — count #t tags over the last 7d window in the live store.
+  const trendHost = document.getElementById("rail-trending");
+  if (trendHost) {
+    const since = Math.floor(Date.now() / 1000) - 7 * 86400;
+    const counts = new Map();
+    for (const e of events.values()) {
+      if (e.kind !== 1 || e.created_at < since) continue;
+      for (const tg of tagsOf(e)) counts.set(tg, (counts.get(tg) || 0) + 1);
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    trendHost.innerHTML = top.length === 0
+      ? `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-faint)">no tags yet</div>`
+      : top.map(([tg, n], i) => `
+        <div class="lb-row" data-filter-tag="${escapeHTML(tg)}">
+          <span class="rank">0${i + 1}</span>
+          <span class="tag">#${escapeHTML(tg)}</span>
+          <span class="ct">${n}</span>
+        </div>`).join("");
+  }
+}
+
+// ─── live preview (Report tab) ──────────────────────────────────────────
+
+function renderLivePreview() {
+  const text = $("#compose-content")?.value || "";
+  const body = $("#preview-body");
+  if (body) {
+    const trimmed = text.trim();
+    if (trimmed) {
+      body.textContent = trimmed;
+      body.classList.remove("empty");
+    } else {
+      body.textContent = "Kya hua? Kab? Kahan? — describe what you witnessed.";
+      body.classList.add("empty");
+    }
+  }
+
+  // Tags
+  const tagHost = $("#preview-tags");
+  if (tagHost) {
+    const selected = [...document.querySelectorAll("#tag-pills .pill.selected")].map(el => el.textContent.replace(/^#/, ""));
+    tagHost.innerHTML = selected.map(tg => `<span class="preview-tag">#${escapeHTML(tg)}</span>`).join("");
+    const sigTags = $("#sig-tags");
+    if (sigTags) sigTags.textContent = selected.length ? selected.map(t => "#" + t).join("  ") : "—";
+  }
+
+  // Precision indicator
+  const prec = Number($("#geo-precision")?.value || 7);
+  const precEl = $("#preview-precision");
+  if (precEl) precEl.textContent = prec;
+
+  // Location label
+  const locEl = $("#preview-loc");
+  if (locEl) {
+    if (lastFix) {
+      locEl.textContent = `${lastFix.lat.toFixed(2)}, ${lastFix.lon.toFixed(2)}`;
+    } else {
+      locEl.textContent = "no GPS fix yet";
+    }
+  }
+
+  // Sig-strip fields
+  const sigPk = $("#sig-pubkey");
+  if (sigPk) sigPk.textContent = pkHex.slice(0, 8) + "…" + pkHex.slice(-8);
+  const pkRow = $("#preview-pk");
+  if (pkRow) pkRow.textContent = `ed25519:${pkHex.slice(0, 4)}…${pkHex.slice(-4)}`;
+  const sigCreated = $("#sig-created");
+  if (sigCreated) sigCreated.textContent = new Date().toISOString();
+  const sigGeo = $("#sig-geohash");
+  if (sigGeo) sigGeo.textContent = lastFix ? geohashEncode(lastFix.lat, lastFix.lon, prec) : "—";
+
+  // Ready/draft state
+  const canPublish = text.trim().length > 8;
+  const stateEl = $("#preview-state");
+  const stateLabel = $("#preview-state-label");
+  if (stateEl) stateEl.classList.toggle("signed", canPublish);
+  if (stateLabel) stateLabel.textContent = canPublish ? "ready" : "draft";
+  const sigStatus = $("#sig-status");
+  if (sigStatus) {
+    if (canPublish) {
+      sigStatus.textContent = "ready to sign (ed25519)";
+      sigStatus.classList.remove("muted");
+    } else {
+      sigStatus.textContent = "— (write text to sign)";
+      sigStatus.classList.add("muted");
+    }
+  }
+
+  // Photo preview block (mirror the in-event base64 photo if attached)
+  const photoBox = $("#preview-photo");
+  if (photoBox) {
+    const previewImg = document.querySelector("#media-preview img");
+    if (previewImg) {
+      photoBox.hidden = false;
+      photoBox.innerHTML = `<img src="${previewImg.src}" alt=""/>`;
+    } else {
+      photoBox.hidden = true;
+      photoBox.innerHTML = "";
+    }
+  }
+
+  // Character count
+  const cc = $("#compose-char-count");
+  if (cc) {
+    cc.textContent = `${text.length} / 500`;
+    cc.classList.toggle("warn", text.length > 480);
+  }
 }
 
 // ─── relay list (Identity tab) ───────────────────────────────────────────
@@ -1017,6 +1205,9 @@ window.addEventListener("DOMContentLoaded", async () => {
       });
       tagPills.appendChild(el);
     }
+    const hint = document.getElementById("tag-hint");
+    if (hint) hint.textContent = `Tap to add · ${selectedTags.size} selected`;
+    renderLivePreview();
   }
   renderTagPills();
 
@@ -1030,16 +1221,44 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   async function refreshGeo() {
     geoLine.textContent = t("compose.locating");
+    const gpsLabel = document.getElementById("gps-label");
+    const gpsIcon  = document.getElementById("gps-icon");
+    const gpsBtn   = document.getElementById("btn-locate");
+    if (gpsIcon) gpsIcon.innerHTML = `<span class="spin">◔</span>`;
+    if (gpsLabel) gpsLabel.textContent = "acquiring fix…";
     try {
       const fix = await fetchLocation();
       const gh = geohashEncode(fix.lat, fix.lon, Number(precSel.value));
       geoLine.innerHTML = `${fix.lat.toFixed(4)}, ${fix.lon.toFixed(4)} → <code>${gh}</code> <span style="opacity:0.5">±${Math.round(fix.acc)}m</span>`;
+      if (gpsBtn) gpsBtn.classList.add("has-fix");
+      if (gpsIcon) gpsIcon.textContent = "📍";
+      if (gpsLabel) gpsLabel.textContent = `${fix.lat.toFixed(2)}, ${fix.lon.toFixed(2)}`;
     } catch (e) {
       geoLine.textContent = t("compose.location_error", { msg: e.message });
+      if (gpsBtn) gpsBtn.classList.remove("has-fix");
+      if (gpsIcon) gpsIcon.textContent = "📡";
+      if (gpsLabel) gpsLabel.textContent = t("compose.get_gps");
     }
+    renderLivePreview();
   }
   $("#btn-locate").addEventListener("click", refreshGeo);
-  precSel.addEventListener("change", refreshGeo);
+  precSel.addEventListener("change", () => { syncPrecisionPills(); refreshGeo(); });
+
+  // Precision pill grid → drives the hidden <select id="geo-precision">.
+  function syncPrecisionPills() {
+    const cur = precSel.value;
+    for (const el of document.querySelectorAll("#precision-grid .precision-pill")) {
+      el.classList.toggle("on", el.dataset.prec === cur);
+    }
+  }
+  document.getElementById("precision-grid")?.addEventListener("click", (e) => {
+    const pill = e.target.closest(".precision-pill");
+    if (!pill) return;
+    precSel.value = pill.dataset.prec;
+    syncPrecisionPills();
+    refreshGeo();
+  });
+  syncPrecisionPills();
 
   // ── media attachment (in-event base64) ───────────────────────────────
   let pendingMedia = null;
@@ -1052,6 +1271,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (mediaInput) mediaInput.value = "";
     if (mediaPreview) mediaPreview.innerHTML = "";
     if (mediaStatus) mediaStatus.textContent = "no photo attached";
+    renderLivePreview();
   }
   if (mediaBtn && mediaInput) {
     mediaBtn.addEventListener("click", () => mediaInput.click());
@@ -1069,6 +1289,7 @@ window.addEventListener("DOMContentLoaded", async () => {
           <button type="button" id="btn-remove-media" class="ghost small" style="margin-top:6px">Remove</button>`;
         const removeBtn = $("#btn-remove-media");
         if (removeBtn) removeBtn.addEventListener("click", clearMedia);
+        renderLivePreview();
       } catch (e) {
         mediaStatus.innerHTML = `<span style="color:var(--bad)">✗ ${escapeHTML(e.message)}</span>`;
         pendingMedia = null;
@@ -1097,6 +1318,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       });
       composeText.value = "";
       clearMedia();
+      renderLivePreview();
       showScreen("feed");
     } finally { composeBtn.disabled = false; }
   });
@@ -1136,6 +1358,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Identity tab
   $("#about-pubkey").textContent = pkHex;
+  const titleShort = document.getElementById("title-shortid");
+  if (titleShort) titleShort.textContent = "#" + pkHex.slice(0, 4);
   $("#about-regenerate").addEventListener("click", () => {
     if (!confirm(t("identity.regen_confirm"))) return;
     localStorage.removeItem(KEY_STORAGE);
@@ -1223,7 +1447,12 @@ window.addEventListener("DOMContentLoaded", async () => {
         : s.total > 0 ? `connecting to ${s.total} peers…`
         : "searching for peers…";
     }
-    if (peerIndicator) peerIndicator.style.display = s.enabled ? "" : "none";
+    if (peerIndicator) {
+      peerIndicator.style.display = s.enabled ? "" : "none";
+      // Mirror dot state onto the pill border (design system).
+      peerIndicator.classList.toggle("live", s.connected > 0);
+      peerIndicator.classList.toggle("warn", s.enabled && s.connected === 0);
+    }
     if (peerCount) peerCount.textContent = `${s.connected} peer${s.connected === 1 ? "" : "s"}`;
     if (peerDot) {
       peerDot.classList.toggle("live", s.connected > 0);
@@ -1274,6 +1503,52 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     updatePeerStatus();
   }
+
+  // ─── live preview wiring (Report tab) ────────────────────────────────
+  const composeContent = document.getElementById("compose-content");
+  if (composeContent) composeContent.addEventListener("input", renderLivePreview);
+  renderLivePreview();
+
+  // ─── feed sort + filter wiring ───────────────────────────────────────
+  document.getElementById("sort-list")?.addEventListener("click", (e) => {
+    const li = e.target.closest("li[data-sort]");
+    if (!li) return;
+    feedSort = li.dataset.sort;
+    for (const x of document.querySelectorAll("#sort-list li")) x.classList.toggle("on", x === li);
+    renderFeed();
+  });
+  document.getElementById("filter-tags")?.addEventListener("click", (e) => {
+    const pill = e.target.closest("[data-filter]");
+    if (!pill) return;
+    feedFilter = pill.dataset.filter;
+    renderFeed();
+  });
+  // Clicking a trending tag in the rail jumps the filter chip to that tag.
+  document.getElementById("rail-trending")?.addEventListener("click", (e) => {
+    const row = e.target.closest("[data-filter-tag]");
+    if (!row) return;
+    feedFilter = row.dataset.filterTag;
+    renderFeed();
+  });
+
+  // ─── keyboard shortcuts: 1 = report, 2 = feed, 3 = identity ──────────
+  window.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, textarea, select")) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "1") showScreen("compose");
+    else if (e.key === "2") showScreen("feed");
+    else if (e.key === "3") showScreen("about");
+  });
+
+  // ─── sign-row meta — keep peer count fresh as the mesh state changes ─
+  function updateSignRowPeers() {
+    const sp = document.getElementById("signrow-peers");
+    if (!sp) return;
+    const s = peers.status();
+    sp.textContent = s.connected + (s.connected === 1 ? " peer" : " peers");
+  }
+  peers.on(updateSignRowPeers);
+  updateSignRowPeers();
 
   // Boot
   showScreen("compose");

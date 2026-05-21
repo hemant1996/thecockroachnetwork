@@ -8,178 +8,344 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#0a0a0a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
-    <div class="brand">
-      <svg viewBox="0 0 200 200" aria-hidden="true">
-        <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
-        <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
-        <path d="M 88 42 Q 70 18 50 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 112 42 Q 130 18 150 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 65 90  Q 35 80 18 60" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 60 120 Q 28 122 12 110" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 65 150 Q 38 162 26 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 135 90  Q 165 80 182 60" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 140 120 Q 172 122 188 110" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 135 150 Q 162 162 174 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-      </svg>
-      <span>cockroach</span>
-    </div>
-    <div class="header-status">
-      <span class="status-pill">
-        <span id="live-dot" class="dot"></span>
-        <span id="status" data-i18n="status.starting">starting…</span>
-      </span>
-      <span id="peer-indicator" class="status-pill peer-pill" style="display:none">
-        <span id="peer-dot" class="dot"></span>
-        <span>🔗 <span id="peer-count">0 peers</span></span>
-      </span>
+    <div class="app-bar-inner">
+      <div class="brand">
+        <svg class="roach-svg" viewBox="0 0 200 200" aria-hidden="true">
+          <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
+          <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
+          <path d="M 88 42 Q 70 18 50 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 112 42 Q 130 18 150 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 65 90 Q 35 80 18 60" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 60 120 Q 28 122 12 110" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 65 150 Q 38 162 26 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 135 90 Q 165 80 182 60" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 140 120 Q 172 122 188 110" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 135 150 Q 162 162 174 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <span>cockroach</span>
+        <span class="ver">v0.2</span>
+      </div>
+
+      <nav class="tabs">
+        <button id="tab-compose"><span data-i18n="tab.compose">Report</span><span class="kbd">1</span></button>
+        <button id="tab-feed"><span data-i18n="tab.feed">Feed</span><span class="count" id="feed-count" hidden></span><span class="kbd">2</span></button>
+        <button id="tab-about"><span data-i18n="tab.identity">Identity</span><span class="kbd">3</span></button>
+      </nav>
+
+      <div class="header-status">
+        <span class="status-pill">
+          <span id="live-dot" class="dot"></span>
+          <span id="status" data-i18n="status.starting">starting…</span>
+        </span>
+        <span id="peer-indicator" class="status-pill peer-pill" style="display:none">
+          <span id="peer-dot" class="dot"></span>
+          <span><span id="peer-count">0 peers</span></span>
+        </span>
+      </div>
     </div>
   </header>
 
-  <nav class="tabs">
-    <button id="tab-compose" data-i18n="tab.compose">Report</button>
-    <button id="tab-feed" data-i18n="tab.feed">Feed</button>
-    <button id="tab-about" data-i18n="tab.identity">Identity</button>
-  </nav>
-
   <main>
-    <!-- Compose screen -->
+    <!-- ─── Compose / Report ──────────────────────────────────────── -->
     <section id="screen-compose" class="screen">
-      <div class="field">
-        <label for="compose-content" data-i18n="compose.what_broken">What is broken?</label>
-        <textarea id="compose-content" data-i18n-placeholder="compose.placeholder" placeholder="Describe the issue. Be specific."></textarea>
-      </div>
-
-      <div class="field">
-        <label data-i18n="compose.tags_label">Tags</label>
-        <div class="tag-pills" id="tag-pills"></div>
-        <input id="compose-tag-input" data-i18n-placeholder="compose.add_tag_placeholder" placeholder="add a tag and press enter" style="margin-top:8px"/>
-      </div>
-
-      <div class="field">
-        <label>Photo <span style="color:var(--muted);font-weight:400">(optional, auto-shrunk)</span></label>
-        <div class="row" style="margin-bottom:6px;align-items:center;gap:10px">
-          <button id="btn-attach-media" type="button" class="ghost small">Attach photo</button>
-          <input id="media-input" type="file" accept="image/*" hidden />
-          <span id="media-status" style="font-size:13px;color:var(--muted)">no photo attached</span>
+      <header class="panel-title">
+        <div>
+          <div class="kicker">/ report — compose</div>
+          <h1>What is <span class="accent">broken</span>?</h1>
         </div>
-        <div id="media-preview"></div>
-        <div style="font-size:12px;color:var(--muted);margin-top:6px">
-          Photo is shrunk to ~480-720 px, JPEG quality ~60, embedded directly in your signed event as a data URL. No upload to any external service — the event IS the storage. Replicates across relays automatically.
-        </div>
-      </div>
+        <p class="sub">Your phone signs it. The network keeps it. Forever.</p>
+      </header>
 
-      <div class="field">
-        <label data-i18n="compose.location_label">Location</label>
-        <div class="row" style="margin-bottom:6px">
-          <button id="btn-locate" class="ghost small" data-i18n="compose.get_gps">get GPS fix</button>
-          <select id="geo-precision" style="width:auto;padding:6px 10px;font-size:13px">
-            <option value="9">9 (~5 m)</option>
-            <option value="8">8 (~38 m)</option>
-            <option value="7" selected>7 (~150 m)</option>
-            <option value="6">6 (~1.2 km)</option>
-            <option value="5">5 (~5 km)</option>
-            <option value="4">4 (~40 km)</option>
+      <div class="report-grid">
+        <section class="composer">
+          <div class="field">
+            <div class="field-label">
+              <span data-i18n="compose.what_broken">What is broken?</span>
+              <span class="hint">Signed · public · <b>permanent</b></span>
+            </div>
+            <textarea id="compose-content" data-i18n-placeholder="compose.placeholder" placeholder="Describe what happened. Be specific — date, place, who, what." maxlength="500"></textarea>
+            <div id="compose-char-count" class="char-count">0 / 500</div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">
+              <span data-i18n="compose.tags_label">Tags</span>
+              <span class="hint" id="tag-hint">Tap to add · 0 selected</span>
+            </div>
+            <div class="tag-pills" id="tag-pills"></div>
+            <input id="compose-tag-input" data-i18n-placeholder="compose.add_tag_placeholder" placeholder="add a tag and press enter" />
+          </div>
+
+          <div class="field">
+            <div class="field-label">
+              <span>Photo</span>
+              <span class="hint">Optional · auto-shrunk · base64 in event</span>
+            </div>
+            <div class="row" style="margin-bottom:6px;align-items:center;gap:10px">
+              <button id="btn-attach-media" type="button" class="ghost small">Attach photo</button>
+              <input id="media-input" type="file" accept="image/*" hidden />
+              <span id="media-status">no photo attached</span>
+            </div>
+            <div id="media-preview"></div>
+            <div class="field-help">
+              Photo is shrunk to ~480-720 px, JPEG quality ~60, embedded directly in your signed event as a data URL. The event IS the storage — replicates across relays automatically.
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">
+              <span data-i18n="compose.location_label">Location</span>
+              <span class="hint">Geohash precision · lower = more privacy</span>
+            </div>
+            <div class="gps-block">
+              <button id="btn-locate" type="button">
+                <span id="gps-icon">📡</span>
+                <span id="gps-label" data-i18n="compose.get_gps">get GPS fix</span>
+              </button>
+              <div class="precision-grid" id="precision-grid">
+                <div class="precision-pill" data-prec="9"><b>9</b>~5 m</div>
+                <div class="precision-pill" data-prec="8"><b>8</b>~38 m</div>
+                <div class="precision-pill on" data-prec="7"><b>7</b>~150 m</div>
+                <div class="precision-pill" data-prec="6"><b>6</b>~1.2 km</div>
+                <div class="precision-pill" data-prec="5"><b>5</b>~5 km</div>
+                <div class="precision-pill" data-prec="4"><b>4</b>~40 km</div>
+              </div>
+            </div>
+            <!-- hidden select drives the existing app.js geo refresh logic -->
+            <select id="geo-precision" hidden>
+              <option value="9">9</option>
+              <option value="8">8</option>
+              <option value="7" selected>7</option>
+              <option value="6">6</option>
+              <option value="5">5</option>
+              <option value="4">4</option>
+            </select>
+            <div id="geo-line" data-i18n="compose.no_fix">no fix yet</div>
+            <p class="field-help" data-i18n="compose.privacy_note">Use 5 or below for sensitive contexts. Higher precision narrows your physical location.</p>
+          </div>
+
+          <div class="sign-row">
+            <div class="meta">
+              Signed with <b>your key</b> · published to <b><span id="signrow-relays">…</span></b> · gossiped to <b><span id="signrow-peers">…</span></b><br/>
+              Cannot be edited or deleted. Read the privacy notes in Identity.
+            </div>
+            <button id="btn-publish" data-i18n="compose.publish">🪳 Sign &amp; publish</button>
+          </div>
+        </section>
+
+        <aside class="preview" id="compose-preview">
+          <div class="preview-head">
+            <span class="label">Live preview · what gets signed</span>
+            <span class="state" id="preview-state">
+              <span class="blink"></span>
+              <span id="preview-state-label">draft</span>
+            </span>
+          </div>
+
+          <div class="preview-card">
+            <div class="preview-id-row">
+              <div class="av">🪳</div>
+              <span class="pk" id="preview-pk">ed25519:…</span>
+              <span style="color:var(--ink-faint)">· just now</span>
+              <span class="you">YOU</span>
+            </div>
+            <p class="preview-body empty" id="preview-body">Kya hua? Kab? Kahan? — describe what you witnessed.</p>
+            <div class="preview-photo" id="preview-photo" hidden></div>
+            <div class="preview-tags" id="preview-tags"></div>
+            <div class="preview-loc">📍 <span id="preview-loc">no GPS fix yet</span> · geohash <span id="preview-precision">7</span></div>
+          </div>
+
+          <div class="sig-strip">
+            <div class="row"><span class="k">kind</span><span class="v">1 / report</span></div>
+            <div class="row"><span class="k">pubkey</span><span class="v mono" id="sig-pubkey">—</span></div>
+            <div class="row"><span class="k">created</span><span class="v" id="sig-created">—</span></div>
+            <div class="row"><span class="k">tags</span><span class="v" id="sig-tags">—</span></div>
+            <div class="row"><span class="k">geohash</span><span class="v" id="sig-geohash">—</span></div>
+            <div class="row"><span class="k">sig</span><span class="v muted" id="sig-status">— (write text to sign)</span></div>
+          </div>
+
+          <p class="preview-footnote">
+            <b>NOTE</b> Once published, the event is broadcast to every connected relay and gossiped through the WebRTC peer mesh. You can <i>add to</i> it (with replies) but not edit or delete it.
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ─── Feed ──────────────────────────────────────────────────── -->
+    <section id="screen-feed" class="screen">
+      <header class="panel-title">
+        <div>
+          <div class="kicker">/ feed — signed events</div>
+          <h1>The <span class="accent">network</span> is writing.</h1>
+        </div>
+        <p class="sub">Read. Verify. Co-sign. Three taps make truth.</p>
+      </header>
+
+      <div class="feed-layout">
+        <aside class="feed-side">
+          <div>
+            <h5>Sort</h5>
+            <ul class="sort-list" id="sort-list">
+              <li class="on" data-sort="newest">Newest</li>
+              <li data-sort="verified">Most verified</li>
+              <li data-sort="needs-proof">Needs proof</li>
+            </ul>
+          </div>
+          <div>
+            <h5>Filter</h5>
+            <div class="tag-pills" id="filter-tags">
+              <span class="pill selected" data-filter="all">all</span>
+              <!-- filter chips injected by app.js -->
+            </div>
+          </div>
+        </aside>
+
+        <div id="feed-list"></div>
+
+        <aside class="rail">
+          <div class="rail-card">
+            <h6>Live · network</h6>
+            <div class="relays" id="rail-relays"></div>
+          </div>
+          <div class="rail-card">
+            <h6>Trending tags · 7d</h6>
+            <div class="leaderboard" id="rail-trending"></div>
+          </div>
+          <div class="rail-card rail-cta">
+            <h6>Pehredaar wanted</h6>
+            <p>Network needs more public relays. <b>3 min</b> to deploy.</p>
+            <a href="../relay/RUN.md" class="ghost" style="display:inline-block;padding:10px 16px;border:1px solid var(--accent);color:var(--accent);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase">Run a relay →</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ─── Identity ──────────────────────────────────────────────── -->
+    <section id="screen-about" class="screen about">
+      <header class="panel-title">
+        <div>
+          <div class="kicker">/ identity — your key, your relays</div>
+          <h1>You are <span class="accent" id="title-shortid">#…</span>.</h1>
+        </div>
+        <p class="sub">No email, no signup, no recovery. The key lives here, in this browser.</p>
+      </header>
+
+      <div class="id-grid">
+        <div class="id-card full">
+          <h3 data-i18n="identity.your_identity">Your identity</h3>
+          <p data-i18n="identity.identity_blurb">Your ed25519 public key. This is your account. There is no email, no signup, no recovery — if you lose this device and have not exported the key, you lose this identity.</p>
+          <div class="key-display mono" id="about-pubkey"></div>
+          <div class="row" style="gap:10px;margin-top:12px">
+            <button id="about-export" class="ghost small" data-i18n="identity.export_key">⬇ Export key</button>
+            <button id="about-regenerate" class="ghost small" data-i18n="identity.regen_key" style="border-color:rgba(230,59,46,0.4);color:var(--accent)">⟲ Generate new key</button>
+          </div>
+        </div>
+
+        <div class="id-card">
+          <h3 data-i18n="identity.relays">Relays</h3>
+          <p data-i18n="identity.relays_blurb">This client talks to many relays at once. Publishing fans out to all connected relays. Anyone can run one — see the run-a-relay guide.</p>
+          <div id="relay-list"></div>
+          <div class="row" style="gap:8px;margin-top:10px">
+            <input id="add-relay-input" placeholder="wss://your-relay.onrender.com" />
+            <button id="add-relay-btn" class="ghost small" data-i18n="identity.add">+ Add</button>
+          </div>
+          <div class="row" style="gap:8px;margin-top:8px">
+            <button id="reset-relays" class="ghost small" data-i18n="identity.reset_relays">Reset to seed list</button>
+          </div>
+        </div>
+
+        <div class="id-card">
+          <h3>Peer mode <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:0.1em;text-transform:uppercase">· v0.2 mesh</span></h3>
+          <p>WebRTC peer-to-peer mesh. Your browser opens direct connections to other peers and gossips events with them. <b>The network survives any single relay going offline.</b></p>
+          <div class="peer-warning">
+            ⚠ Peer mode exposes your IP address to other peers (not only your relay's operator). Turn it off on hostile networks or when reporting sensitive content.
+          </div>
+          <div class="peer-toggle-row">
+            <label class="peer-switch">
+              <input type="checkbox" id="peer-toggle" />
+              <span class="peer-switch-track"><span class="peer-switch-thumb"></span></span>
+              <span class="peer-switch-label">Enable peer mode</span>
+            </label>
+            <span id="peer-status"></span>
+          </div>
+        </div>
+
+        <div class="id-card">
+          <h3 data-i18n="identity.language">Language</h3>
+          <p>Switch the interface between English and हिन्दी.</p>
+          <select id="lang-select" style="max-width:260px">
+            <option value="en" data-i18n="lang.english">English</option>
+            <option value="hi" data-i18n="lang.hindi">हिन्दी</option>
           </select>
         </div>
-        <div id="geo-line" style="font-size:13px;color:var(--muted)" data-i18n="compose.no_fix">no fix yet</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:6px" data-i18n="compose.privacy_note">Lower precision = more privacy. Use 5 or below for sensitive contexts.</div>
+
+        <div class="id-card">
+          <h3 data-i18n="identity.privacy">Privacy</h3>
+          <p data-i18n="identity.privacy_blurb">Your secret key never leaves this browser. The relay you talk to sees your IP — for sensitive reporting use Tor or a VPN. Geohash precision 7 reveals your location to ~150 m; drop to 5 or below for sensitive contexts.</p>
+          <p style="font-family:'Instrument Serif',serif;font-style:italic;color:var(--ink-faint);font-size:14px">
+            "Phone-key se asli naam directly connect nahi hai. Pseudonymous hain — pakka anonymous nahi. Soch ke daaliye."
+          </p>
+        </div>
+
+        <div class="id-card full">
+          <h3 data-i18n="identity.about">About this client</h3>
+          <p data-i18n="identity.about_blurb">This is a reference client for the Cockroach Relay Protocol. ~700 lines of plain JavaScript. Read it, fork it, host your own copy, replace it entirely.</p>
+          <div class="row" style="gap:10px;margin-top:8px">
+            <a href="../SPEC.md" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">SPEC ↗</a>
+            <a href="../WHITEPAPER.md" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">WHITEPAPER ↗</a>
+            <a href="../relay/RUN.md" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">Run a relay ↗</a>
+            <a href="https://github.com/hemantbangar/cockroachparty" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">Source on GitHub ↗</a>
+          </div>
+          <p style="margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:0.1em">
+            COCKROACH V0.2 · CC0 PUBLIC DOMAIN · JANTA KA NETWORK
+          </p>
+        </div>
       </div>
-
-      <button id="btn-publish" data-i18n="compose.publish">Sign and publish</button>
-    </section>
-
-    <!-- Feed screen -->
-    <section id="screen-feed" class="screen">
-      <div id="feed-list"></div>
-    </section>
-
-    <!-- About screen -->
-    <section id="screen-about" class="screen about">
-      <h2 data-i18n="identity.your_identity">Your identity</h2>
-      <p data-i18n="identity.identity_blurb">Your ed25519 public key. This is your account. There is no email, no signup, no recovery — if you lose this device and have not exported the key, you lose this identity.</p>
-      <div class="key-display mono" id="about-pubkey"></div>
-      <div class="row" style="gap:8px;margin-top:8px">
-        <button id="about-export" class="ghost small" data-i18n="identity.export_key">Export key</button>
-        <button id="about-regenerate" class="ghost small" data-i18n="identity.regen_key">Generate new key</button>
-      </div>
-
-      <h2 data-i18n="identity.relays">Relays</h2>
-      <p data-i18n="identity.relays_blurb">This client talks to many relays at once. Publishing fans out to all connected relays. Anyone can run one — see the run-a-relay guide.</p>
-      <div id="relay-list"></div>
-      <div class="row" style="gap:8px;margin-top:10px">
-        <input id="add-relay-input" placeholder="wss://relay.example.org" />
-        <button id="add-relay-btn" class="ghost small" data-i18n="identity.add">Add</button>
-      </div>
-      <div class="row" style="gap:8px;margin-top:8px">
-        <button id="reset-relays" class="ghost small" data-i18n="identity.reset_relays">Reset to seed list</button>
-      </div>
-
-      <h2>Peer mode <span style="font-size:13px;color:var(--muted);font-weight:400">— v0.2 mesh</span></h2>
-      <p>WebRTC peer-to-peer mesh. Your browser opens direct connections to other peers and gossips events with them. The network survives any single relay going offline; you participate in carrying the load.</p>
-      <p style="font-size:13px;color:var(--warn)"><b>Privacy:</b> peer mode exposes your IP address to other peers (not just to your relay's operator). <b>On by default</b> so the mesh is alive from the first page load. <b>Turn it off here if you're on a hostile network or reporting sensitive content.</b></p>
-      <div class="peer-toggle-row">
-        <label class="peer-switch">
-          <input type="checkbox" id="peer-toggle" />
-          <span class="peer-switch-track"><span class="peer-switch-thumb"></span></span>
-          <span class="peer-switch-label">Enable peer mode</span>
-        </label>
-        <span id="peer-status" class="muted small"></span>
-      </div>
-
-      <h2 data-i18n="identity.language">Language</h2>
-      <div class="row" style="gap:8px">
-        <select id="lang-select" style="max-width:240px">
-          <option value="en" data-i18n="lang.english">English</option>
-          <option value="hi" data-i18n="lang.hindi">हिन्दी</option>
-        </select>
-      </div>
-
-      <h2 data-i18n="identity.about">About</h2>
-      <p data-i18n="identity.about_blurb">This is a reference client for the Cockroach Relay Protocol. ~700 lines of plain JavaScript. Read it, fork it, host your own copy, replace it entirely.</p>
-      <p><a href="../SPEC.md">SPEC</a> &nbsp;·&nbsp; <a href="../WHITEPAPER.md">WHITEPAPER</a> &nbsp;·&nbsp; <a href="../relay/RUN.md">run a relay</a></p>
-
-      <h2 data-i18n="identity.privacy">Privacy</h2>
-      <p data-i18n="identity.privacy_blurb">Your secret key never leaves this browser. The relay you talk to sees your IP — for sensitive reporting use Tor or a VPN. Geohash precision 7 reveals your location to ~150 m; drop to 5 or below for sensitive contexts.</p>
     </section>
   </main>
 
   <div id="toast" class="toast"></div>
-
-  <!-- Publish confirmation card: small slide-in showing the fan-out
-       (signed → relays → peers → permanent).  Appears after every publish. -->
   <div id="publish-toast" class="publish-toast"></div>
 
-  <!-- First-publish modal: shown once, explains what just happened.
-       Makes the decentralization architecture VISIBLE to the user. -->
+  <!-- First-publish modal -->
   <div id="publish-explainer" class="modal-overlay" hidden>
     <div class="modal-card">
-      <div class="explainer-head">
-        <span class="explainer-check">✓</span>
-        <h3>Yeh kya hua? · What just happened?</h3>
-      </div>
+      <h3>Signed.<br/><span class="accent">Forever.</span></h3>
+      <p class="sub">Aapka event ab network par hai — koi mita nahi sakta.</p>
       <ol class="explainer-steps">
         <li>
-          <b>Signed with your key.</b>
-          Aapke phone ne aapki gupt chaabi se signature lagaya. Koi aur is event ko forge nahi kar sakta.
+          <div>
+            <b>Signed with your key</b>
+            ed25519 — only this browser could sign this event.
+          </div>
         </li>
         <li>
-          <b>Sent to <span id="explainer-relays">0</span> relay(s).</b>
-          Public servers jo anyone chala sakta hai. Aaj ek hai — aur chaahiye. <a href="../#pehredaar">Pehredaar baniye</a>.
+          <div>
+            <b>Sent to <span id="explainer-relays">0</span> relay(s)</b>
+            Public servers anyone can run. <a href="../relay/RUN.md">Pehredaar baniye</a>.
+          </div>
         </li>
         <li id="explainer-peers-block">
-          <b>Fanned out to <span id="explainer-peers">0</span> peer(s).</b>
-          WebRTC se direct connections — dusre cockroaches ke phones se. No middleman.
+          <div>
+            <b>Fanned to <span id="explainer-peers">0</span> peer(s)</b>
+            WebRTC direct — no middleman.
+          </div>
         </li>
         <li>
-          <b>Permanent record.</b>
-          Signed event ko koi badal nahi sakta. Tabhi tak rahega jab tak koi Pehredaar host kar raha hai.
+          <div>
+            <b>Permanent record</b>
+            Lives as long as a single Pehredaar is hosting.
+          </div>
         </li>
       </ol>
-      <button id="explainer-ok" class="btn">Samjha · Got it</button>
+      <button id="explainer-ok">Samjha · Got it</button>
     </div>
   </div>
 
