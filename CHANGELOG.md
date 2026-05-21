@@ -4,6 +4,23 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.2.2 — relay stats endpoint + network-wide health aggregator (2026-05-21)
+
+### Relay
+
+- `GET /` JSON now includes a `stats` block — `ws_connected` (real-time WebSocket connections), `unique_pubkeys_1h` (distinct authors in the last hour), `peer_offers_15m` (kind:10001 events in the last 15 min, proxy for active peer mesh), `events_24h` (total events in last day). Cached for 10s to keep the endpoint cheap under load. Other relays and clients can pull this without subscribing.
+- Version banner bumped to v0.2.2.
+
+### Landing
+
+- Cockroach health metric now aggregates `stats` from EVERY responding relay in `client/relays.json`, not just the relay the landing happens to be subscribed to. The score reads the whole network's state, not one slice of it.
+- `effectivePeers()` returns the max of (locally observed kind:10001 publishers) and (network-wide peer_offers_15m sum). Whichever is more accurate wins.
+- Captions now show the aggregated peer count: *"Mazboot. 5 Pehredaar, 47 peers meshing."* — the user sees the real network-wide state.
+
+### Deploy
+
+- Operators on v0.2.1 should `fly deploy` (or pull + restart) to pick up the new `/stats` block. Old relays that don't have it still count as "alive" — they just don't contribute to the aggregated peer/connection signal.
+
 ## v0.2.1 — peer mode on by default + Cloudflare Tunnel guide (2026-05-20)
 
 ### Changed

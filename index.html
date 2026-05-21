@@ -653,11 +653,24 @@
 
     let relaysAlive = 0;
     let relaysTotal = 0;
+    // Aggregated stats across every responding relay's /info endpoint.
+    // (Each Pehredaar's relay now publishes ws_connected, unique_pubkeys_1h,
+    // peer_offers_15m, events_24h on GET /.  We sum across relays for a
+    // real network-wide view.)
+    let networkConnected = 0;
+    let networkPeerOffers = 0;
+    let networkUniquePubkeys = 0;
     const activePeerPubkeys = new Map();  // pubkey -> last-seen-unix
     const PEER_ACTIVE_WINDOW = 15 * 60;   // 15 minutes
+    function effectivePeers() {
+      // Prefer the larger of: peers we directly observed via the connected
+      // relay's kind:10001 subscription, or the aggregated peer_offers_15m
+      // count from every responding relay's /info.
+      return Math.max(activePeerPubkeys.size, networkPeerOffers || 0);
+    }
 
     function healthStage() {
-      const peers = activePeerPubkeys.size;
+      const peers = effectivePeers();
       if (relaysAlive >= 10 && peers >= 30) return 4; // thriving
       if (relaysAlive >= 5  && peers >= 10) return 3; // strong
       if (relaysAlive >= 3  && peers >= 3)  return 2; // surviving
@@ -671,17 +684,17 @@
     const HEALTH_CAPTIONS = {
       hi: [
         () => `Cockroach akela hai. ${relaysAlive} Pehredaar. Bachao.`,
-        () => `Saans le raha hai. ${relaysAlive} Pehredaar, ${activePeerPubkeys.size} peers.`,
-        () => `Jeevit hai. ${relaysAlive} Pehredaar, ${activePeerPubkeys.size} peers — aur chahiye.`,
-        () => `Mazboot. ${relaysAlive} Pehredaar, ${activePeerPubkeys.size} peers meshing.`,
-        () => `Hum sab cockroach. ${relaysAlive} Pehredaar, ${activePeerPubkeys.size} peers.`,
+        () => `Saans le raha hai. ${relaysAlive} Pehredaar, ${effectivePeers()} peers.`,
+        () => `Jeevit hai. ${relaysAlive} Pehredaar, ${effectivePeers()} peers — aur chahiye.`,
+        () => `Mazboot. ${relaysAlive} Pehredaar, ${effectivePeers()} peers meshing.`,
+        () => `Hum sab cockroach. ${relaysAlive} Pehredaar, ${effectivePeers()} peers.`,
       ],
       en: [
         () => `The cockroach is alone. ${relaysAlive} Pehredaar. Save it.`,
-        () => `Barely breathing. ${relaysAlive} Pehredaar(s), ${activePeerPubkeys.size} peer(s).`,
-        () => `Alive. ${relaysAlive} Pehredaar(s), ${activePeerPubkeys.size} peer(s) — needs more.`,
-        () => `Strong. ${relaysAlive} Pehredaar(s), ${activePeerPubkeys.size} peer(s) meshing.`,
-        () => `Thriving. ${relaysAlive} Pehredaar(s), ${activePeerPubkeys.size} peer(s).`,
+        () => `Barely breathing. ${relaysAlive} Pehredaar(s), ${effectivePeers()} peer(s).`,
+        () => `Alive. ${relaysAlive} Pehredaar(s), ${effectivePeers()} peer(s) — needs more.`,
+        () => `Strong. ${relaysAlive} Pehredaar(s), ${effectivePeers()} peer(s) meshing.`,
+        () => `Thriving. ${relaysAlive} Pehredaar(s), ${effectivePeers()} peer(s).`,
       ],
     };
 
@@ -712,10 +725,9 @@
       }
     }
 
-    // Poll every known relay's HTTP /info endpoint; count how many respond.
-    // The relays.json file is the seed list the deployed client uses, so
-    // it's also the right list to use for "what relays does this network
-    // claim to have."
+    // Poll every known relay's HTTP /info endpoint; count how many respond,
+    // and aggregate their `stats` blocks for a true network-wide view.
+    // Pre-v0.2.2 relays that don't have a stats block still count as alive.
     async function pingAllRelays() {
       try {
         const r = await fetch("client/relays.json", { cache: "no-cache" });
@@ -724,19 +736,41 @@
         const urls = Array.isArray(json) ? json : Array.isArray(json.relays) ? json.relays : [];
         const valid = urls.filter(u => typeof u === "string" && /^wss?:\/\//.test(u));
         relaysTotal = valid.length;
+
         const results = await Promise.allSettled(valid.map(async (wsUrl) => {
           const httpUrl = wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
           const controller = new AbortController();
           const timer = setTimeout(() => controller.abort(), 5000);
           try {
             const resp = await fetch(httpUrl, { signal: controller.signal, cache: "no-cache" });
-            return resp.ok;
-          } catch { return false; }
+            if (!resp.ok) return null;
+            const ct = (resp.headers.get("content-type") || "").toLowerCase();
+            if (ct.includes("application/json")) return await resp.json();
+            return { alive: true }; // old relay, no stats body — still alive
+          } catch { return null; }
           finally { clearTimeout(timer); }
         }));
-        relaysAlive = results.filter(r => r.status === "fulfilled" && r.value).length;
+
+        let aliveCount = 0;
+        let aggConnected = 0;
+        let aggPeerOffers = 0;
+        let aggUnique = 0;
+        for (const res of results) {
+          if (res.status !== "fulfilled" || !res.value) continue;
+          aliveCount++;
+          const s = res.value.stats;
+          if (s && typeof s === "object") {
+            aggConnected   += Number(s.ws_connected) || 0;
+            aggPeerOffers  += Number(s.peer_offers_15m) || 0;
+            aggUnique      += Number(s.unique_pubkeys_1h) || 0;
+          }
+        }
+        relaysAlive          = aliveCount;
+        networkConnected     = aggConnected;
+        networkPeerOffers    = aggPeerOffers;
+        networkUniquePubkeys = aggUnique;
         updateCockroachHealth();
-      } catch { /* ignore — keep last known counts */ }
+      } catch { /* keep last known counts on network blip */ }
     }
     pingAllRelays();
     setInterval(pingAllRelays, 60 * 1000); // every minute

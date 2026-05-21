@@ -5,7 +5,8 @@
       "Bash(rm -f /tmp/cr-consensus.js)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(bun test *)"
     ]
   }
 }

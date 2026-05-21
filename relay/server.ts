@@ -310,6 +310,41 @@ function broadcast(e: SignedEvent) {
 const liveSockets = new Set<any>();
 
 // ──────────────────────────────────────────────────────────────────────────
+// Public stats — exposed on GET /  so other relays / clients can aggregate
+// a network-wide health view without having to subscribe to every relay
+// individually.  Cached for 10s so an "everyone refreshes the landing"
+// thundering-herd doesn't hammer SQLite.
+
+let statsCache: ReturnType<typeof computeStats> | null = null;
+let statsCacheAt = 0;
+
+function computeStats() {
+  const now = Math.floor(Date.now() / 1000);
+  const h1 = now - 3600;
+  const m15 = now - 900;
+  const h24 = now - 86400;
+
+  const uniquePubkeys1h = (db.query("SELECT COUNT(DISTINCT pubkey) AS c FROM events WHERE created_at >= ?").get(h1) as { c: number } | undefined)?.c ?? 0;
+  const peerOffers15m  = (db.query("SELECT COUNT(*) AS c FROM events WHERE kind = 10001 AND created_at >= ?").get(m15) as { c: number } | undefined)?.c ?? 0;
+  const events24h      = (db.query("SELECT COUNT(*) AS c FROM events WHERE created_at >= ?").get(h24) as { c: number } | undefined)?.c ?? 0;
+
+  return {
+    ws_connected: liveSockets.size,
+    unique_pubkeys_1h: uniquePubkeys1h,
+    peer_offers_15m: peerOffers15m,
+    events_24h: events24h,
+  };
+}
+
+function getStats() {
+  const now = Date.now();
+  if (statsCache && now - statsCacheAt < 10_000) return statsCache;
+  statsCache = computeStats();
+  statsCacheAt = now;
+  return statsCache;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // HTTP + WebSocket server
 
 let server: ReturnType<typeof Bun.serve>;
@@ -327,9 +362,10 @@ try {
     if (url.pathname === "/") {
       return new Response(JSON.stringify({
         name: "cockroach-relay",
-        version: "0.1.0",
+        version: "0.2.2",
         spec: "https://github.com/hemant1996/thecockroachnetwork/blob/main/SPEC.md",
         retention_days: RETENTION_DAYS,
+        stats: getStats(),
       }, null, 2), { headers: { "content-type": "application/json", "access-control-allow-origin": "*" } });
     }
     if (url.pathname === "/og.svg") {
@@ -424,7 +460,7 @@ try {
 }
 
 console.log("");
-console.log("  cockroach-relay v0.2.1 running");
+console.log("  cockroach-relay v0.2.2 running");
 console.log("");
 console.log(`  WebSocket:  ws://localhost:${server.port}`);
 console.log(`  Info:       http://localhost:${server.port}/`);
