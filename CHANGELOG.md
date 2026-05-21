@@ -4,6 +4,23 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.2.3 — landing redesign: agitprop poster with live cockroach (2026-05-21)
+
+### Landing
+
+- Full visual rewrite of `index.html` from the Claude Design handoff. Dark editorial / agitprop poster aesthetic — black background, cream paper ink, rebel-red accent (`#e63b2e`). Anton (display) + Instrument Serif (italic pull) + JetBrains Mono (tags / metadata) + Inter (body).
+- The cockroach is now the lead character: giant 🪳 in the hero stage with idle wiggle, cursor parallax, click-to-startle bounce, an orbiting ring of four stamps (Janta ka, Indestructible, est. 2026, Signed · Forever), and a constant background swarm of smaller scurriers crossing the viewport.
+- Marquee tape strip across the top with data-driven Pehredaar count (`1 public Pehredaar live` updates to the real `relaysAlive`).
+- New "Live wall" section between *What* and *How* — shows real-time `reports/24h`, `#mainbhicockroach/7d`, `cities` stats plus the latest six declarations as Instrument Serif pull-quote cards.
+- Pehredaar alarm box now drives off real data: the giant "01" is `relaysAlive` padded, the headline switches between "Sirf ek Pehredaar zinda hai" / "N Pehredaar zinda hain" based on count, and the live status line in the footer shows aggregated relay + peer count + last-event time in IST.
+- Mascot health caption (the honest "Akela · 1 Pehredaar · bachao" line) sits below the mascot and updates from the same resilience metric as v0.2.2.
+- Removed the v0.1 stylesheet path — the landing is now self-contained with inline styles. `web/styles.css` remains for the `/build/` developer page.
+- The Tweaks panel from the design handoff is intentionally excluded — it was the designer's authoring surface, not a production component.
+
+### Protocol / relay / client
+
+- No changes.
+
 ## v0.2.2 — relay stats endpoint + network-wide health aggregator (2026-05-21)
 
 ### Relay

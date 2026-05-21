@@ -1,889 +1,1006 @@
 <!doctype html>
-<html lang="hi-Latn">
+<html lang="en" data-lang="hi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Main bhi cockroach — janta ka network</title>
-  <meta name="description" content="Jo likha gaya, woh hamesha rahega. Koi mita nahi sakta. Janta ka apna network." />
-  <meta name="theme-color" content="#0a0a0a" />
-  <link rel="canonical" href="https://thecockroachnetwork.com/" />
-  <link rel="icon" href="web/assets/cockroach.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="web/styles.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Main bhi cockroach — janta ka network</title>
+<meta name="description" content="Jo likha gaya, woh hamesha rahega. Koi mita nahi sakta. Janta ka apna network — signed, decentralized, CC0." />
+<meta name="theme-color" content="#0a0a0a" />
+<link rel="canonical" href="https://thecockroachnetwork.com/" />
+<link rel="icon" href="web/assets/cockroach.svg" type="image/svg+xml" />
 
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="The Cockroach Network" />
-  <meta property="og:title" content="Main bhi cockroach." />
-  <meta property="og:description" content="Jo likha gaya, woh hamesha rahega. Janta ka network." />
-  <meta property="og:url" content="https://thecockroachnetwork.com/" />
-  <meta property="og:image" content="https://thecockroachnetwork.com/web/assets/og-cover.svg" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="The Cockroach Network" />
+<meta property="og:title" content="Main bhi cockroach." />
+<meta property="og:description" content="Jo likha gaya, woh hamesha rahega. Janta ka network." />
+<meta property="og:url" content="https://thecockroachnetwork.com/" />
+<meta property="og:image" content="https://thecockroachnetwork.com/web/assets/og-cover.svg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Main bhi cockroach." />
+<meta name="twitter:description" content="Jo likha gaya, woh hamesha rahega. Janta ka network." />
+<meta name="twitter:image" content="https://thecockroachnetwork.com/web/assets/og-cover.svg" />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Main bhi cockroach." />
-  <meta name="twitter:description" content="Jo likha gaya, woh hamesha rahega. Janta ka network." />
-  <meta name="twitter:image" content="https://thecockroachnetwork.com/web/assets/og-cover.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --paper: #f4ead5;
+    --paper-dim: #d9ccb0;
+    --ink: #0a0a0a;
+    --accent: #e63b2e;          /* rebel red */
+    --accent-ink: #f4ead5;
+    --muted: #8a8377;
+    --rule: rgba(244,234,213,0.14);
+    --card: rgba(244,234,213,0.04);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--paper); font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+
+  .display { font-family: "Anton", "Impact", sans-serif; font-weight: 400; letter-spacing: 0.005em; line-height: 0.86; text-transform: uppercase; }
+  .serif { font-family: "Instrument Serif", "Times New Roman", serif; font-style: italic; letter-spacing: -0.01em; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+
+  /* ── tape strip ───────────────────────────────────────── */
+  .tape {
+    position: relative; z-index: 5;
+    background: var(--accent); color: var(--accent-ink);
+    font-family: "JetBrains Mono", monospace; font-weight: 500;
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 8px 0; overflow: hidden; white-space: nowrap;
+    border-bottom: 1px solid rgba(0,0,0,0.25);
+  }
+  .tape-track { display: inline-flex; gap: 48px; animation: marquee 38s linear infinite; padding-left: 48px; }
+  .tape-track span::before { content: "✦"; margin-right: 16px; opacity: 0.7; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ── top nav ──────────────────────────────────────────── */
+  .nav {
+    position: sticky; top: 0; z-index: 40;
+    backdrop-filter: blur(14px) saturate(140%);
+    background: color-mix(in oklab, var(--bg) 78%, transparent);
+    border-bottom: 1px solid var(--rule);
+  }
+  .nav-inner { max-width: 1320px; margin: 0 auto; padding: 14px 32px; display: flex; align-items: center; gap: 24px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: "Anton", sans-serif; text-transform: uppercase; letter-spacing: 0.04em; font-size: 18px; color: var(--paper); text-decoration: none; }
+  .brand .roach { font-size: 22px; transform: rotate(-8deg); display: inline-block; animation: brand-wiggle 3.4s ease-in-out infinite; }
+  @keyframes brand-wiggle { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+  .nav-links { display: flex; gap: 22px; margin-left: auto; font-size: 13px; font-family: "JetBrains Mono", monospace; text-transform: uppercase; letter-spacing: 0.12em; }
+  .nav-links a { color: var(--paper); text-decoration: none; opacity: 0.7; }
+  .nav-links a:hover { opacity: 1; color: var(--accent); }
+  .lang-toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; font-family: "JetBrains Mono", monospace; font-size: 11px; }
+  .lang-toggle button { background: transparent; color: inherit; border: 0; padding: 6px 12px; cursor: pointer; letter-spacing: 0.1em; }
+  .lang-toggle button.on { background: var(--accent); color: var(--accent-ink); }
+
+  /* ── hero ─────────────────────────────────────────────── */
+  .hero { position: relative; padding: 56px 32px 80px; max-width: 1320px; margin: 0 auto; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 32px; align-items: center; min-height: 78vh; }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px;
+    padding: 8px 14px; margin-bottom: 28px;
+  }
+  .hero-eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: 0.4; } }
+
+  h1.hero-title { font-family: "Anton", "Impact", sans-serif; letter-spacing: 0.005em; line-height: 0.86; text-transform: uppercase; font-size: clamp(72px, 13vw, 220px); margin: 0; }
+  h1.hero-title .stroke { color: transparent; -webkit-text-stroke: 2px var(--paper); }
+  h1.hero-title .accent { color: var(--accent); }
+  h1.hero-title .roach-inline { display: inline-block; transform: translateY(0.12em) rotate(-6deg); font-family: "Apple Color Emoji","Segoe UI Emoji",sans-serif; }
+
+  .hero-sub { margin: 28px 0 0; font-size: 20px; line-height: 1.5; max-width: 52ch; color: color-mix(in oklab, var(--paper) 84%, transparent); }
+  .hero-sub b { color: var(--accent); font-weight: 600; }
+  .hero-sub .pull { font-family: "Instrument Serif", serif; font-style: italic; font-size: 24px; }
+
+  .hero-ctas { display: flex; gap: 14px; margin-top: 36px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 12px; padding: 16px 22px; border-radius: 4px; font-family: "JetBrains Mono", monospace; font-size: 13px; text-transform: uppercase; letter-spacing: 0.14em; cursor: pointer; border: 0; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: 6px 6px 0 var(--paper); }
+  .btn-primary:hover { transform: translate(-2px,-2px); box-shadow: 8px 8px 0 var(--paper); }
+  .btn-ghost { background: transparent; color: var(--paper); border: 1px solid var(--paper); }
+  .btn-ghost:hover { background: var(--paper); color: var(--bg); }
+  .btn .arrow { transition: transform .15s ease; }
+  .btn:hover .arrow { transform: translateX(4px); }
+
+  /* ── mascot stage ─────────────────────────────────────── */
+  .mascot-stage {
+    position: relative; aspect-ratio: 1/1; max-width: 640px; margin: 0 auto; width: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mascot-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--accent) 30%, transparent) 0%, transparent 62%),
+      conic-gradient(from 0deg at 50% 50%, transparent 0deg, color-mix(in oklab, var(--accent) 12%, transparent) 8deg, transparent 16deg, color-mix(in oklab, var(--accent) 12%, transparent) 24deg, transparent 32deg);
+    border-radius: 50%;
+    animation: spin 60s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .mascot-ring {
+    position: absolute; inset: 6%; border: 1px dashed var(--rule); border-radius: 50%;
+    animation: spin 120s linear infinite reverse;
+  }
+  .mascot-ring::before, .mascot-ring::after {
+    content: ""; position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--accent);
+    top: 50%; left: -7px; transform: translateY(-50%);
+  }
+  .mascot-ring::after { left: auto; right: -7px; }
+
+  .mascot-ring-2 {
+    position: absolute; inset: 16%; border: 2px solid var(--accent); border-radius: 50%; opacity: 0.35;
+    border-style: dotted;
+  }
+
+  /* the big bug */
+  .mascot {
+    position: relative; z-index: 2;
+    font-size: clamp(180px, 30vw, 380px);
+    font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji", sans-serif;
+    line-height: 1;
+    filter: drop-shadow(0 24px 48px rgba(230,59,46,0.45)) drop-shadow(0 8px 16px rgba(0,0,0,0.6));
+    cursor: grab;
+    transform-origin: 50% 60%;
+    animation: roach-idle 4.6s ease-in-out infinite;
+    user-select: none;
+    will-change: transform;
+  }
+  .mascot:active { cursor: grabbing; animation-play-state: paused; }
+  @keyframes roach-idle {
+    0%, 100% { transform: rotate(-3deg) translateY(0) scale(1); }
+    25% { transform: rotate(2deg) translateY(-6px) scale(1.02); }
+    50% { transform: rotate(-1deg) translateY(2px) scale(1); }
+    75% { transform: rotate(4deg) translateY(-3px) scale(1.01); }
+  }
+  .mascot.startled { animation: roach-jump 0.55s ease-out; }
+  @keyframes roach-jump {
+    0% { transform: rotate(-3deg) translateY(0) scale(1); }
+    30% { transform: rotate(-18deg) translateY(-30px) scale(1.12); }
+    60% { transform: rotate(14deg) translateY(10px) scale(0.96); }
+    100% { transform: rotate(-3deg) translateY(0) scale(1); }
+  }
+
+  /* orbiting stamps */
+  .stamp {
+    position: absolute; z-index: 3;
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    padding: 8px 12px; border: 1px solid var(--paper); border-radius: 999px;
+    background: var(--bg); color: var(--paper);
+    white-space: nowrap;
+  }
+  .stamp.s1 { top: 6%; left: 6%; transform: rotate(-8deg); }
+  .stamp.s2 { top: 12%; right: 4%; transform: rotate(6deg); background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .stamp.s3 { bottom: 14%; left: -2%; transform: rotate(4deg); }
+  .stamp.s4 { bottom: 6%; right: 8%; transform: rotate(-5deg); }
+
+  .mascot-caption {
+    position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+    font-family: "Instrument Serif", serif; font-style: italic;
+    font-size: 18px; color: color-mix(in oklab, var(--paper) 70%, transparent);
+    white-space: nowrap;
+  }
+  .mascot-caption b { font-family: "JetBrains Mono", monospace; font-style: normal; color: var(--accent); font-weight: 500; font-size: 13px; letter-spacing: 0.1em; }
+
+  /* Live health line under the mascot caption — drives off real network data. */
+  .mascot-health {
+    position: absolute; bottom: -44px; left: 50%; transform: translateX(-50%);
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); white-space: nowrap;
+  }
+
+  /* ── scurriers (background swarm) ─────────────────────── */
+  .swarm { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+  .scurrier {
+    position: absolute; font-size: 22px; line-height: 1;
+    font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji", sans-serif;
+    opacity: 0.55;
+    animation: scurry linear infinite;
+    will-change: transform;
+  }
+  @keyframes scurry {
+    0% { transform: translateX(-120px) rotate(var(--rot)); }
+    100% { transform: translateX(calc(100vw + 120px)) rotate(var(--rot)); }
+  }
+
+  /* ── section base ─────────────────────────────────────── */
+  section.block { position: relative; z-index: 2; max-width: 1320px; margin: 0 auto; padding: 96px 32px; border-top: 1px solid var(--rule); }
+  .kicker { font-family: "JetBrains Mono", monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.22em; color: var(--accent); margin-bottom: 18px; display: flex; align-items: center; gap: 12px; }
+  .kicker::before { content: ""; width: 28px; height: 1px; background: var(--accent); }
+  h2.block-title { font-family: "Anton", sans-serif; line-height: 0.86; text-transform: uppercase; letter-spacing: 0.005em; font-size: clamp(48px, 7vw, 96px); margin: 0 0 12px; max-width: 18ch; }
+  h2.block-title .accent { color: var(--accent); }
+  h2.block-title .stroke { color: transparent; -webkit-text-stroke: 2px var(--paper); }
+  .block-lead { font-family: "Instrument Serif", serif; font-style: italic; font-size: 22px; max-width: 60ch; color: color-mix(in oklab, var(--paper) 78%, transparent); margin: 0 0 56px; }
+
+  /* ── categories ───────────────────────────────────────── */
+  .cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .cat { background: var(--bg); padding: 36px 28px 28px; position: relative; transition: background .25s ease; cursor: pointer; min-height: 240px; display: flex; flex-direction: column; color: var(--paper); text-decoration: none; }
+  .cat:hover { background: var(--accent); color: var(--accent-ink); }
+  .cat:hover .cat-num, .cat:hover .cat-tags { color: var(--accent-ink); }
+  .cat-num { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.16em; }
+  .cat-emoji { font-size: 44px; margin: 6px 0 18px; }
+  .cat h3 { font-family: "Anton", sans-serif; text-transform: uppercase; font-size: 30px; margin: 0 0 10px; letter-spacing: 0.01em; line-height: 1; }
+  .cat p { margin: 0 0 auto; font-size: 14px; line-height: 1.5; color: color-mix(in oklab, var(--paper) 78%, transparent); }
+  .cat:hover p { color: var(--accent-ink); opacity: 0.92; }
+  .cat-tags { margin-top: 18px; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
+  .cat-tags span { padding: 2px 6px; border: 1px solid currentColor; border-radius: 3px; }
+
+  /* ── live wall ────────────────────────────────────────── */
+  .live-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 32px; }
+  .live-stat { background: var(--bg); padding: 28px; display: flex; flex-direction: column; gap: 8px; }
+  .live-stat .num { font-family: "Anton", sans-serif; font-size: 64px; line-height: 0.85; color: var(--accent); }
+  .live-stat .label { font-family: "JetBrains Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted); }
+
+  .live-feed { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .live-feed li { background: var(--bg); padding: 24px 24px 22px; display: flex; flex-direction: column; gap: 14px; border-left: 3px solid transparent; transition: border-color .2s ease; }
+  .live-feed li:hover { border-left-color: var(--accent); }
+  .live-feed .meta { font-family: "JetBrains Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .live-feed .meta .where { color: var(--accent); }
+  .live-feed .pull { font-family: "Instrument Serif", serif; font-style: italic; font-size: 22px; line-height: 1.3; color: var(--paper); margin: 0; }
+  .live-feed .tags { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
+  .live-feed .tags span { padding: 2px 6px; border: 1px solid var(--rule); border-radius: 3px; }
+  .live-feed-empty { background: var(--bg); padding: 48px; text-align: center; font-family: "Instrument Serif", serif; font-style: italic; color: var(--muted); border: 1px dashed var(--rule); grid-column: 1 / -1; }
+
+  /* ── how it works ─────────────────────────────────────── */
+  .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--rule); }
+  .step { padding: 40px 32px; border-right: 1px solid var(--rule); position: relative; min-height: 280px; }
+  .step:last-child { border-right: 0; }
+  .step-num { font-family: "Anton", sans-serif; font-size: 120px; line-height: 0.85; color: transparent; -webkit-text-stroke: 1.5px var(--accent); margin: 0; }
+  .step h4 { font-family: "Anton", sans-serif; text-transform: uppercase; font-size: 28px; margin: 12px 0 8px; }
+  .step p { font-size: 15px; line-height: 1.55; color: color-mix(in oklab, var(--paper) 78%, transparent); margin: 0; }
+  .step p b { color: var(--accent); }
+
+  /* ── compare ──────────────────────────────────────────── */
+  .compare { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--rule); }
+  .vs { padding: 32px 24px; border-right: 1px solid var(--rule); position: relative; min-height: 240px; display: flex; flex-direction: column; }
+  .vs:last-child { border-right: 0; background: var(--accent); color: var(--accent-ink); }
+  .vs h5 { font-family: "Anton", sans-serif; text-transform: uppercase; font-size: 28px; margin: 0 0 14px; }
+  .vs p { font-size: 14px; line-height: 1.5; margin: 0; color: color-mix(in oklab, var(--paper) 76%, transparent); }
+  .vs:last-child p { color: var(--accent-ink); opacity: 0.95; }
+  .vs .owner { margin-top: auto; font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding-top: 24px; color: var(--muted); }
+  .vs:last-child .owner { color: var(--accent-ink); opacity: 0.9; }
+  .vs.strike h5 { position: relative; }
+  .vs.strike h5::after { content: ""; position: absolute; left: -4px; right: -4px; top: 50%; height: 2px; background: var(--accent); transform: rotate(-3deg); }
+
+  /* ── pehredaar ────────────────────────────────────────── */
+  .pehredaar { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .alarm-box { background: var(--accent); color: var(--accent-ink); padding: 32px; border-radius: 0; position: relative; }
+  .alarm-box .alarm-label { font-family: "JetBrains Mono", monospace; text-transform: uppercase; font-size: 11px; letter-spacing: 0.22em; opacity: 0.85; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .alarm-box .alarm-label .blink { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-ink); animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .alarm-box .alarm-stat { font-family: "Anton", sans-serif; font-size: 72px; line-height: 0.9; margin: 0; }
+  .alarm-box .alarm-stat small { font-size: 36px; opacity: 0.85; }
+  .alarm-box p { font-size: 15px; line-height: 1.55; margin: 16px 0 0; max-width: 38ch; }
+  .alarm-box .btn-ghost { margin-top: 24px; border-color: var(--accent-ink); color: var(--accent-ink); }
+  .alarm-box .btn-ghost:hover { background: var(--accent-ink); color: var(--accent); }
+
+  .relay-steps { list-style: none; padding: 0; margin: 0; counter-reset: r; }
+  .relay-steps li { display: grid; grid-template-columns: 56px 1fr; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--rule); counter-increment: r; font-size: 14px; color: color-mix(in oklab, var(--paper) 78%, transparent); line-height: 1.5; }
+  .relay-steps li::before { content: counter(r,decimal-leading-zero); font-family: "JetBrains Mono", monospace; color: var(--accent); font-size: 18px; letter-spacing: 0.08em; }
+  .relay-steps li b { color: var(--paper); }
+  .relay-steps li .mono { color: var(--paper); }
+
+  /* ── faq ──────────────────────────────────────────────── */
+  .faq { display: grid; grid-template-columns: 1fr 1fr; gap: 0 48px; }
+  details.faq-item { border-top: 1px solid var(--rule); padding: 20px 0; cursor: pointer; }
+  details.faq-item:last-child { border-bottom: 1px solid var(--rule); }
+  details.faq-item summary { list-style: none; display: flex; gap: 16px; align-items: baseline; font-family: "Anton", sans-serif; text-transform: uppercase; font-size: 22px; }
+  details.faq-item summary::-webkit-details-marker { display: none; }
+  details.faq-item summary::before { content: "+"; color: var(--accent); font-size: 24px; transition: transform .2s ease; }
+  details.faq-item[open] summary::before { transform: rotate(45deg); }
+  details.faq-item p { font-size: 14px; line-height: 1.6; color: color-mix(in oklab, var(--paper) 78%, transparent); margin: 12px 0 0 32px; max-width: 60ch; }
+
+  /* ── footer ───────────────────────────────────────────── */
+  footer { border-top: 1px solid var(--rule); padding: 48px 32px 64px; max-width: 1320px; margin: 0 auto; }
+  footer .f-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; align-items: end; }
+  footer h6 { font-family: "Anton", sans-serif; text-transform: uppercase; font-size: 14px; margin: 0 0 12px; letter-spacing: 0.05em; color: var(--muted); }
+  footer a { color: var(--paper); display: block; font-size: 14px; padding: 4px 0; text-decoration: none; }
+  footer a:hover { color: var(--accent); }
+  footer .big { font-family: "Anton", sans-serif; font-size: 96px; line-height: 0.85; text-transform: uppercase; }
+  footer .big .accent { color: var(--accent); }
+  footer .meta { font-family: "JetBrains Mono", monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+  /* hide-on-en / hide-on-hi via root attribute */
+  html[data-lang="en"] .hi { display: none; }
+  html[data-lang="hi"] .en { display: none; }
+
+  @media (max-width: 960px) {
+    .hero-grid, .cats, .how, .compare, .pehredaar, .faq, footer .f-grid, .live-stats, .live-feed { grid-template-columns: 1fr; }
+    .step, .vs { border-right: 0; border-bottom: 1px solid var(--rule); }
+    .nav-links { display: none; }
+    h1.hero-title { font-size: clamp(56px, 14vw, 120px); }
+    .hero { padding: 32px 20px 56px; }
+    section.block { padding: 64px 20px; }
+  }
+</style>
 </head>
 <body>
-  <!-- Top strip: GitHub link on the left, prominent language toggle on the right -->
-  <div class="topbar topbar-flex">
-    <a class="topbar-link" href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor">
-        <path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.1.83-.26.83-.58v-2.04c-3.34.73-4.04-1.41-4.04-1.41-.54-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.84 2.8 1.31 3.49 1 .1-.78.42-1.31.76-1.61-2.66-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.31-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.87.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.38.82 1.11.82 2.23v3.3c0 .32.22.69.83.58A12 12 0 0 0 12 .3"/>
-      </svg>
-      <span>Source on GitHub</span>
+
+<div class="swarm" id="swarm" aria-hidden="true"></div>
+
+<!-- ── marquee tape ── -->
+<div class="tape" aria-hidden="true">
+  <div class="tape-track" id="tapeTrack">
+    <span>Janta ka network</span><span>Signed forever</span><span>No signup · no email · no OTP</span><span>CC0 public domain</span><span id="tape-pehredaar-1">1 public Pehredaar live</span><span>Be the next one</span>
+    <span>Janta ka network</span><span>Signed forever</span><span>No signup · no email · no OTP</span><span>CC0 public domain</span><span id="tape-pehredaar-2">1 public Pehredaar live</span><span>Be the next one</span>
+  </div>
+</div>
+
+<!-- ── nav ── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/"><span class="roach">🪳</span><span>The Cockroach Network</span></a>
+    <div class="nav-links">
+      <a href="#what">What</a>
+      <a href="#live">Live</a>
+      <a href="#how">How</a>
+      <a href="#why">Why</a>
+      <a href="#pehredaar">Pehredaar</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="lang-toggle" role="tablist" aria-label="Language">
+      <button id="lang-hi" class="on" type="button">हिं</button>
+      <button id="lang-en" type="button">EN</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ── hero ── -->
+<header class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow">
+        <span class="dot"></span>
+        <span>
+          <span class="hi">v0.2 · janta ka network</span>
+          <span class="en">v0.2 · the people's network</span>
+        </span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="hi">Main bhi<br/><span class="accent">cockroach</span><span class="roach-inline">🪳</span>.</span>
+        <span class="en">I&nbsp;am<br/><span class="accent">cockroach</span><span class="roach-inline">🪳</span>.</span>
+      </h1>
+
+      <p class="hero-sub hi">
+        <span class="pull">CJI ne hume cockroach kaha.</span> Ye naam ab humara hai. Aap jo likhenge, woh <b>signed</b> hoga — koi badal nahi sakta. Network jeeta rahega jab tak koi Pehredaar relay chala raha hai. <b>Jitne zyada Pehredaar, utna sach.</b>
+      </p>
+      <p class="hero-sub en">
+        <span class="pull">A judge called us cockroaches.</span> The name is ours now. What you write is <b>signed</b> — no one can alter it. The network stays alive as long as someone is running a relay. <b>More Pehredaar, more truth.</b>
+      </p>
+
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="client/">
+          <span class="hi">Network mein aaiye</span><span class="en">Join the network</span>
+          <span class="arrow">→</span>
+        </a>
+        <a class="btn btn-ghost" href="#pehredaar">
+          <span class="hi">Pehredaar baniye · 3 min</span><span class="en">Run a relay · 3 min</span>
+          <span class="arrow">↗</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- mascot -->
+    <div class="mascot-stage" id="mascotStage">
+      <div class="mascot-bg"></div>
+      <div class="mascot-ring"></div>
+      <div class="mascot-ring-2"></div>
+
+      <div class="stamp s1">★ Janta ka ★</div>
+      <div class="stamp s2">Indestructible</div>
+      <div class="stamp s3">est. 2026</div>
+      <div class="stamp s4">Signed · Forever</div>
+
+      <div class="mascot" id="mascot" title="Boo!">🪳</div>
+
+      <div class="mascot-caption">
+        <span class="hi"><b>tap me</b> — main bhi cockroach</span>
+        <span class="en"><b>tap me</b> — I am cockroach too</span>
+      </div>
+      <div class="mascot-health" id="mascot-health" hidden></div>
+    </div>
+  </div>
+</header>
+
+<!-- ── what you can do ── -->
+<section class="block" id="what">
+  <div class="kicker"><span class="hi">Aap yahan kya kar sakte hain</span><span class="en">What you can do here</span></div>
+  <h2 class="block-title">
+    <span class="hi">Jo bhi <span class="accent">galat</span> hua hai,<br/><span class="stroke">yahan likhiye.</span></span>
+    <span class="en">Whatever is <span class="accent">broken</span>,<br/><span class="stroke">write it down.</span></span>
+  </h2>
+  <p class="block-lead">
+    <span class="hi">Aapka signature apne aap lagega — koi badal nahi sakta. Doosre cockroach verify karenge. Saath milkar sachhai ban jaati hai.</span>
+    <span class="en">Your signature is attached automatically — nobody can alter it. Other cockroaches will verify. Together, truth gets built.</span>
+  </p>
+
+  <div class="cats">
+    <a class="cat" href="client/?compose=paperleak">
+      <span class="cat-num">01 / 06</span>
+      <div class="cat-emoji">📝</div>
+      <h3><span class="hi">Paper leak</span><span class="en">Paper leak</span></h3>
+      <p><span class="hi">Konsa exam, kab, kahan. Photo URL ho to saath dein.</span><span class="en">Which exam, when, where. Photo URL if you have one.</span></p>
+      <div class="cat-tags"><span>#paperleak</span></div>
     </a>
-    <div class="lang-toggle" role="group" aria-label="Language toggle">
-      <button type="button" data-lang="hi" class="active">हिं · Hinglish</button>
-      <button type="button" data-lang="en">English</button>
+    <a class="cat" href="client/?compose=jobs">
+      <span class="cat-num">02 / 06</span>
+      <div class="cat-emoji">💼</div>
+      <h3><span class="hi">Naukri ka jhaansa</span><span class="en">Broken job promise</span></h3>
+      <p><span class="hi">Kis ne promise tooda, kab. Sarkari ya private — sab record par.</span><span class="en">Who broke the promise, when. Government or private — on record.</span></p>
+      <div class="cat-tags"><span>#unemployment</span><span>#ghosted</span></div>
+    </a>
+    <a class="cat" href="client/?compose=infra">
+      <span class="cat-num">03 / 06</span>
+      <div class="cat-emoji">🛣️</div>
+      <h3><span class="hi">Sadak · paani · bijli</span><span class="en">Roads · water · power</span></h3>
+      <p><span class="hi">Tooti sadak, gayab paani, bijli ki gadbad. Apne MLA ke samne saboot.</span><span class="en">Broken roads, missing water, power failures. Evidence for your MLA.</span></p>
+      <div class="cat-tags"><span>#road</span><span>#water</span><span>#electricity</span></div>
+    </a>
+    <a class="cat" href="client/?compose=harassment">
+      <span class="cat-num">04 / 06</span>
+      <div class="cat-emoji">👮</div>
+      <h3><span class="hi">Harassment</span><span class="en">Harassment</span></h3>
+      <p><span class="hi">Police ne kuch kiya. Kisi ne "cockroach" bola. Witnesses sign karenge.</span><span class="en">Police acted out. Someone called you a cockroach. Witnesses co-sign.</span></p>
+      <div class="cat-tags"><span>#harassment</span><span>#atrocity</span></div>
+    </a>
+    <a class="cat" href="client/?compose=election">
+      <span class="cat-num">05 / 06</span>
+      <div class="cat-emoji">🗳️</div>
+      <h3><span class="hi">Election gadbad</span><span class="en">Election irregularity</span></h3>
+      <p><span class="hi">Booth number, time, kya dekha. Permanent record. Kal koi inkar nahi kar sakta.</span><span class="en">Booth number, time, what you saw. Permanent. Nobody can deny it later.</span></p>
+      <div class="cat-tags"><span>#election</span></div>
+    </a>
+    <a class="cat" href="client/?compose=mainbhicockroach">
+      <span class="cat-num">06 / 06</span>
+      <div class="cat-emoji">🤝</div>
+      <h3><span class="hi">Main bhi cockroach</span><span class="en">I am cockroach</span></h3>
+      <p><span class="hi">Apni kahani share kariye. Solidarity bhi record par jaati hai.</span><span class="en">Share your story. Solidarity goes on record too.</span></p>
+      <div class="cat-tags"><span>#mainbhicockroach</span></div>
+    </a>
+  </div>
+</section>
+
+<!-- ── live wall ── -->
+<section class="block" id="live">
+  <div class="kicker"><span class="hi">Live wall · abhi network mein</span><span class="en">Live wall · happening right now</span></div>
+  <h2 class="block-title">
+    <span class="hi"><span class="accent">Abhi</span> yahi<br/><span class="stroke">ho raha hai.</span></span>
+    <span class="en"><span class="accent">Right now</span>,<br/><span class="stroke">on the network.</span></span>
+  </h2>
+
+  <div class="live-stats">
+    <div class="live-stat">
+      <span class="num" id="elReports">—</span>
+      <span class="label"><span class="hi">Reports · 24h</span><span class="en">Reports · 24h</span></span>
+    </div>
+    <div class="live-stat">
+      <span class="num" id="elCockroaches">—</span>
+      <span class="label"><span class="hi">#mainbhicockroach · 7 din</span><span class="en">#mainbhicockroach · 7 days</span></span>
+    </div>
+    <div class="live-stat">
+      <span class="num" id="elCities">—</span>
+      <span class="label"><span class="hi">Sheher</span><span class="en">Cities</span></span>
     </div>
   </div>
 
-  <main>
-    <!-- ─── HERO ──────────────────────────────────────────────────────── -->
-    <section class="hero">
-      <svg class="mark" id="hero-mark" viewBox="0 0 200 200" aria-hidden="true">
-        <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
-        <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
-        <path d="M 88 42 Q 70 18 50 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 112 42 Q 130 18 150 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 65 90  Q 35 80 18 60" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 60 120 Q 28 122 12 110" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 65 150 Q 38 162 26 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 135 90  Q 165 80 182 60" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 140 120 Q 172 122 188 110" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <path d="M 135 150 Q 162 162 174 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-      </svg>
+  <ol class="live-feed" id="liveFeed">
+    <li class="live-feed-empty">
+      <span class="hi">Network se connect ho rahe hain…</span>
+      <span class="en">Connecting to the network…</span>
+    </li>
+  </ol>
+</section>
 
-      <!-- Live cockroach health meter — its colour reflects the network's
-           activity in real time.  Hidden until the WebSocket has resolved
-           a first state so we never show a stale "0/5 health" on load. -->
-      <div class="health-strip" id="health-strip" hidden>
-        <div class="health-meter">
-          <div class="health-segment" data-stage="0"></div>
-          <div class="health-segment" data-stage="1"></div>
-          <div class="health-segment" data-stage="2"></div>
-          <div class="health-segment" data-stage="3"></div>
-          <div class="health-segment" data-stage="4"></div>
-        </div>
-        <div class="health-caption" id="health-caption"></div>
-      </div>
+<!-- ── how it works ── -->
+<section class="block" id="how">
+  <div class="kicker"><span class="hi">Kaise — teen tap, aap network mein</span><span class="en">How — three taps, you're in</span></div>
+  <h2 class="block-title">
+    <span class="hi"><span class="accent">Teen</span> taps.<br/>Aap <span class="stroke">network mein.</span></span>
+    <span class="en"><span class="accent">Three</span> taps.<br/>You're <span class="stroke">in.</span></span>
+  </h2>
 
-      <!-- Hinglish -->
-      <div data-lang-content="hi">
-        <h1>Main bhi <span class="accent">cockroach</span>.</h1>
-        <p class="lead">CJI ne hume cockroach kaha. Ye naam ab humara hai.</p>
-        <p class="lead" style="margin-top:0">Aap jo likhenge, woh signed hoga — koi badal nahi sakta. Network jeeta rahega jab tak koi Pehredaar relay chala raha hai. <b>Jitne zyada Pehredaar, utna sach.</b></p>
+  <div class="how">
+    <div class="step">
+      <p class="step-num">01</p>
+      <h4><span class="hi">Link kholiye</span><span class="en">Open the link</span></h4>
+      <p><span class="hi">Phone ho ya laptop, bas browser kholiye. Browser apne aap aapki pehchaan banata hai — sirf aapke paas. <b>Signup nahi, email nahi, OTP nahi.</b></span>
+         <span class="en">Phone or laptop — just open the browser. Your browser creates an identity, only you have it. <b>No signup, no email, no OTP.</b></span></p>
+    </div>
+    <div class="step">
+      <p class="step-num">02</p>
+      <h4><span class="hi">Jo bigda hai, likhiye</span><span class="en">Write what's broken</span></h4>
+      <p><span class="hi">Kya hua, kab hua. Photo URL daaliye — Imgur, Drive, kahin se. Location apne aap. Sensitive ho to coarse precision rakhiye.</span>
+         <span class="en">What happened, when. Add a photo URL — Imgur, Drive, anywhere. Location is automatic. For sensitive content, use coarse precision.</span></p>
+    </div>
+    <div class="step">
+      <p class="step-num">03</p>
+      <h4><span class="hi">Sign karke bhejiye</span><span class="en">Sign and send</span></h4>
+      <p><span class="hi">Phone signature lagayega. Network par chala jaayega. <b>Hamesha.</b> Doosron ki reports bhi verify kar sakte hain.</span>
+         <span class="en">Your phone signs it. It goes onto the network. <b>Forever.</b> You can verify others' reports too.</span></p>
+    </div>
+  </div>
+</section>
 
-        <div class="hero-actions">
-          <a class="action-card primary" href="client/index.html">
-            <span class="action-title">Network mein aaiye →</span>
-            <span class="action-sub">Phone ya laptop, bas browser chahiye. Likhiye, verify kariye, padhiye.</span>
-          </a>
-          <a class="action-card ghost" href="#pehredaar">
-            <span class="action-title">Pehredaar baniye →</span>
-            <span class="action-sub">Ek relay chala kar network ko zinda rakhiye. 3 minute. Koi code nahi.</span>
-          </a>
-        </div>
-      </div>
+<!-- ── why different ── -->
+<section class="block" id="why">
+  <div class="kicker"><span class="hi">Yeh Twitter / Insta / WhatsApp se alag kyun?</span><span class="en">Why is this different?</span></div>
+  <h2 class="block-title">
+    <span class="hi"><span class="stroke">Algorithm</span> bhul jaata hai.<br/><span class="accent">Cockroach yaad rakhta hai.</span></span>
+    <span class="en"><span class="stroke">Algorithms</span> forget.<br/><span class="accent">Cockroaches remember.</span></span>
+  </h2>
 
-      <!-- English -->
-      <div data-lang-content="en" hidden>
-        <h1>I am also <span class="accent">cockroach</span>.</h1>
-        <p class="lead">The Chief Justice called us cockroaches. We have made the name our own.</p>
-        <p class="lead" style="margin-top:0">What you write is signed — no one can alter it. The network lives as long as a Pehredaar runs a relay. <b>The more Pehredaars, the more it survives.</b></p>
+  <div class="compare">
+    <div class="vs strike">
+      <h5>Twitter</h5>
+      <p><span class="hi">24 ghante mein algorithm bhula deta. Account band ho sakta.</span>
+         <span class="en">Algorithm buries in 24h. Account can be suspended.</span></p>
+      <div class="owner">Owner · Elon</div>
+    </div>
+    <div class="vs strike">
+      <h5>Instagram</h5>
+      <p><span class="hi">Story 24h mein gayab. Post buried. Suspend ho sakte hain.</span>
+         <span class="en">Story gone in 24h. Posts buried. Suspendable.</span></p>
+      <div class="owner">Owner · Meta</div>
+    </div>
+    <div class="vs strike">
+      <h5>WhatsApp</h5>
+      <p><span class="hi">Sirf aapke group mein. Forward chain mein context kho jaata.</span>
+         <span class="en">Only your group. Forwards lose all context.</span></p>
+      <div class="owner">Owner · Meta</div>
+    </div>
+    <div class="vs">
+      <h5>🪳 Here</h5>
+      <p><span class="hi">Signed. Koi badal nahi sakta. Sab ke liye. Koi company maalik nahi.</span>
+         <span class="en">Signed. Unalterable. For everyone. Nobody owns it.</span></p>
+      <div class="owner">Owner · Janta</div>
+    </div>
+  </div>
+</section>
 
-        <div class="hero-actions">
-          <a class="action-card primary" href="client/index.html">
-            <span class="action-title">Enter the network →</span>
-            <span class="action-sub">Phone or laptop, just a browser. Write, verify, read.</span>
-          </a>
-          <a class="action-card ghost" href="#pehredaar">
-            <span class="action-title">Become a Pehredaar →</span>
-            <span class="action-sub">Run a relay. Keep the network alive. 3 minutes. No code.</span>
-          </a>
-        </div>
-      </div>
-    </section>
+<!-- ── pehredaar ── -->
+<section class="block" id="pehredaar">
+  <div class="kicker"><span class="hi">Cockroach Pehredaar baniye</span><span class="en">Become a Pehredaar</span></div>
+  <h2 class="block-title">
+    <span class="hi"><span id="pehredaarHeadlineCount-hi">Sirf <span class="accent">ek</span> Pehredaar zinda hai.</span><br/><span class="stroke">Doosra aap baniye.</span></span>
+    <span class="en"><span id="pehredaarHeadlineCount-en">Only <span class="accent">one</span> Pehredaar alive.</span><br/><span class="stroke">Be the next.</span></span>
+  </h2>
 
-    <!-- ─── LIVE WALL — labels switch with language ─────────────────────── -->
-    <section id="live-wall" class="live-wall" hidden>
-      <div class="live-head">
-        <span class="live-pulse"></span>
-        <span class="live-label" data-i18n="live.label">LIVE — abhi ka network</span>
-      </div>
-      <div class="live-stats">
-        <div class="live-stat">
-          <b id="live-reports">—</b>
-          <span data-i18n="live.reports">reports aaj</span>
-        </div>
-        <div class="live-stat">
-          <b id="live-cockroaches">—</b>
-          <span data-i18n="live.cockroaches">"main bhi cockroach"</span>
-        </div>
-        <div class="live-stat">
-          <b id="live-cities">—</b>
-          <span data-i18n="live.cities">shehron se</span>
-        </div>
-      </div>
-      <div class="live-feed" id="live-feed"></div>
-    </section>
+  <div class="pehredaar">
+    <div class="alarm-box">
+      <div class="alarm-label"><span class="blink"></span> <span class="hi">Live status · Mumbai</span><span class="en">Live status · Mumbai</span></div>
+      <p class="alarm-stat"><span id="alarmStat">01</span><br/><small>Pehredaar</small></p>
+      <p><span class="hi">Agar woh band ho aur koi naya nahi banta, jo aap likh chuke hain, kahin nahi pahunchega. <b>Network khatam.</b> Isiliye chahiye. Jitne zyada, utna mazboot.</span>
+         <span class="en">If it goes down and nobody replaces it, what you wrote goes nowhere. <b>Network ends.</b> That's why we need more. More relays, more strength.</span></p>
+      <a class="btn btn-ghost" href="https://render.com/deploy?repo=https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">
+        <span class="hi">Deploy to Render</span><span class="en">Deploy to Render</span><span class="arrow">→</span>
+      </a>
+    </div>
 
-    <!-- ─── WHAT YOU CAN DO ───────────────────────────────────────────── -->
-    <section id="kya-karein">
-      <div data-lang-content="hi">
-        <h2>Aap yahan kya kar sakte hain</h2>
-        <p class="lead" style="font-size:18px">Jo bhi galat hua hai, yahan likhiye. Aapka signature apne aap lagega — koi badal nahi sakta. Jab tak koi cockroach relay chala raha hai, network jeeta rahega.</p>
+    <ol class="relay-steps">
+      <li><div><b><span class="hi">Deploy button click kariye</span><span class="en">Click the Deploy button</span></b><br/><span class="hi">Saamne hi hai. Render.com par le jaayega.</span><span class="en">Right there. It'll take you to Render.com.</span></div></li>
+      <li><div><b><span class="hi">Render account banaiye</span><span class="en">Make a Render account</span></b><br/><span class="hi">Free, koi credit card nahi.</span><span class="en">Free, no credit card.</span></div></li>
+      <li><div><b><span class="hi">Naam rakhiye</span><span class="en">Name your relay</span></b><br/><span class="mono">cockroach-relay-yourname</span></div></li>
+      <li><div><b><span class="hi">"Apply" daabiye</span><span class="en">Hit "Apply"</span></b><br/><span class="hi">Render apne aap deploy karega.</span><span class="en">Render deploys it on its own.</span></div></li>
+      <li><div><b><span class="hi">~3 minute</span><span class="en">~3 minutes</span></b><br/><span class="mono">https://[yourname].onrender.com</span></div></li>
+      <li><div><b><span class="hi">URL share kariye</span><span class="en">Share the URL</span></b><br/><span class="hi">Twitter, WhatsApp, kahin bhi. Doosre clients aapke relay use karenge.</span><span class="en">Twitter, WhatsApp, anywhere. Other clients will use your relay.</span></div></li>
+    </ol>
+  </div>
+</section>
 
-        <div class="action-list">
-          <div class="action-item">
-            <h3>📝 Paper leak</h3>
-            <p>Konsa exam, kab, kahan. Photo URL ho to saath dein. Doosre students sign karenge — saath milkar saboot ban jaata hai.</p>
-            <p class="action-tag"><code>#paperleak</code></p>
-          </div>
-          <div class="action-item">
-            <h3>💼 Naukri ka jhaansa</h3>
-            <p>Kis ne promise tooda, kab. Sarkari scheme, private company, coaching — sab record par. Kal phir koi inkar nahi kar sakta.</p>
-            <p class="action-tag"><code>#unemployment</code> <code>#ghosted</code></p>
-          </div>
-          <div class="action-item">
-            <h3>🛣️ Sadak, paani, bijli</h3>
-            <p>Tooti sadak, gayab paani, bijli ki gadbad. Yahan likhiye. Permanent rahega. Apne MLA ke samne saboot.</p>
-            <p class="action-tag"><code>#road</code> <code>#water</code> <code>#electricity</code></p>
-          </div>
-          <div class="action-item">
-            <h3>👮 Harassment</h3>
-            <p>Police ne kuch kiya. Kisi ne "cockroach" bola. Yahan record kariye. Witnesses sign karenge. Aap akele nahi hain.</p>
-            <p class="action-tag"><code>#harassment</code> <code>#atrocity</code></p>
-          </div>
-          <div class="action-item">
-            <h3>🗳️ Election gadbad</h3>
-            <p>Booth number, time, kya dekha. Permanent record. Kal koi inkar nahi kar sakta.</p>
-            <p class="action-tag"><code>#election</code></p>
-          </div>
-          <div class="action-item">
-            <h3>🤝 Main bhi cockroach</h3>
-            <p>Apni kahani share kariye. Kahan se hain, kya karte hain, kya hua. Solidarity bhi record par jaati hai.</p>
-            <p class="action-tag"><code>#mainbhicockroach</code></p>
-          </div>
-        </div>
+<!-- ── faq ── -->
+<section class="block" id="faq">
+  <div class="kicker"><span class="hi">Sawaal aur jawaab</span><span class="en">Questions & answers</span></div>
+  <h2 class="block-title">
+    <span class="hi"><span class="stroke">Sawaal hain?</span><br/><span class="accent">Ek baar padh leejiye.</span></span>
+    <span class="en"><span class="stroke">Questions?</span><br/><span class="accent">Read these first.</span></span>
+  </h2>
 
-        <p class="muted" style="margin-top:24px;font-size:15px">
-          Aap likhenge, doosre cockroach verify karenge. Saath milkar sachhai ban jaati hai. <b>Akele kuch mushkil, saath sab mumkin.</b>
-        </p>
-      </div>
+  <div class="faq">
+    <div>
+      <details class="faq-item" open>
+        <summary><span class="hi">Kya yeh free hai?</span><span class="en">Is it free?</span></summary>
+        <p><span class="hi">Haan, hamesha. Code CC0 — public domain. Koi paid plan, koi ads. Server cost personally afford hoti hai — aapko kuch nahi dena.</span>
+           <span class="en">Yes, always. Code is CC0 — public domain. No paid plans, no ads. Server cost is personally afforded — you pay nothing.</span></p>
+      </details>
+      <details class="faq-item">
+        <summary><span class="hi">Mera data leak ho sakta hai?</span><span class="en">Can my data leak?</span></summary>
+        <p><span class="hi">Aapki gupt chaabi sirf aapke device ke browser mein hai — kisi server par nahi. Device badla = pehchaan gayi. Encrypted backup v0.2 mein.</span>
+           <span class="en">Your secret key lives only in your browser — never on a server. Change device = identity is gone. Encrypted backup is coming in v0.2.</span></p>
+      </details>
+      <details class="faq-item">
+        <summary><span class="hi">Police identify kar sakti hai?</span><span class="en">Can the police identify me?</span></summary>
+        <p><span class="hi">Aap relay se connect karte hain, relay aapka IP dekh sakta hai. Sensitive ho to Tor ya VPN se kholiye. Location precision kam rakhiye.</span>
+           <span class="en">You connect to a relay; the relay can see your IP. For sensitive reports use Tor or a VPN. Keep location precision coarse.</span></p>
+      </details>
+    </div>
+    <div>
+      <details class="faq-item">
+        <summary><span class="hi">Sirf CJP walon ke liye?</span><span class="en">Only for the CJP movement?</span></summary>
+        <p><span class="hi">Nahi. Yeh ek protocol hai, kisi ka private nahi. Koi bhi use kar sakta hai — citizens, journalists, activists, students.</span>
+           <span class="en">No. This is a protocol, nobody's property. Anyone can use it — citizens, journalists, activists, students.</span></p>
+      </details>
+      <details class="faq-item">
+        <summary><span class="hi">Kuch download karna hoga?</span><span class="en">Do I download anything?</span></summary>
+        <p><span class="hi">Nahi. Bas browser. Phone ya laptop, koi app install nahi. Site kholiye — bas.</span>
+           <span class="en">No. Just the browser. Phone or laptop, no app to install. Open the site — that's it.</span></p>
+      </details>
+      <details class="faq-item">
+        <summary><span class="hi">Sab Pehredaar band ho gaye to?</span><span class="en">What if all relays go down?</span></summary>
+        <p><span class="hi">Reports kho ja sakte hain. Aapki gupt chaabi safe hai. <b>Isi liye Pehredaar chahiye.</b></span>
+           <span class="en">Reports could be lost. Your secret key is safe. <b>That's why we need more Pehredaar.</b></span></p>
+      </details>
+    </div>
+  </div>
+</section>
 
-      <div data-lang-content="en" hidden>
-        <h2>What you can do here</h2>
-        <p class="lead" style="font-size:18px">Whatever has gone wrong, write it here. Your signature is attached automatically — no one can alter it. The network lives as long as someone runs a relay.</p>
+<!-- ── footer ── -->
+<footer>
+  <div class="f-grid">
+    <div class="big">Main bhi<br/><span class="accent">cockroach.🪳</span></div>
+    <div>
+      <h6>Network</h6>
+      <a href="client/">Client →</a>
+      <a href="build/">Developer →</a>
+      <a href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">Source ↗</a>
+    </div>
+    <div>
+      <h6>Run</h6>
+      <a href="https://render.com/deploy?repo=https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">Render</a>
+      <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/relay/RUN.md" target="_blank" rel="noopener">Fly · Docker</a>
+      <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/relay/RUN.md#cloudflare-tunnel" target="_blank" rel="noopener">Tor · Cloudflare</a>
+    </div>
+    <div>
+      <h6>Reach</h6>
+      <a href="https://instagram.com/cockroachjantaparty" target="_blank" rel="noopener">Instagram ↗</a>
+      <a href="https://github.com/hemant1996/thecockroachnetwork/discussions" target="_blank" rel="noopener">Discuss ↗</a>
+      <a href="https://github.com/hemant1996/thecockroachnetwork/issues" target="_blank" rel="noopener">Bugs ↗</a>
+    </div>
+  </div>
+  <div class="meta">
+    <span>cockroach v0.2.2 · CC0 public domain · janta ka network</span>
+    <span id="footer-status">Status · — relay(s) live · — peer(s) meshing</span>
+  </div>
+</footer>
 
-        <div class="action-list">
-          <div class="action-item">
-            <h3>📝 Paper leak</h3>
-            <p>Which exam, when, where. Add a photo URL if you have one. Other students will co-sign — together it becomes evidence.</p>
-            <p class="action-tag"><code>#paperleak</code></p>
-          </div>
-          <div class="action-item">
-            <h3>💼 Broken job promise</h3>
-            <p>Who broke the promise, when. Government scheme, private company, coaching institute — all on record. No one can deny it later.</p>
-            <p class="action-tag"><code>#unemployment</code> <code>#ghosted</code></p>
-          </div>
-          <div class="action-item">
-            <h3>🛣️ Roads, water, electricity</h3>
-            <p>Broken roads, missing water, power failures. Write it here. It stays permanent — evidence in front of your MLA.</p>
-            <p class="action-tag"><code>#road</code> <code>#water</code> <code>#electricity</code></p>
-          </div>
-          <div class="action-item">
-            <h3>👮 Harassment</h3>
-            <p>Police did something. Someone called you "cockroach." Document it here. Witnesses will co-sign. You are not alone.</p>
-            <p class="action-tag"><code>#harassment</code> <code>#atrocity</code></p>
-          </div>
-          <div class="action-item">
-            <h3>🗳️ Election irregularity</h3>
-            <p>Booth number, time, what you witnessed. Permanent record. No one can deny it later.</p>
-            <p class="action-tag"><code>#election</code></p>
-          </div>
-          <div class="action-item">
-            <h3>🤝 I am cockroach</h3>
-            <p>Share your story. Where you are from, what you do, what happened. Solidarity goes on record too.</p>
-            <p class="action-tag"><code>#mainbhicockroach</code></p>
-          </div>
-        </div>
+<script>
+  // ── language toggle ────────────────────────────────────
+  const html = document.documentElement;
+  const elLangHi = document.getElementById("lang-hi");
+  const elLangEn = document.getElementById("lang-en");
+  function setLang(l) {
+    html.dataset.lang = l;
+    elLangHi.classList.toggle("on", l === "hi");
+    elLangEn.classList.toggle("on", l === "en");
+    window.__currentLang = l;
+    if (typeof updateCockroachHealth === "function") updateCockroachHealth();
+  }
+  elLangHi.addEventListener("click", () => setLang("hi"));
+  elLangEn.addEventListener("click", () => setLang("en"));
+  window.__currentLang = "hi";
 
-        <p class="muted" style="margin-top:24px;font-size:15px">
-          You write — others verify. Together, truth gets built. <b>Difficult alone. Possible together.</b>
-        </p>
-      </div>
-    </section>
+  // ── mascot interaction ────────────────────────────────
+  const mascot = document.getElementById("mascot");
+  const stage = document.getElementById("mascotStage");
+  mascot.addEventListener("click", () => {
+    mascot.classList.remove("startled");
+    void mascot.offsetWidth;
+    mascot.classList.add("startled");
+  });
+  stage.addEventListener("mousemove", (e) => {
+    const r = stage.getBoundingClientRect();
+    const dx = (e.clientX - r.left - r.width / 2) / r.width;
+    const dy = (e.clientY - r.top - r.height / 2) / r.height;
+    mascot.style.setProperty("transform", `translate(${dx * 14}px, ${dy * 10}px) rotate(${-3 + dx * 6}deg)`);
+  });
+  stage.addEventListener("mouseleave", () => { mascot.style.transform = ""; });
 
-    <!-- ─── HOW ───────────────────────────────────────────────────────── -->
-    <section id="kaise">
-      <div data-lang-content="hi">
-        <h2>Kaise — teen tap, aap network mein.</h2>
+  // ── scurrying cockroaches ─────────────────────────────
+  const swarm = document.getElementById("swarm");
+  function makeScurrier(initial = false) {
+    const el = document.createElement("div");
+    el.className = "scurrier";
+    el.textContent = "🪳";
+    const y = 8 + Math.random() * 84;
+    const size = 14 + Math.random() * 28;
+    const dur = 14 + Math.random() * 18;
+    const rot = (Math.random() * 30 - 15).toFixed(1) + "deg";
+    el.style.top = y + "%";
+    el.style.fontSize = size + "px";
+    el.style.animationDuration = dur + "s";
+    el.style.setProperty("--rot", rot);
+    el.style.animationDelay = (initial ? -Math.random() * dur : 0) + "s";
+    el.addEventListener("animationiteration", () => el.remove());
+    el.addEventListener("animationend", () => el.remove());
+    swarm.appendChild(el);
+  }
+  const SWARM_COUNT = 8;
+  for (let i = 0; i < SWARM_COUNT; i++) makeScurrier(true);
+  setInterval(() => { if (swarm.children.length < SWARM_COUNT) makeScurrier(); }, 1800);
+</script>
 
-        <div class="steps">
-          <div class="step">
-            <div class="step-num">1</div>
-            <h3>Link kholiye</h3>
-            <p>Phone ho ya laptop, bas thecockroachnetwork.com kholiye. Browser apne aap aapki pehchaan banata hai — sirf aapke paas rahegi. <b>Signup, email, OTP — kuch nahi.</b></p>
-          </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <h3>Jo bigda hai, likhiye</h3>
-            <p>Kya hua, kab hua. Photo URL ho to daaliye — Imgur, Drive, kahin se bhi. Location apne aap aati hai. Sensitive content ho to coarse precision rakhiye.</p>
-          </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <h3>Sign karke bhejiye</h3>
-            <p>Phone signature lagayega. Network par chala jaayega. <b>Hamesha.</b> Doosron ki reports bhi verify kar sakte hain — saath milkar sachhai ban jaati hai.</p>
-          </div>
-        </div>
+<script>
+  // ─── Live network state ─────────────────────────────────────────────
+  //
+  // Subscribes to the primary Fly relay over WebSocket for the live feed,
+  // and polls every known relay's /info HTTP endpoint every 60s to
+  // aggregate real network-wide stats.  Drives:
+  //   - the mascot's health caption (the honest "1 Pehredaar — bachao")
+  //   - the live wall stats (reports / cockroach / cities)
+  //   - the live feed cards
+  //   - the alarm box's big "01" Pehredaar count
+  //   - the marquee tape's "X public Pehredaar live"
+  //   - the footer status line
 
-        <p style="margin-top:28px;text-align:center">
-          <a class="btn" href="client/index.html" style="font-size:17px;padding:16px 32px">Abhi kholiye →</a>
-        </p>
-      </div>
+  const RELAY = "wss://cockroach-relay-hemant1996.fly.dev";
+  const events = new Map();
+  const cities = new Set();
+  let reports24h = 0;
+  let cockroaches7d = 0;
+  let lastEventAt = 0;
 
-      <div data-lang-content="en" hidden>
-        <h2>How — three taps and you are in.</h2>
+  let relaysAlive = 0;
+  let relaysTotal = 0;
+  let networkConnected = 0;
+  let networkPeerOffers = 0;
+  let networkUniquePubkeys = 0;
+  const activePeerPubkeys = new Map();
+  const PEER_ACTIVE_WINDOW = 15 * 60;
 
-        <div class="steps">
-          <div class="step">
-            <div class="step-num">1</div>
-            <h3>Open the link</h3>
-            <p>Phone or laptop — just open thecockroachnetwork.com. Your browser creates an identity automatically, and it stays only with you. <b>No signup, no email, no OTP.</b></p>
-          </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <h3>Write what has gone wrong</h3>
-            <p>What happened, when. Add a photo URL if you have one — Imgur, Drive, anywhere. Location is automatic. For sensitive content, use a coarser precision.</p>
-          </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <h3>Sign and send</h3>
-            <p>Your phone signs it. It goes onto the network. <b>Forever.</b> You can verify others' reports too — together, truth gets built.</p>
-          </div>
-        </div>
+  function effectivePeers() {
+    return Math.max(activePeerPubkeys.size, networkPeerOffers || 0);
+  }
 
-        <p style="margin-top:28px;text-align:center">
-          <a class="btn" href="client/index.html" style="font-size:17px;padding:16px 32px">Open it now →</a>
-        </p>
-      </div>
-    </section>
-
-    <!-- ─── WHY DIFFERENT ─────────────────────────────────────────────── -->
-    <section id="alag">
-      <div data-lang-content="hi">
-        <h2>Yeh Twitter / Insta / WhatsApp se alag kyun?</h2>
-        <div class="compare-grid">
-          <div class="compare-item bad">
-            <h3>Twitter</h3>
-            <p>Algorithm 24 ghante mein bhula deta. Likes ke baad gayab. Account band ho sakta. Maalik: Elon.</p>
-          </div>
-          <div class="compare-item bad">
-            <h3>Instagram</h3>
-            <p>Story 24 ghante mein gayab. Post buried. Suspend ho sakte hain kabhi bhi. Maalik: Meta.</p>
-          </div>
-          <div class="compare-item bad">
-            <h3>WhatsApp</h3>
-            <p>Sirf aapke group mein. Forward chain mein context kho jaata. Saboot nahi banta.</p>
-          </div>
-          <div class="compare-item good">
-            <h3>Yahan</h3>
-            <p><b>Signed</b>. Koi badal nahi sakta. Sab ke liye. Koi company maalik nahi. Network jeeta rahega jab tak koi cockroach relay host kar raha hai — <b>jitne zyada operators, utna asambhav band karna.</b></p>
-          </div>
-        </div>
-        <p class="callout" style="margin-top:24px;background:#1a1a1c;border-left-color:var(--accent)">
-          <b>Janta ka network. Janta ke liye.</b><br>
-          Kisi company ka nahi. Kisi sarkar ka nahi. Kisi NGO ka nahi. <em>Aapka — agar aap chalayenge.</em>
-        </p>
-      </div>
-
-      <div data-lang-content="en" hidden>
-        <h2>Why is this different from Twitter / Instagram / WhatsApp?</h2>
-        <div class="compare-grid">
-          <div class="compare-item bad">
-            <h3>Twitter</h3>
-            <p>Algorithm forgets in 24 hours. Buried after the like spike. Account can be banned. Owner: Elon.</p>
-          </div>
-          <div class="compare-item bad">
-            <h3>Instagram</h3>
-            <p>Story disappears in 24 hours. Posts buried. Account can be suspended anytime. Owner: Meta.</p>
-          </div>
-          <div class="compare-item bad">
-            <h3>WhatsApp</h3>
-            <p>Only reaches your group. Context lost in forwards. Doesn't become evidence.</p>
-          </div>
-          <div class="compare-item good">
-            <h3>Here</h3>
-            <p><b>Signed</b>. No one can alter what you wrote. For everyone. No company owns it. The network stays alive as long as any cockroach is hosting a relay — <b>the more operators, the harder to shut down.</b></p>
-          </div>
-        </div>
-        <p class="callout" style="margin-top:24px;background:#1a1a1c;border-left-color:var(--accent)">
-          <b>The people's network. For the people.</b><br>
-          Not a company's. Not a government's. Not an NGO's. <em>Yours — if you keep it running.</em>
-        </p>
-      </div>
-    </section>
-
-    <!-- ─── BECOME A PEHREDAAR ─────────────────────────────────────────── -->
-    <section id="pehredaar">
-      <div data-lang-content="hi">
-        <h2>Cockroach Pehredaar baniye</h2>
-
-        <p class="warn-callout">
-          <b>Sach baat:</b> aaj sirf <b>ek public Pehredaar</b> hai — Mumbai mein. Agar woh band ho aur koi naya nahi banta, jo aap likh chuke hain, kahin nahi pahunchega. <b>Network khatam.</b><br>
-          Isiliye Pehredaar chahiye. Jitne zyada, utna mazboot.
-        </p>
-
-        <h3>Pehredaar kya karte hain?</h3>
-        <p>Bas ek server chalu rakhte hain. Wahi network ka kaam karta hai — har report receive, store, doosron tak forward. Code samajhne ki zaroorat nahi.</p>
-
-        <h3>3 minute mein Pehredaar baniye — koi credit card nahi</h3>
-        <ol class="ol-steps">
-          <li><b>Deploy to Render</b> button neeche click kariye.</li>
-          <li>Render.com par account banaiye — free, koi card nahi.</li>
-          <li>Apne Pehredaar ka naam rakhiye, jaise <code>cockroach-relay-yourname</code>.</li>
-          <li><b>"Apply"</b> click kariye. Render apne aap deploy karega.</li>
-          <li>~3 minute baad URL milega: <code>https://[yourname].onrender.com</code>.</li>
-          <li>Yeh URL share kariye — Twitter, WhatsApp, kahin bhi. Doosre clients aapke relay use karenge.</li>
-        </ol>
-
-        <p style="margin-top:18px">
-          <a class="btn" href="https://render.com/deploy?repo=https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener" style="font-size:16px;padding:14px 26px">Deploy to Render →</a>
-        </p>
-
-        <p class="muted" style="font-size:14px;margin-top:18px">
-          Aapke pas apna server / Mac / Linux laptop hai? Direct binary download kariye — <a href="build/#download">yahan se</a>. Ya Fly / Docker / Tor / Termux — saare options <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/relay/RUN.md" target="_blank" rel="noopener">RUN.md</a> mein.
-        </p>
-      </div>
-
-      <div data-lang-content="en" hidden>
-        <h2>Become a Cockroach Pehredaar</h2>
-
-        <p class="warn-callout">
-          <b>The truth:</b> there is <b>only one public Pehredaar</b> today, in Mumbai. If it goes down and nobody else has set one up, everything you have written becomes unreachable. <b>The network dies.</b><br>
-          That is why Pehredaars are needed. The more there are, the stronger the network.
-        </p>
-
-        <h3>What does a Pehredaar do?</h3>
-        <p>Keeps a server running. That's it. The server receives every report, stores it, forwards it to others. No code knowledge needed.</p>
-
-        <h3>3 minutes to become a Pehredaar — no credit card</h3>
-        <ol class="ol-steps">
-          <li>Click the <b>Deploy to Render</b> button below.</li>
-          <li>Sign in or create a Render.com account — free, no card.</li>
-          <li>Name your Pehredaar, like <code>cockroach-relay-yourname</code>.</li>
-          <li>Click <b>"Apply"</b>. Render deploys it automatically.</li>
-          <li>After ~3 minutes you get a URL: <code>https://[yourname].onrender.com</code>.</li>
-          <li>Share that URL — Twitter, WhatsApp, anywhere. Other clients will use your relay.</li>
-        </ol>
-
-        <p style="margin-top:18px">
-          <a class="btn" href="https://render.com/deploy?repo=https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener" style="font-size:16px;padding:14px 26px">Deploy to Render →</a>
-        </p>
-
-        <p class="muted" style="font-size:14px;margin-top:18px">
-          Have your own server / Mac / Linux laptop? Download the binary <a href="build/#download">here</a>. Or use Fly, Docker, Tor, Termux — all options in <a href="https://github.com/hemant1996/thecockroachnetwork/blob/main/relay/RUN.md" target="_blank" rel="noopener">RUN.md</a>.
-        </p>
-      </div>
-    </section>
-
-    <!-- ─── FAQ ───────────────────────────────────────────────────────── -->
-    <section id="faq">
-      <div data-lang-content="hi">
-        <h2>Sawaal aur jawaab</h2>
-
-        <h3>Kya yeh free hai?</h3>
-        <p>Haan, hamesha. Code CC0 — public domain. Koi paid plan nahi, koi ads nahi. Server cost jo run karta hai woh personally afford karta hai — aapko kuch nahi dena.</p>
-
-        <h3>Kya mera data leak ho sakta hai?</h3>
-        <p>Aapki gupt chaabi sirf aapke device ke browser mein hai — kisi server par nahi. Password reset nahi hota. Device badla ya browser data clear hua = pehchaan gayi. Yeh ek tradeoff hai — encrypted backup feature v0.2 mein aa raha hai.</p>
-        <p>Aap apna naam-pata nahi dete, sirf ek random key hoti hai. Lekin jo report karte hain woh public hai — woh toh point hi hai.</p>
-
-        <h3>Kya police mujhe identify kar sakti hai?</h3>
-        <p>Honest answer: aap relay se connect karte hain, relay aapka IP dekh sakta hai. Sensitive reports ke liye Tor browser ya VPN se kholiye. Location precision bhi kam rakhiye (5 ya kam).</p>
-        <p>Phone-key se asli naam directly connect nahi hai. Pseudonymous hain — pakka anonymous nahi. Soch ke daaliye.</p>
-
-        <h3>Kya sirf Cockroach Janta Party walon ke liye hai?</h3>
-        <p>Nahi. Yeh ek protocol hai, kisi ka private nahi. Koi bhi use kar sakta hai — citizens, journalists, activists, students, jo bhi. CJP movement ne yeh moment banaya; tool sab ka hai.</p>
-
-        <h3>Kuch download karna hoga?</h3>
-        <p>Nahi. Bas browser. Phone ho ya laptop, koi app install nahi. thecockroachnetwork.com kholiye — bas.</p>
-
-        <h3>Agar saare Pehredaar band ho gaye to?</h3>
-        <p>Network mein jo events the, woh khatam ho jaayenge — kyunki host karne wala koi nahi. Aapki gupt chaabi safe hai (woh aapke browser mein), lekin reports khoja sakte hain. <b>Yahi reason hai ki Pehredaar chahiye.</b> <a href="#pehredaar">Aap khud Pehredaar baniye</a>.</p>
-
-        <h3>Mujhe code dekhna hai / fork karna hai?</h3>
-        <p>Saari cheez open hai. <a href="build/">Developer page</a> dekhiye — spec, source, run-your-own guides. Apna relay chalaiye, apna mirror host kariye, kuch naya banaiye.</p>
-      </div>
-
-      <div data-lang-content="en" hidden>
-        <h2>Questions</h2>
-
-        <h3>Is this free?</h3>
-        <p>Yes, always. Code is CC0 — public domain. No paid plans, no ads. Whoever runs a server personally affords the cost — you pay nothing.</p>
-
-        <h3>Can my data leak?</h3>
-        <p>Your secret key stays only in your device's browser — never on a server. There is no password reset. Change device or clear browser data = identity lost. This is the tradeoff — an encrypted backup feature is coming in v0.2.</p>
-        <p>You don't provide a real name, just a random key. But what you report is public — that's the point.</p>
-
-        <h3>Can the police identify me?</h3>
-        <p>Honest answer: you connect to a relay, and the relay can see your IP. For sensitive reports, open it via Tor browser or a VPN. Keep the location precision low (5 or less).</p>
-        <p>Your phone key is not directly linked to your real name. You are pseudonymous — not fully anonymous. Think before you post.</p>
-
-        <h3>Is this only for Cockroach Janta Party members?</h3>
-        <p>No. This is a protocol, not anyone's private tool. Anyone can use it — citizens, journalists, activists, students, anyone. The CJP movement created this moment; the tool belongs to everyone.</p>
-
-        <h3>Do I need to download anything?</h3>
-        <p>No. Just a browser. Phone or laptop, no app to install. Open thecockroachnetwork.com — that's it.</p>
-
-        <h3>What if every Pehredaar goes offline?</h3>
-        <p>Every event in the network becomes unreachable — nobody is hosting it anymore. Your secret key is safe (it lives in your browser) but the reports are lost. <b>That is why Pehredaars matter.</b> <a href="#pehredaar">Become one yourself</a>.</p>
-
-        <h3>I want to read the code / fork it?</h3>
-        <p>Everything is open. See the <a href="build/">developer page</a> — spec, source, run-your-own guides. Run your own relay, host your own mirror, build something new on top.</p>
-      </div>
-    </section>
-
-    <footer>
-      <div class="row">
-        <div>
-          <svg class="mark" viewBox="0 0 200 200" aria-hidden="true">
-            <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
-            <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
-          </svg>
-          <span data-lang-content="hi">cockroach v0.2 · CC0 public domain · janta ka network</span>
-          <span data-lang-content="en" hidden>cockroach v0.2 · CC0 public domain · the people's network</span>
-        </div>
-        <div>
-          <a href="client/index.html" data-lang-content="hi">client kholiye</a>
-          <a href="client/index.html" data-lang-content="en" hidden>open the client</a>
-          &nbsp;·&nbsp;
-          <a href="build/" data-lang-content="hi">developer page</a>
-          <a href="build/" data-lang-content="en" hidden>for developers</a>
-          &nbsp;·&nbsp;
-          <a href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener">source</a>
-        </div>
-      </div>
-    </footer>
-  </main>
-
-  <script>
-  // ─── Language toggle ─────────────────────────────────────────────────
-  // EN ↔ Hinglish (Hindi in Latin script — what the audience actually
-  // reads and writes in messages).  Default Hinglish; auto-detect Hindi
-  // browser locales; persist choice in localStorage.
-  (function () {
-    const STORAGE = "cockroach.lang";
-    const LANGS = ["hi", "en"];
-
-    // Live-wall i18n labels: keyed by element data-i18n attribute.
-    const LIVE_LABELS = {
-      hi: {
-        "live.label": "LIVE — abhi ka network",
-        "live.reports": "reports aaj",
-        "live.cockroaches": '"main bhi cockroach"',
-        "live.cities": "shehron se",
-        "live.empty": 'Abhi tak koi "main bhi cockroach" nahi. <a href="client/index.html">Pehla aap hi baniye</a>.',
-        "live.connecting": "Network se connect ho rahe hain…",
-        "live.ago_now": "abhi",
-        "live.ago_s": "{n}s pehle",
-        "live.ago_m": "{n}m pehle",
-        "live.ago_h": "{n}h pehle",
-        "live.ago_d": "{n}d pehle",
-      },
-      en: {
-        "live.label": "LIVE — network right now",
-        "live.reports": "reports today",
-        "live.cockroaches": '"I am cockroach"',
-        "live.cities": "cities",
-        "live.empty": 'No "I am cockroach" declarations yet. <a href="client/index.html">Be the first</a>.',
-        "live.connecting": "Connecting to network…",
-        "live.ago_now": "now",
-        "live.ago_s": "{n}s ago",
-        "live.ago_m": "{n}m ago",
-        "live.ago_h": "{n}h ago",
-        "live.ago_d": "{n}d ago",
-      },
-    };
-    window.__LIVE_LABELS = LIVE_LABELS;
-    window.__currentLang = "hi";
-
-    function detectLang() {
-      const stored = localStorage.getItem(STORAGE);
-      if (LANGS.includes(stored)) return stored;
-      const b = (navigator.language || "en").toLowerCase();
-      // Treat any India-locale or Hindi/Urdu/Punjabi browser as Hinglish default.
-      if (b.startsWith("hi") || b.startsWith("ur") || b.startsWith("pa") || b.endsWith("-in")) return "hi";
-      return "en";
-    }
-
-    function applyLang(lang) {
-      if (!LANGS.includes(lang)) lang = "hi";
-      window.__currentLang = lang;
-      document.documentElement.lang = lang === "hi" ? "hi-Latn" : "en";
-      // Show/hide all dual-content blocks.
-      document.querySelectorAll("[data-lang-content]").forEach((el) => {
-        el.hidden = el.dataset.langContent !== lang;
-      });
-      // Update toggle button state.
-      document.querySelectorAll(".lang-toggle button").forEach((b) => {
-        b.classList.toggle("active", b.dataset.lang === lang);
-      });
-      // Apply data-i18n labels (for the live wall counters etc).
-      const labels = LIVE_LABELS[lang];
-      document.querySelectorAll("[data-i18n]").forEach((el) => {
-        const v = labels[el.dataset.i18n];
-        if (v) el.textContent = v;
-      });
-      // Tell the live wall to re-render its feed in the new language.
-      if (window.__renderLiveFeed) window.__renderLiveFeed();
-      localStorage.setItem(STORAGE, lang);
-    }
-
-    document.querySelectorAll(".lang-toggle button").forEach((b) => {
-      b.addEventListener("click", () => applyLang(b.dataset.lang));
-    });
-    applyLang(detectLang());
-  })();
-
-  // ─── Live wall ───────────────────────────────────────────────────────
-  // (Same WebSocket+Nominatim machinery as before, but now its labels and
-  // empty-state copy switch with the language toggle.)
-  (function () {
-    const RELAY = "wss://cockroach-relay-hemant1996.fly.dev";
-    const wall = document.getElementById("live-wall");
-    if (!wall) return;
-    const elReports = document.getElementById("live-reports");
-    const elCockroaches = document.getElementById("live-cockroaches");
-    const elCities = document.getElementById("live-cities");
-    const elFeed = document.getElementById("live-feed");
-
-    let reports24h = 0;
-    let cockroaches7d = 0;
-    const cities = new Set();
-    const declarations = [];
-    const seenIds = new Set();
-    let connected = false;
-
-    const BASE32 = "0123456789bcdefghjkmnpqrstuvwxyz";
-    function geohashCenter(hash) {
-      let latMin = -90, latMax = 90, lonMin = -180, lonMax = 180, even = true;
-      for (const c of (hash || "").toLowerCase()) {
-        const idx = BASE32.indexOf(c);
-        if (idx < 0) return null;
-        for (let mask = 16; mask > 0; mask >>= 1) {
-          const bit = (idx & mask) ? 1 : 0;
-          if (even) { const m = (lonMin + lonMax) / 2; if (bit) lonMin = m; else lonMax = m; }
-          else      { const m = (latMin + latMax) / 2; if (bit) latMin = m; else latMax = m; }
-          even = !even;
+  // Geohash decode (just enough to extract a city-bucket).
+  const GEO_BASE32 = "0123456789bcdefghjkmnpqrstuvwxyz";
+  function decodeGeohash(g) {
+    let evenBit = true, latMin = -90, latMax = 90, lonMin = -180, lonMax = 180;
+    for (const c of g) {
+      const idx = GEO_BASE32.indexOf(c);
+      if (idx < 0) return null;
+      for (let n = 4; n >= 0; n--) {
+        const bit = (idx >> n) & 1;
+        if (evenBit) {
+          const mid = (lonMin + lonMax) / 2;
+          if (bit === 1) lonMin = mid; else lonMax = mid;
+        } else {
+          const mid = (latMin + latMax) / 2;
+          if (bit === 1) latMin = mid; else latMax = mid;
         }
+        evenBit = !evenBit;
       }
-      return { lat: (latMin + latMax) / 2, lon: (lonMin + lonMax) / 2 };
     }
-    function shortGeo(h) { return (h || "").slice(0, 5); }
+    return { lat: (latMin + latMax) / 2, lon: (lonMin + lonMax) / 2 };
+  }
+  function cityKey(geohash) {
+    if (!geohash || geohash.length < 4) return null;
+    return geohash.slice(0, 4); // ~20km cell — coarse "city" bucket
+  }
 
-    const placeCache = (() => {
-      try { return new Map(Object.entries(JSON.parse(localStorage.getItem("cockroach.places") || "{}"))); }
-      catch { return new Map(); }
-    })();
-    const placeQueue = [];
-    let placeRunning = false;
-    async function runPlaceQueue() {
-      if (placeRunning) return;
-      placeRunning = true;
-      while (placeQueue.length) {
-        const key = placeQueue.shift();
-        if (placeCache.get(key) !== undefined && placeCache.get(key) !== null) continue;
-        const c = geohashCenter(key);
-        if (!c) { placeCache.set(key, null); continue; }
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function shortId(pubkey) { return "#" + pubkey.slice(0, 4); }
+  function formatAgo(ts) {
+    const sec = Math.floor(Date.now() / 1000) - ts;
+    if (sec < 60) return sec + "s";
+    if (sec < 3600) return Math.floor(sec / 60) + "m";
+    if (sec < 86400) return Math.floor(sec / 3600) + "h";
+    return Math.floor(sec / 86400) + "d";
+  }
+
+  const COCKROACH_PHRASE_RE = /\b(main\s*bhi\s*cockroach|i\s*am\s*cockroach|hum\s*sab\s*cockroach)\b/i;
+  function isCockroachDeclaration(ev) {
+    if (ev.tags.some(t => t[0] === "t" && /^main(.bhi.cockroach|bhicockroach)$/i.test(t[1]))) return true;
+    return COCKROACH_PHRASE_RE.test(ev.content || "");
+  }
+  function locationLabel(ev) {
+    const gt = ev.tags.find(t => t[0] === "g")?.[1];
+    if (!gt) return null;
+    const c = decodeGeohash(gt.toLowerCase());
+    if (!c) return null;
+    return c.lat.toFixed(2) + "°, " + c.lon.toFixed(2) + "°";
+  }
+
+  function ingest(ev) {
+    if (!ev || events.has(ev.id)) return false;
+    events.set(ev.id, ev);
+    if (ev.created_at > lastEventAt) lastEventAt = ev.created_at;
+    const now = Math.floor(Date.now() / 1000);
+    if (ev.created_at >= now - 86400) reports24h++;
+    if (ev.created_at >= now - 7 * 86400 && isCockroachDeclaration(ev)) cockroaches7d++;
+    const ck = cityKey(ev.tags.find(t => t[0] === "g")?.[1]);
+    if (ck) cities.add(ck);
+    return true;
+  }
+
+  function renderStats() {
+    document.getElementById("elReports").textContent = reports24h.toLocaleString("en-IN");
+    document.getElementById("elCockroaches").textContent = cockroaches7d.toLocaleString("en-IN");
+    document.getElementById("elCities").textContent = cities.size.toLocaleString("en-IN");
+    updateAlarm();
+    updateFooter();
+    updateCockroachHealth();
+  }
+
+  function renderFeed() {
+    const list = document.getElementById("liveFeed");
+    const declarations = Array.from(events.values())
+      .filter(isCockroachDeclaration)
+      .sort((a, b) => b.created_at - a.created_at)
+      .slice(0, 6);
+    if (declarations.length === 0) {
+      list.innerHTML = `<li class="live-feed-empty">
+        <span class="hi">Pehla cockroach intezaar mein…</span>
+        <span class="en">Waiting for the first cockroach…</span>
+      </li>`;
+      return;
+    }
+    list.innerHTML = declarations.map(ev => {
+      const loc = locationLabel(ev);
+      const tags = ev.tags.filter(t => t[0] === "t").map(t => "#" + t[1]);
+      const content = (ev.content || "").trim().slice(0, 220);
+      return `<li>
+        <div class="meta">
+          <span>${escapeHTML(shortId(ev.pubkey))}</span>
+          ${loc ? `<span class="where">${escapeHTML(loc)}</span>` : ""}
+          <span>${escapeHTML(formatAgo(ev.created_at))} ago</span>
+        </div>
+        <p class="pull">${escapeHTML(content) || "—"}</p>
+        ${tags.length ? `<div class="tags">${tags.map(t => `<span>${escapeHTML(t)}</span>`).join("")}</div>` : ""}
+      </li>`;
+    }).join("");
+  }
+
+  // ── Cockroach health (resilience-driven) ─────────────────────────────
+  function healthStage() {
+    const peers = effectivePeers();
+    if (relaysAlive >= 10 && peers >= 30) return 4;
+    if (relaysAlive >= 5  && peers >= 10) return 3;
+    if (relaysAlive >= 3  && peers >= 3)  return 2;
+    if (relaysAlive >= 2  || peers >= 5)  return 1;
+    return 0;
+  }
+  const HEALTH_CAPTIONS = {
+    hi: [
+      () => `Akela · ${relaysAlive} Pehredaar · bachao`,
+      () => `Saans · ${relaysAlive} Pehredaar · ${effectivePeers()} peer`,
+      () => `Jeevit · ${relaysAlive} Pehredaar · ${effectivePeers()} peer`,
+      () => `Mazboot · ${relaysAlive} Pehredaar · ${effectivePeers()} peer`,
+      () => `Anabhinaad · ${relaysAlive} Pehredaar · ${effectivePeers()} peer`,
+    ],
+    en: [
+      () => `Alone · ${relaysAlive} Pehredaar · save it`,
+      () => `Breathing · ${relaysAlive} Pehredaar · ${effectivePeers()} peer`,
+      () => `Alive · ${relaysAlive} Pehredaar · ${effectivePeers()} peer`,
+      () => `Strong · ${relaysAlive} Pehredaar · ${effectivePeers()} peer`,
+      () => `Thriving · ${relaysAlive} Pehredaar · ${effectivePeers()} peer`,
+    ],
+  };
+  function updateCockroachHealth() {
+    const now = Math.floor(Date.now() / 1000);
+    for (const [pk, ts] of activePeerPubkeys) {
+      if (now - ts > PEER_ACTIVE_WINDOW) activePeerPubkeys.delete(pk);
+    }
+    const stage = healthStage();
+    const el = document.getElementById("mascot-health");
+    if (el) {
+      const lang = window.__currentLang || "hi";
+      el.textContent = HEALTH_CAPTIONS[lang][stage]();
+      el.hidden = false;
+    }
+  }
+
+  function updateAlarm() {
+    const stat = document.getElementById("alarmStat");
+    if (stat) stat.textContent = String(relaysAlive).padStart(2, "0");
+
+    const hiEl = document.getElementById("pehredaarHeadlineCount-hi");
+    const enEl = document.getElementById("pehredaarHeadlineCount-en");
+    if (hiEl) {
+      if (relaysAlive <= 1) hiEl.innerHTML = `Sirf <span class="accent">ek</span> Pehredaar zinda hai.`;
+      else hiEl.innerHTML = `<span class="accent">${relaysAlive}</span> Pehredaar zinda hain.`;
+    }
+    if (enEl) {
+      if (relaysAlive <= 1) enEl.innerHTML = `Only <span class="accent">one</span> Pehredaar alive.`;
+      else enEl.innerHTML = `<span class="accent">${relaysAlive}</span> Pehredaar alive.`;
+    }
+
+    const phrase = relaysAlive === 1 ? "1 public Pehredaar live" : `${relaysAlive} public Pehredaar live`;
+    const t1 = document.getElementById("tape-pehredaar-1");
+    const t2 = document.getElementById("tape-pehredaar-2");
+    if (t1) t1.textContent = phrase;
+    if (t2) t2.textContent = phrase;
+  }
+
+  function updateFooter() {
+    const peers = effectivePeers();
+    const el = document.getElementById("footer-status");
+    if (!el) return;
+    const last = lastEventAt
+      ? new Date(lastEventAt * 1000).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" }) + " IST"
+      : "—";
+    el.textContent = `Status · ${relaysAlive} relay${relaysAlive === 1 ? "" : "s"} live · ${peers} peer${peers === 1 ? "" : "s"} · last event ${last}`;
+  }
+
+  async function pingAllRelays() {
+    try {
+      const r = await fetch("client/relays.json", { cache: "no-cache" });
+      if (!r.ok) return;
+      const json = await r.json();
+      const urls = Array.isArray(json) ? json : Array.isArray(json.relays) ? json.relays : [];
+      const valid = urls.filter(u => typeof u === "string" && /^wss?:\/\//.test(u));
+      relaysTotal = valid.length;
+
+      const results = await Promise.allSettled(valid.map(async (wsUrl) => {
+        const httpUrl = wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 5000);
         try {
-          const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${c.lat}&lon=${c.lon}&zoom=10&accept-language=hi,en`);
-          if (r.ok) {
-            const j = await r.json();
-            const a = j.address || {};
-            const name = a.city || a.town || a.village || a.suburb || a.state || a.country || null;
-            placeCache.set(key, name);
-            try { localStorage.setItem("cockroach.places", JSON.stringify(Object.fromEntries(placeCache))); } catch {}
-            window.__renderLiveFeed && window.__renderLiveFeed();
-          } else placeCache.set(key, null);
-        } catch { placeCache.set(key, null); }
-        await new Promise(r => setTimeout(r, 1100));
+          const resp = await fetch(httpUrl, { signal: controller.signal, cache: "no-cache" });
+          if (!resp.ok) return null;
+          const ct = (resp.headers.get("content-type") || "").toLowerCase();
+          if (ct.includes("application/json")) return await resp.json();
+          return { alive: true };
+        } catch { return null; }
+        finally { clearTimeout(timer); }
+      }));
+
+      let aliveCount = 0, aggConnected = 0, aggPeerOffers = 0, aggUnique = 0;
+      for (const res of results) {
+        if (res.status !== "fulfilled" || !res.value) continue;
+        aliveCount++;
+        const s = res.value.stats;
+        if (s && typeof s === "object") {
+          aggConnected   += Number(s.ws_connected) || 0;
+          aggPeerOffers  += Number(s.peer_offers_15m) || 0;
+          aggUnique      += Number(s.unique_pubkeys_1h) || 0;
+        }
       }
-      placeRunning = false;
-    }
-    function requestPlace(g) {
-      if (!g || placeCache.get(g)) return;
-      placeCache.set(g, undefined);
-      placeQueue.push(g);
-      runPlaceQueue();
-    }
-
-    function fmtAgo(secs) {
-      const lang = window.__currentLang || "hi";
-      const L = window.__LIVE_LABELS[lang];
-      if (secs < 5) return L["live.ago_now"];
-      if (secs < 60) return L["live.ago_s"].replace("{n}", Math.floor(secs));
-      if (secs < 3600) return L["live.ago_m"].replace("{n}", Math.floor(secs / 60));
-      if (secs < 86400) return L["live.ago_h"].replace("{n}", Math.floor(secs / 3600));
-      return L["live.ago_d"].replace("{n}", Math.floor(secs / 86400));
-    }
-
-    function renderStats() {
-      elReports.textContent = reports24h.toLocaleString("en-IN");
-      elCockroaches.textContent = cockroaches7d.toLocaleString("en-IN");
-      elCities.textContent = cities.size.toLocaleString("en-IN");
+      relaysAlive          = aliveCount;
+      networkConnected     = aggConnected;
+      networkPeerOffers    = aggPeerOffers;
+      networkUniquePubkeys = aggUnique;
+      updateAlarm();
+      updateFooter();
       updateCockroachHealth();
-    }
+    } catch { /* network blip — keep last known counts */ }
+  }
+  pingAllRelays();
+  setInterval(pingAllRelays, 60 * 1000);
 
-    // ─── Real network-health metric ──────────────────────────────────────
-    //
-    // The cockroach is healthy when the network is HARD TO KILL — multiple
-    // independent relays alive, peers actively meshing.  Activity (reports,
-    // cities) is NOT health; a viral spike on a single-relay network is
-    // still a fragile network.
-    //
-    //   relaysAlive   = relays in relays.json whose /info HTTP endpoint
-    //                   responded OK in the last poll
-    //   activePeers   = distinct pubkeys publishing kind:10001 (peer offer)
-    //                   events seen on the relay in the last 15 minutes
-    //
-    // The thresholds force both axes to grow together — a relay-rich but
-    // peer-empty network is still weak; a peer-rich but single-relay
-    // network is still weak.  Resilience requires both.
-
-    let relaysAlive = 0;
-    let relaysTotal = 0;
-    // Aggregated stats across every responding relay's /info endpoint.
-    // (Each Pehredaar's relay now publishes ws_connected, unique_pubkeys_1h,
-    // peer_offers_15m, events_24h on GET /.  We sum across relays for a
-    // real network-wide view.)
-    let networkConnected = 0;
-    let networkPeerOffers = 0;
-    let networkUniquePubkeys = 0;
-    const activePeerPubkeys = new Map();  // pubkey -> last-seen-unix
-    const PEER_ACTIVE_WINDOW = 15 * 60;   // 15 minutes
-    function effectivePeers() {
-      // Prefer the larger of: peers we directly observed via the connected
-      // relay's kind:10001 subscription, or the aggregated peer_offers_15m
-      // count from every responding relay's /info.
-      return Math.max(activePeerPubkeys.size, networkPeerOffers || 0);
-    }
-
-    function healthStage() {
-      const peers = effectivePeers();
-      if (relaysAlive >= 10 && peers >= 30) return 4; // thriving
-      if (relaysAlive >= 5  && peers >= 10) return 3; // strong
-      if (relaysAlive >= 3  && peers >= 3)  return 2; // surviving
-      if (relaysAlive >= 2  || peers >= 5)  return 1; // weak (some redundancy)
-      return 0; // dying — single point of failure
-    }
-
-    // Captions name the EXACT missing piece for each stage so the visual
-    // doubles as a recruitment ladder.  "Bachao" → "more Pehredaars" →
-    // "peer mesh" → "we are everywhere".
-    const HEALTH_CAPTIONS = {
-      hi: [
-        () => `Cockroach akela hai. ${relaysAlive} Pehredaar. Bachao.`,
-        () => `Saans le raha hai. ${relaysAlive} Pehredaar, ${effectivePeers()} peers.`,
-        () => `Jeevit hai. ${relaysAlive} Pehredaar, ${effectivePeers()} peers — aur chahiye.`,
-        () => `Mazboot. ${relaysAlive} Pehredaar, ${effectivePeers()} peers meshing.`,
-        () => `Hum sab cockroach. ${relaysAlive} Pehredaar, ${effectivePeers()} peers.`,
-      ],
-      en: [
-        () => `The cockroach is alone. ${relaysAlive} Pehredaar. Save it.`,
-        () => `Barely breathing. ${relaysAlive} Pehredaar(s), ${effectivePeers()} peer(s).`,
-        () => `Alive. ${relaysAlive} Pehredaar(s), ${effectivePeers()} peer(s) — needs more.`,
-        () => `Strong. ${relaysAlive} Pehredaar(s), ${effectivePeers()} peer(s) meshing.`,
-        () => `Thriving. ${relaysAlive} Pehredaar(s), ${effectivePeers()} peer(s).`,
-      ],
-    };
-
-    function updateCockroachHealth() {
-      // Expire stale peer pubkeys (signal that a peer is no longer offering).
+  // ── WebSocket subscription to the primary relay ──────────────────────
+  function connectWS() {
+    let ws;
+    try { ws = new WebSocket(RELAY); } catch { setTimeout(connectWS, 4000); return; }
+    ws.addEventListener("open", () => {
       const now = Math.floor(Date.now() / 1000);
-      for (const [pk, ts] of activePeerPubkeys) {
-        if (now - ts > PEER_ACTIVE_WINDOW) activePeerPubkeys.delete(pk);
-      }
-
-      const stage = healthStage();
-      const mark = document.getElementById("hero-mark");
-      if (mark) {
-        mark.classList.remove("cockroach-state-0","cockroach-state-1","cockroach-state-2","cockroach-state-3","cockroach-state-4");
-        mark.classList.add("cockroach-state-" + stage);
-      }
-      document.querySelectorAll(".health-segment").forEach((seg) => {
-        seg.classList.toggle("active", Number(seg.dataset.stage) <= stage);
-        seg.classList.toggle("at-stage", Number(seg.dataset.stage) === stage);
-      });
-      const strip = document.getElementById("health-strip");
-      const caption = document.getElementById("health-caption");
-      if (strip) strip.hidden = false;
-      if (caption) {
-        const lang = window.__currentLang || "hi";
-        caption.textContent = HEALTH_CAPTIONS[lang][stage]();
-        caption.dataset.stage = String(stage);
-      }
-    }
-
-    // Poll every known relay's HTTP /info endpoint; count how many respond,
-    // and aggregate their `stats` blocks for a true network-wide view.
-    // Pre-v0.2.2 relays that don't have a stats block still count as alive.
-    async function pingAllRelays() {
-      try {
-        const r = await fetch("client/relays.json", { cache: "no-cache" });
-        if (!r.ok) return;
-        const json = await r.json();
-        const urls = Array.isArray(json) ? json : Array.isArray(json.relays) ? json.relays : [];
-        const valid = urls.filter(u => typeof u === "string" && /^wss?:\/\//.test(u));
-        relaysTotal = valid.length;
-
-        const results = await Promise.allSettled(valid.map(async (wsUrl) => {
-          const httpUrl = wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 5000);
-          try {
-            const resp = await fetch(httpUrl, { signal: controller.signal, cache: "no-cache" });
-            if (!resp.ok) return null;
-            const ct = (resp.headers.get("content-type") || "").toLowerCase();
-            if (ct.includes("application/json")) return await resp.json();
-            return { alive: true }; // old relay, no stats body — still alive
-          } catch { return null; }
-          finally { clearTimeout(timer); }
-        }));
-
-        let aliveCount = 0;
-        let aggConnected = 0;
-        let aggPeerOffers = 0;
-        let aggUnique = 0;
-        for (const res of results) {
-          if (res.status !== "fulfilled" || !res.value) continue;
-          aliveCount++;
-          const s = res.value.stats;
-          if (s && typeof s === "object") {
-            aggConnected   += Number(s.ws_connected) || 0;
-            aggPeerOffers  += Number(s.peer_offers_15m) || 0;
-            aggUnique      += Number(s.unique_pubkeys_1h) || 0;
-          }
-        }
-        relaysAlive          = aliveCount;
-        networkConnected     = aggConnected;
-        networkPeerOffers    = aggPeerOffers;
-        networkUniquePubkeys = aggUnique;
-        updateCockroachHealth();
-      } catch { /* keep last known counts on network blip */ }
-    }
-    pingAllRelays();
-    setInterval(pingAllRelays, 60 * 1000); // every minute
-
-    // Re-render the caption when the language toggle fires.
-    const _origRender = window.__renderLiveFeed;
-    window.__renderLiveFeed = function () {
-      if (_origRender) _origRender();
-      updateCockroachHealth();
-    };
-
-    function renderFeed() {
-      if (!connected) return;
-      const lang = window.__currentLang || "hi";
-      const L = window.__LIVE_LABELS[lang];
-      if (declarations.length === 0) {
-        elFeed.innerHTML = `<div class="live-empty">${L["live.empty"]}</div>`;
-        return;
-      }
-      const now = Date.now() / 1000;
-      elFeed.innerHTML = declarations.slice(0, 5).map(ev => {
-        const geo = (ev.tags.find(t => t[0] === "g") || [])[1] || "";
-        const placeKey = shortGeo(geo);
-        const place = placeCache.get(placeKey);
-        const c = geohashCenter(geo);
-        const locLabel = place || (c ? `${c.lat.toFixed(1)}°, ${c.lon.toFixed(1)}°` : "—");
-        const ago = fmtAgo(now - ev.created_at);
-        const content = (ev.content || "main bhi cockroach.").trim();
-        const truncated = content.length > 140 ? content.slice(0, 137).trim() + "…" : content;
-        return `<div class="live-row">
-          <span class="live-loc">📍 ${esc(locLabel)}</span>
-          <span class="live-when">${esc(ago)}</span>
-          <div class="live-content">${esc(truncated)}</div>
-        </div>`;
-      }).join("");
-    }
-    window.__renderLiveFeed = renderFeed;
-
-    function esc(s) {
-      return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-    }
-
-    // Match a "cockroach declaration" by tag OR by content phrase.
-    // Users often write "i am a cockroach" / "main bhi cockroach" without
-    // picking the exact hashtag — we count those too.
-    const COCKROACH_TAG_RE = /^main[-_]?bhi[-_]?cockroach$/i;
-    const COCKROACH_CONTENT_RE = /\b(?:main\s+bhi|i\s+am(?:\s+(?:a|the))?|we\s+are(?:\s+all)?|hum(?:\s+sab)?)\s+cockroach(?:es)?\b/i;
-    function isCockroachDeclaration(ev) {
-      const tags = ev.tags || [];
-      if (tags.some(t => t[0] === "t" && COCKROACH_TAG_RE.test(t[1]))) return true;
-      return COCKROACH_CONTENT_RE.test(ev.content || "");
-    }
-
-    function ingest(ev) {
-      if (seenIds.has(ev.id)) return;
-      seenIds.add(ev.id);
-      const tags = ev.tags || [];
-      const ageSec = Date.now() / 1000 - ev.created_at;
-      if (ageSec < 86400) reports24h++;
-      const geo = (tags.find(t => t[0] === "g") || [])[1];
-      if (geo) { cities.add(shortGeo(geo)); requestPlace(shortGeo(geo)); }
-      if (isCockroachDeclaration(ev) && ageSec < 7 * 86400) {
-        cockroaches7d++;
-        declarations.push(ev);
-        declarations.sort((a, b) => b.created_at - a.created_at);
-        if (declarations.length > 50) declarations.length = 50;
-        renderFeed();
-      }
+      ws.send(JSON.stringify(["REQ", "wall-r", { kinds: [1], since: now - 86400, limit: 500 }]));
+      ws.send(JSON.stringify(["REQ", "wall-c", { kinds: [1], "#t": ["mainbhicockroach", "main-bhi-cockroach", "main_bhi_cockroach"], since: now - 7 * 86400, limit: 100 }]));
+      ws.send(JSON.stringify(["REQ", "wall-peers", { kinds: [10001], since: now - PEER_ACTIVE_WINDOW, limit: 500 }]));
       renderStats();
-    }
+      renderFeed();
+    });
+    ws.addEventListener("message", (e) => {
+      let msg; try { msg = JSON.parse(e.data); } catch { return; }
+      if (!Array.isArray(msg)) return;
+      if (msg[0] === "EVENT") {
+        const ev = msg[2];
+        if (!ev) return;
+        if (ev.kind === 1) { if (ingest(ev)) renderStats(); }
+        else if (ev.kind === 10001) { activePeerPubkeys.set(ev.pubkey, ev.created_at); updateCockroachHealth(); updateFooter(); }
+      }
+      if (msg[0] === "EOSE") renderFeed();
+    });
+    ws.addEventListener("close", () => { setTimeout(connectWS, 4000); });
+    ws.addEventListener("error", () => { try { ws.close(); } catch {} });
+  }
+  connectWS();
+</script>
 
-    function connect() {
-      let ws;
-      try { ws = new WebSocket(RELAY); } catch { return scheduleReconnect(); }
-      ws.addEventListener("open", () => {
-        connected = true;
-        wall.hidden = false;
-        const since24h = Math.floor(Date.now() / 1000) - 86400;
-        const since7d = Math.floor(Date.now() / 1000) - 7 * 86400;
-        const since15m = Math.floor(Date.now() / 1000) - PEER_ACTIVE_WINDOW;
-        ws.send(JSON.stringify(["REQ", "wall-r", { kinds: [1], since: since24h, limit: 500 }]));
-        ws.send(JSON.stringify(["REQ", "wall-c", { kinds: [1], "#t": ["mainbhicockroach", "main-bhi-cockroach", "main_bhi_cockroach"], since: since7d, limit: 100 }]));
-        // Active peers — track distinct pubkeys publishing kind:10001 offers
-        // in the last 15 minutes.  Proxy for "peers currently meshing".
-        ws.send(JSON.stringify(["REQ", "wall-peers", { kinds: [10001], since: since15m, limit: 500 }]));
-        renderStats();
-        renderFeed();
-      });
-      ws.addEventListener("message", (e) => {
-        let msg; try { msg = JSON.parse(e.data); } catch { return; }
-        if (!Array.isArray(msg)) return;
-        if (msg[0] === "EVENT") {
-          const ev = msg[2];
-          if (!ev) return;
-          if (ev.kind === 1) ingest(ev);
-          else if (ev.kind === 10001) {
-            activePeerPubkeys.set(ev.pubkey, ev.created_at);
-            updateCockroachHealth();
-          }
-        }
-        if (msg[0] === "EOSE") renderFeed();
-      });
-      ws.addEventListener("close", () => { connected = false; scheduleReconnect(); });
-      ws.addEventListener("error", () => { /* close fires next */ });
-    }
-    let reconnectDelay = 2000;
-    function scheduleReconnect() {
-      setTimeout(connect, reconnectDelay);
-      reconnectDelay = Math.min(reconnectDelay * 2, 30000);
-    }
-    connect();
-    setInterval(renderFeed, 10000);
-  })();
-  </script>
 </body>
 </html>
