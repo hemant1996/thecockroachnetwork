@@ -24,7 +24,7 @@ Then open `http://localhost:3000` (or whatever port the static server picked) on
 
 - The relay you're talking to sees your IP. For sensitive reporting use Tor or a VPN.
 - Geohash precision 7 reveals your location to ~150 m. Use 5 or lower for sensitive contexts.
-- The client strips no media metadata in v0.1 because it does not yet handle media uploads. Any media URL you reference in `content` must already be sanitized.
+- v0.5+ in-client media: `media.js` downscales photos to ≤720 px longest edge and re-encodes JPEG at ≤48 KB before embedding the bytes directly in the signed event as a `data:` URL with a SHA-256 binding (SPEC §3.4 / §7.1). EXIF and other camera metadata is dropped by the canvas re-encode. If you paste an external `https://` media URL into your report `content`, sanitize it yourself — the client does not fetch or strip remote bytes.
 
 ## License
 

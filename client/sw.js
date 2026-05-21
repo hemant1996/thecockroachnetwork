@@ -10,12 +10,14 @@
 // anything in the shell) wipes every visitor's stale cache on next SW
 // activation.
 
-const CACHE = "cockroach-shell-v3";
+const CACHE = "cockroach-shell-v074";
 const SHELL = [
   "./",
   "./index.html",
   "./app.js",
+  "./verdicts.js",
   "./peers.js",
+  "./media.js",
   "./styles.css",
   "./icon.svg",
   "./manifest.webmanifest",

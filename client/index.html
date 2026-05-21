@@ -14,6 +14,30 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <script>
+    if (sessionStorage.getItem("cockroach.topbar.dismissed") === "1") {
+      document.documentElement.classList.add("topbar-dismissed-pre");
+    }
+  </script>
+  <div class="topbar" id="topbar">
+    <a href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener" aria-label="Open source on GitHub">
+      <span class="star">★</span>
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.1.83-.26.83-.58v-2.04c-3.34.73-4.04-1.41-4.04-1.41-.54-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.84 2.8 1.31 3.49 1 .1-.78.42-1.31.76-1.61-2.66-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.31-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.87.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.38.82 1.11.82 2.23v3.3c0 .32.22.69.83.58A12 12 0 0 0 12 .3"/></svg>
+      <span><b>Open source</b><span class="long"> · CC0 public domain</span> · github.com/hemant1996/thecockroachnetwork</span>
+      <span class="topbar-arrow">→</span>
+    </a>
+    <button class="topbar-close" type="button" aria-label="Dismiss" id="topbar-close">×</button>
+  </div>
+  <script>
+    if (document.documentElement.classList.contains("topbar-dismissed-pre")) {
+      document.body.classList.add("topbar-dismissed");
+    }
+    document.getElementById("topbar-close")?.addEventListener("click", () => {
+      sessionStorage.setItem("cockroach.topbar.dismissed", "1");
+      document.body.classList.add("topbar-dismissed");
+    });
+  </script>
+
   <header>
     <div class="app-bar-inner">
       <div class="brand">
@@ -30,7 +54,7 @@
           <path d="M 135 150 Q 162 162 174 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
         </svg>
         <span>cockroach</span>
-        <span class="ver">v0.7.3</span>
+        <span class="ver">v0.7.4</span>
       </div>
 
       <nav class="tabs">
@@ -307,7 +331,7 @@
             <a href="../SPEC.md" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">SPEC ↗</a>
             <a href="../WHITEPAPER.md" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">WHITEPAPER ↗</a>
             <a href="../relay/RUN.md" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">Run a relay ↗</a>
-            <a href="https://github.com/hemantbangar/cockroachparty" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">Source on GitHub ↗</a>
+            <a href="https://github.com/hemant1996/thecockroachnetwork" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">Source on GitHub ↗</a>
           </div>
           <p style="margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:0.1em">
             COCKROACH V0.2 · CC0 PUBLIC DOMAIN · JANTA KA NETWORK

@@ -16,7 +16,7 @@ WHITEPAPER.md      The "why" — vision, threat model, civic theory
 RELEASE.md         How to cut, mirror, and pin a release
 CHANGELOG.md       Versioned change log
 LICENSE            CC0 — public domain
-VERSION            Current version (0.4.1)
+VERSION            Current version (0.7.4)
 
 relay/             Reference relay (Bun + TypeScript + SQLite, L1 conformant)
   server.ts        WebSocket broker + permalink HTTP endpoint
@@ -156,21 +156,23 @@ The relay suite covers signature verification, canonical serialization, filter m
 
 ## Status
 
-**v0.4.1** — the spec is implementable, the reference relay is L1-conformant, the reference client is L3-conformant, the wire protocol is stable. The network currently has **3 public Pehredaars** (Mumbai/Fly, Singapore/Fly, Render) running v0.4.x and meshed via relay-to-relay sync.
+**v0.7.4** — the spec is implementable, the reference relay is L1-conformant, the reference client is L3-conformant (now L2+ with §8.3 voter-weight legibility and §8.4 sparse-cell rendering surfaced in the UI). The wire protocol is stable. The network currently has **3 public Pehredaars** (Mumbai/Fly, Singapore/Fly, Render) meshed via relay-to-relay sync.
 
-Shipped between v0.1 and v0.4:
+Released versions (newest first — see `CHANGELOG.md` for full notes):
 
-- v0.2 — WebRTC peer-relay mesh (on by default); peer-mesh signaling event kinds 10001/10002/10003
-- v0.2.2 — relay `/stats` endpoint with `ws_connected`, `unique_pubkeys_1h`, `peer_offers_15m`, `events_24h`
-- v0.2.3 — landing-page redesign (agitprop poster, live cockroach health)
-- v0.4.0 — share-URL discovery (`#relays=…` fragment), `PEERS` wire verb (client → relay peer hints), relay-to-relay WebSocket sync, gzip storage compression
-- v0.4.1 — zero-config peer seeding via `relay/seeds.json` + hardcoded backup constants
+- **v0.7.x — verdict honesty + scale-safe feed** — verdict model split into orthogonal kinds (`kind:2` binary truth, `kind:3` status, `kind:4` evidence-request, `kind:5` relation); closure-absence badge on every card; locality-aware sort and voter-weight legibility (SPEC §8.3); sparse-cell badge (§8.4); ingest-time indexes so the feed stays fast at network scale; inline evidence-reply thread; mobile-first sort/filter strips.
+- **v0.6.x — web client redesign** — Anton / Instrument Serif / JetBrains Mono / Inter typography, accent #e63b2e, live preview pane in the composer.
+- **v0.5.x — in-event base64 media** — `compressImage()` downscales + JPEG-encodes a photo into the signed event itself; SHA-256 binding in the media tag. No external pin service required.
+- **v0.4.x — anti-silo release** — share-URL relay discovery, `PEERS` wire verb, relay-to-relay WebSocket sync, gzip storage compression, zero-config seed list.
+- **v0.2.x — WebRTC peer mesh** — every browser tab joins a peer mesh on by default; signaling event kinds 10001/10002/10003. Relay `/stats` endpoint.
+- **v0.1.0** — protocol spec, reference relay, reference client.
 
-**Known limits in v0.4:**
+**Known limits in v0.7:**
 
-- No in-client media upload. The protocol's `media` tag (SPEC §3.4) is content-addressed and intact; reference client doesn't produce or render it yet because there's no decentralized free-tier pin service to default to. Future BYO-pin Settings UI (Storacha / Pinata) is v0.5 work.
-- No encrypted key backup. Losing the device loses the identity unless you export the key (Identity tab). Seed-phrase backup is v0.5 work.
+- No encrypted key backup. Losing the device loses the identity unless you export the key (Identity tab). Seed-phrase / passphrase-encrypted backup is on the road.
 - No native iOS/Android apps; PWA only.
+- SPEC §8.1 full locality-weighted reputation is documented and partially surfaced (the `voterLocalReportCount` floor — §8.3 — is shown on every card), but the multiplier on consensus weight is not yet applied in the reference client's ranking math. v0.10 work.
+- Feedback loop / outcome tracking (a network-level memory of which signals predicted resolved reports) was dropped from the roadmap as not doable simply *and* decentralized at this scale.
 - Bootstrap is still mine — `client/relays.json` and `relay/seeds.json` are lists in this repo. As more independent Pehredaars come online they'll be added to those files; eventually consider transferring ownership to a multi-operator quorum.
 
 ## License

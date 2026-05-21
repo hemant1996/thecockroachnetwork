@@ -4,6 +4,39 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.4 — open-source topbar + stale-data sweep (2026-05-22)
+
+A sweep of the whole repo for stale references, broken links, and pages still on the v0.4 mental model — plus a slim sticky announcement bar across the landing + client that says "we are open source, here is the repo."
+
+### Top announcement bar (landing + client)
+
+- 36 px sticky bar at the very top of the page: `★ Open source · CC0 public domain · github.com/hemant1996/thecockroachnetwork →`.
+- Dismissible with a × button. State persists in `sessionStorage` (clears on tab close) so returning visitors aren't nagged within a session but get reminded across sessions.
+- When dismissed, the sticky nav (landing) / app-bar (client) slides back up to `top: 0` and the feed-side / preview / rail sticky positions also rewind from 132 px to 96 px.
+- Mobile (<640 px): hides the "· CC0 public domain ·" middle segment so the link still fits without wrapping.
+- Pre-paint script reads the sessionStorage flag and adds a class on `<html>` before the first render so the page doesn't flash the bar at returning visitors.
+
+### Stale-reference sweep
+
+| File | Was | Now |
+|---|---|---|
+| `README.md` line 19 | `Current version (0.4.1)` | `Current version (0.7.4)` |
+| `README.md` § Status | block locked on v0.4.1 with claims like "no in-client media upload" (false since v0.5) | full version list v0.1 → v0.7 with one-line summaries; known-limits block rewritten for v0.7 (encrypted key backup still TODO, native apps still TODO, SPEC §8.1 multiplier on consensus still TODO) |
+| `client/index.html` "Source on GitHub" link | `hemantbangar/cockroachparty` (wrong repo from a v0.6 typo) | `hemant1996/thecockroachnetwork` (canonical) |
+| `client/README.md` privacy section | "client strips no media metadata in v0.1 because it does not yet handle media uploads" (stale since v0.5) | accurate description of v0.5+ canvas re-encode + EXIF drop + SHA-256 binding |
+| `build/index.html` SPEC summary | "v0.2 WebRTC mesh kinds (10001/10002/10003)" — single-feature snapshot | broader summary mentioning the v0.7 verdict split, the peer-mesh kinds, and locality-weighted rep |
+| `client/index.html` brand chip | `v0.7.3` | `v0.7.4` |
+| `client/sw.js` cache key | `cockroach-shell-v3` | `cockroach-shell-v074` — also added `verdicts.js` + `media.js` to the precache (they were missing) |
+| `index.html` hero pill | `v0.7.1 · janta ka network` | `v0.7.4 · janta ka network` |
+
+### Hyperlink audit
+
+All `href=` and `[text](url)` references across `*.html` and `*.md` re-grepped. Internal links (`SPEC.md`, `WHITEPAPER.md`, `relay/RUN.md`, `client/`) resolve. External links (`github.com/hemant1996/thecockroachnetwork/...`, `render.com/deploy`, `replit.com`, font CDNs, CC0 license) are all correct. The single drift was the `hemantbangar/cockroachparty` URL in the client's Identity-tab "Source on GitHub" button — now fixed.
+
+Verified at 1480×900 and 390×900 across landing + client. No console errors. Dismiss button works; refreshing the page keeps the bar dismissed within the session.
+
+VERSION → 0.7.4.
+
 ## v0.7.3 — mobile fix: sort + filter no longer fight the viewport (2026-05-22)
 
 The v0.7 feed sidebar (Sort list + Filter chips) was sized for desktop; at mobile it collapsed into a side-by-side row that crammed both into a narrow column, wrapping the filter chips into a multi-line wall and squeezing the sort list into a vertical strip. This rewrites the mobile pattern entirely.

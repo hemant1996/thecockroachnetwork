@@ -92,9 +92,49 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
 input::placeholder, textarea::placeholder { color: var(--ink-faint); }
 
+/* ── top announcement bar (open-source / CC0) ──────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 7px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px; letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+.topbar a {
+  color: inherit; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: color .15s;
+}
+.topbar a:hover { color: var(--accent); }
+.topbar a svg { width: 14px; height: 14px; }
+.topbar .star { color: var(--accent); margin-right: 2px; }
+.topbar-arrow { opacity: 0.7; margin-left: 6px; }
+.topbar-close {
+  background: transparent; border: 0; color: var(--ink-dim);
+  font-size: 14px; line-height: 1; cursor: pointer; padding: 4px 8px;
+  border-radius: 3px; font-weight: 400; box-shadow: none;
+  letter-spacing: 0;
+}
+.topbar-close:hover {
+  color: var(--accent); background: rgba(230,59,46,0.08);
+  transform: none; box-shadow: none;
+}
+body.topbar-dismissed .topbar { display: none; }
+body.topbar-dismissed header { top: 0; }
+body.topbar-dismissed .preview,
+body.topbar-dismissed .feed-side,
+body.topbar-dismissed .rail { top: 96px; }
+@media (max-width: 640px) {
+  .topbar { padding: 6px 12px; font-size: 10px; }
+  .topbar a span.long { display: none; }
+}
+
 /* ── top app bar ──────────────────────────────────────── */
 header {
-  position: sticky; top: 0; z-index: 30;
+  position: sticky; top: 36px; z-index: 30;
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   background: color-mix(in oklab, var(--bg) 80%, transparent);
@@ -339,7 +379,7 @@ main { max-width: 1320px; margin: 0 auto; padding: 28px 28px 64px; }
 
 /* ── live preview pane (Report) ───────────────────────── */
 .preview {
-  position: sticky; top: 96px;
+  position: sticky; top: 132px;
   background: var(--bg-2); border: 1px solid var(--rule); border-radius: 8px;
   padding: 24px;
 }
@@ -436,7 +476,7 @@ main { max-width: 1320px; margin: 0 auto; padding: 28px 28px 64px; }
   gap: 28px; align-items: start;
 }
 .feed-side {
-  position: sticky; top: 96px;
+  position: sticky; top: 132px;
   display: flex; flex-direction: column; gap: 24px;
 }
 .feed-side h5 {
@@ -717,7 +757,7 @@ main { max-width: 1320px; margin: 0 auto; padding: 28px 28px 64px; }
 
 /* ── right rail (Feed) ────────────────────────────────── */
 .rail {
-  position: sticky; top: 96px;
+  position: sticky; top: 132px;
   display: flex; flex-direction: column; gap: 18px;
 }
 .rail-card {
