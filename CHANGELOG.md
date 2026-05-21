@@ -4,6 +4,45 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.2 — density pass + seed reports + honest placeholders (2026-05-22)
+
+Three small things that came up the moment v0.7.1 went live.
+
+### Density pass on the feed
+
+The post image was eating the card and the hero title (56px) was over-dramatic for a content app. Tightened:
+
+- `panel-title h1` 56px → 38px; `kicker` 11px → 10px; sub 18px → 15px
+- Media `max-height` 360px → 240px, capped at `max-width: 360px` (no more full-column hero images)
+- Card padding 20px 22px → 16px 18px; content font 16px → 15px; line-height 1.55 → 1.5
+- Closure badge padding 10px 14px → 7px 11px; gap 12 → 10
+- Verdict buttons 8px 16px → 6px 12px; share/attach/actions all 6px 11px
+- `feed-list` gap 14 → 16 (more breathing room *between* cards)
+- Feed-layout columns 240/720/280 → 200/640/260 — center column tighter
+- `main` 1480px → 1320px, padding 40px 32px 96px → 28px 28px 64px
+
+Three full cards fit comfortably on a 900px viewport now.
+
+### Seed reports — including the project's founding signal
+
+`relay/scripts/seed-reports.ts` is a small Bun script that signs and publishes a starter set of civic reports across all three live relays. Each report uses a fresh ed25519 key so the feed shows multiple voices, not one author. Topics match the existing tag vocabulary: a *main bhi cockroach* declaration (the project's founding signal), road, paperleak, election, harassment, ghosted/coaching, electricity, water. Geographies span Delhi, Nagpur, Patna, Hardoi, Mumbai, Kota, Gurugram, Andheri. Ages are spread under 24h so relays don't reject for clock-skew per SPEC §3.1.
+
+Run: `cd relay && bun run scripts/seed-reports.ts`. Use `--skip=0,1,6` to skip specific indexes on a partial-success rerun.
+
+### Honest placeholders on the landing page
+
+A few hardcoded "we have 1 Pehredaar" / "v0.4" strings from earlier days were still showing on first paint before the live relay-info poll resolved. Replaced with neutral placeholders:
+
+- Hero eyebrow `v0.4` → `v0.7.1` (now matches what's actually deployed)
+- Tape marquee `1 public Pehredaar live` → `— Pehredaar live` (JS fills in)
+- Pehredaar headline `Sirf ek / Only one Pehredaar alive` → `… Pehredaar alive` (JS fills in)
+- Alarm-box stat `01` → `—` (JS fills in)
+- Client brand chip `v0.7.1` → `v0.7.2`
+
+A visitor with slow JS or a relay-info hiccup now sees an obviously-unset value instead of stale-looking numbers from an older epoch.
+
+VERSION → 0.7.2.
+
 ## v0.7.1 — scale-safe feed + the give-proof flow (2026-05-22)
 
 Two issues surfaced post-ship that v0.7.0 left half-done. Both fixed in one patch — no protocol change, no relay change.

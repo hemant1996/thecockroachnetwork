@@ -186,31 +186,31 @@ nav.tabs .count {
 @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.4; } }
 
 /* ── main column ──────────────────────────────────────── */
-main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
+main { max-width: 1320px; margin: 0 auto; padding: 28px 28px 64px; }
 
 .screen { display: none; }
 .screen.active { display: block; }
 
 /* ── panel title (per-screen) ─────────────────────────── */
 .panel-title {
-  display: flex; align-items: baseline; gap: 16px; margin: 0 0 28px;
+  display: flex; align-items: baseline; gap: 16px; margin: 0 0 20px;
 }
 .panel-title .kicker {
   font-family: "JetBrains Mono", monospace;
-  font-size: 11px; color: var(--accent);
-  text-transform: uppercase; letter-spacing: 0.18em;
+  font-size: 10px; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.16em;
 }
 .panel-title h1 {
   font-family: "Anton", sans-serif; text-transform: uppercase;
-  font-size: 56px; line-height: 0.9; margin: 6px 0 0;
+  font-size: 38px; line-height: 1; margin: 4px 0 0;
   font-weight: 400;
   color: var(--ink);
 }
 .panel-title h1 .accent { color: var(--accent); }
 .panel-title .sub {
   font-family: "Instrument Serif", serif; font-style: italic;
-  font-size: 18px; color: var(--ink-dim);
-  margin-left: auto; max-width: 40ch; text-align: right;
+  font-size: 15px; color: var(--ink-dim);
+  margin-left: auto; max-width: 38ch; text-align: right;
 }
 
 /* ── REPORT (composer + live preview) ─────────────────── */
@@ -432,8 +432,8 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
 
 /* ── FEED ─────────────────────────────────────────────── */
 .feed-layout {
-  display: grid; grid-template-columns: 240px minmax(0, 720px) 280px;
-  gap: 32px; align-items: start;
+  display: grid; grid-template-columns: 200px minmax(0, 640px) 260px;
+  gap: 28px; align-items: start;
 }
 .feed-side {
   position: sticky; top: 96px;
@@ -454,16 +454,16 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
 .sort-list li:hover { color: var(--ink); background: var(--card); }
 .sort-list li.on { color: var(--accent); background: rgba(230,59,46,0.08); }
 
-#feed-list { display: flex; flex-direction: column; gap: 14px; }
+#feed-list { display: flex; flex-direction: column; gap: 16px; }
 
 .report-card {
   background: var(--bg-2); border: 1px solid var(--rule); border-radius: 8px;
-  padding: 20px 22px; margin: 0;
+  padding: 16px 18px; margin: 0;
   transition: border-color .15s;
 }
 .report-card:hover { border-color: var(--rule-2); }
 .report-card .card-head {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
   font-family: "JetBrains Mono", monospace; font-size: 11px;
   color: var(--ink-faint); letter-spacing: 0.06em;
 }
@@ -506,15 +506,17 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
 }
 .report-card .content {
   font-family: "Inter", sans-serif;
-  font-size: 16px; line-height: 1.55; color: var(--ink);
-  margin: 0 0 12px;
+  font-size: 15px; line-height: 1.5; color: var(--ink);
+  margin: 0 0 10px;
   white-space: pre-wrap; word-wrap: break-word;
 }
-.report-card .media-row { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 12px; }
+.report-card .media-row { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 10px; }
 .report-card .media-item {
-  max-width: 100%; max-height: 360px;
+  max-width: 360px; max-height: 240px;
+  width: auto; height: auto;
   border-radius: 4px; border: 1px solid var(--rule);
   object-fit: cover;
+  display: block;
 }
 .report-card .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .report-card .tags span {
@@ -589,8 +591,8 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
 
 /* ── ↳ attach evidence quick-button on the verdict row (v0.7.1) ─────── */
 .report-card .verify-row .attach-btn {
-  font-family: "JetBrains Mono", monospace; font-size: 12px;
-  padding: 8px 14px; border-radius: 4px;
+  font-family: "JetBrains Mono", monospace; font-size: 11px;
+  padding: 6px 11px; border-radius: 4px;
   background: rgba(230,59,46,0.08); border: 1px solid rgba(230,59,46,0.45);
   color: var(--accent); letter-spacing: 0.06em; text-transform: lowercase;
   font-weight: 400; box-shadow: none;
@@ -602,12 +604,12 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
 
 /* ── closure-absence badge (SPEC §4.2 + §8.4) ──────────────────── */
 .report-card .closure {
-  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-  padding: 10px 14px;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  padding: 7px 11px;
   background: rgba(244,234,213,0.03);
   border: 1px solid var(--rule);
   border-radius: 4px;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-family: "JetBrains Mono", monospace;
   font-size: 11px; letter-spacing: 0.06em;
 }
@@ -646,17 +648,17 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
   font-family: "JetBrains Mono", monospace;
   font-size: 10px; color: var(--ink-faint);
   letter-spacing: 0.06em; text-transform: uppercase;
-  margin: 0 0 10px; padding-left: 2px;
+  margin: 0 0 8px; padding-left: 2px;
 }
 
 /* ── verdict row v0.7: binary truth toggles + actions overflow ───── */
 .report-card .verify-row {
-  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
 }
 .report-card .truth-btn {
   font-family: "JetBrains Mono", monospace;
-  font-size: 12px; letter-spacing: 0.06em;
-  padding: 8px 16px; border-radius: 4px;
+  font-size: 11px; letter-spacing: 0.06em;
+  padding: 6px 12px; border-radius: 4px;
   background: transparent; border: 1px solid var(--rule-2);
   color: var(--ink-dim);
   font-weight: 400; box-shadow: none;
@@ -675,8 +677,8 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
 
 .report-card .actions-menu { position: relative; }
 .report-card .actions-toggle {
-  font-family: "JetBrains Mono", monospace; font-size: 12px;
-  padding: 8px 14px; border-radius: 4px;
+  font-family: "JetBrains Mono", monospace; font-size: 11px;
+  padding: 6px 11px; border-radius: 4px;
   background: transparent; border: 1px solid var(--rule-2);
   color: var(--ink-dim); font-weight: 400; box-shadow: none;
   letter-spacing: 0.06em; text-transform: lowercase;
@@ -702,8 +704,8 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
 
 .report-card .verify-row .share-btn {
   margin-left: auto;
-  font-family: "JetBrains Mono", monospace; font-size: 12px;
-  padding: 8px 14px; border-radius: 4px;
+  font-family: "JetBrains Mono", monospace; font-size: 11px;
+  padding: 6px 11px; border-radius: 4px;
   background: transparent; border: 1px solid rgba(230,59,46,0.45);
   color: var(--accent); letter-spacing: 0.06em; text-transform: lowercase;
   font-weight: 400; box-shadow: none;
