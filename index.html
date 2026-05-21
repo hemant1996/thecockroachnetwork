@@ -635,56 +635,113 @@
       updateCockroachHealth();
     }
 
-    // Cockroach health states.  Drives the hero mark's animation, color, and
-    // caption based on real network activity.  Each visitor who joins +
-    // publishes literally watches the cockroach get healthier in real time.
+    // ─── Real network-health metric ──────────────────────────────────────
+    //
+    // The cockroach is healthy when the network is HARD TO KILL — multiple
+    // independent relays alive, peers actively meshing.  Activity (reports,
+    // cities) is NOT health; a viral spike on a single-relay network is
+    // still a fragile network.
+    //
+    //   relaysAlive   = relays in relays.json whose /info HTTP endpoint
+    //                   responded OK in the last poll
+    //   activePeers   = distinct pubkeys publishing kind:10001 (peer offer)
+    //                   events seen on the relay in the last 15 minutes
+    //
+    // The thresholds force both axes to grow together — a relay-rich but
+    // peer-empty network is still weak; a peer-rich but single-relay
+    // network is still weak.  Resilience requires both.
+
+    let relaysAlive = 0;
+    let relaysTotal = 0;
+    const activePeerPubkeys = new Map();  // pubkey -> last-seen-unix
+    const PEER_ACTIVE_WINDOW = 15 * 60;   // 15 minutes
+
+    function healthStage() {
+      const peers = activePeerPubkeys.size;
+      if (relaysAlive >= 10 && peers >= 30) return 4; // thriving
+      if (relaysAlive >= 5  && peers >= 10) return 3; // strong
+      if (relaysAlive >= 3  && peers >= 3)  return 2; // surviving
+      if (relaysAlive >= 2  || peers >= 5)  return 1; // weak (some redundancy)
+      return 0; // dying — single point of failure
+    }
+
+    // Captions name the EXACT missing piece for each stage so the visual
+    // doubles as a recruitment ladder.  "Bachao" → "more Pehredaars" →
+    // "peer mesh" → "we are everywhere".
     const HEALTH_CAPTIONS = {
       hi: [
-        "Cockroach mar raha hai. Bachao.",
-        "Saans le raha hai. Aur Pehredaar chahiye.",
-        "Theek hai. Lekin ek hi network hai abhi.",
-        "Mazboot. Janta ka network jeeta hai.",
-        "Anabhinaad — hum sab cockroach.",
+        () => `Cockroach akela hai. ${relaysAlive} Pehredaar. Bachao.`,
+        () => `Saans le raha hai. ${relaysAlive} Pehredaar, ${activePeerPubkeys.size} peers.`,
+        () => `Jeevit hai. ${relaysAlive} Pehredaar, ${activePeerPubkeys.size} peers — aur chahiye.`,
+        () => `Mazboot. ${relaysAlive} Pehredaar, ${activePeerPubkeys.size} peers meshing.`,
+        () => `Hum sab cockroach. ${relaysAlive} Pehredaar, ${activePeerPubkeys.size} peers.`,
       ],
       en: [
-        "The cockroach is dying. Save it.",
-        "Barely breathing. Needs more Pehredaars.",
-        "Surviving. Only one network so far.",
-        "Strong. The people's network is alive.",
-        "Thriving — we are everywhere.",
+        () => `The cockroach is alone. ${relaysAlive} Pehredaar. Save it.`,
+        () => `Barely breathing. ${relaysAlive} Pehredaar(s), ${activePeerPubkeys.size} peer(s).`,
+        () => `Alive. ${relaysAlive} Pehredaar(s), ${activePeerPubkeys.size} peer(s) — needs more.`,
+        () => `Strong. ${relaysAlive} Pehredaar(s), ${activePeerPubkeys.size} peer(s) meshing.`,
+        () => `Thriving. ${relaysAlive} Pehredaar(s), ${activePeerPubkeys.size} peer(s).`,
       ],
     };
+
     function updateCockroachHealth() {
-      // Score weights: cities is the strongest signal (geographic spread =
-      // actual adoption, not just one viral spike), then declarations, then
-      // raw report count.
-      const score = reports24h + cockroaches7d * 3 + cities.size * 5;
-      let stage = 0;
-      if (score >= 2000) stage = 4;
-      else if (score >= 200) stage = 3;
-      else if (score >= 20) stage = 2;
-      else if (score >= 1) stage = 1;
+      // Expire stale peer pubkeys (signal that a peer is no longer offering).
+      const now = Math.floor(Date.now() / 1000);
+      for (const [pk, ts] of activePeerPubkeys) {
+        if (now - ts > PEER_ACTIVE_WINDOW) activePeerPubkeys.delete(pk);
+      }
 
+      const stage = healthStage();
       const mark = document.getElementById("hero-mark");
-      if (mark) mark.classList.remove("cockroach-state-0","cockroach-state-1","cockroach-state-2","cockroach-state-3","cockroach-state-4");
-      if (mark) mark.classList.add("cockroach-state-" + stage);
-
+      if (mark) {
+        mark.classList.remove("cockroach-state-0","cockroach-state-1","cockroach-state-2","cockroach-state-3","cockroach-state-4");
+        mark.classList.add("cockroach-state-" + stage);
+      }
       document.querySelectorAll(".health-segment").forEach((seg) => {
         seg.classList.toggle("active", Number(seg.dataset.stage) <= stage);
         seg.classList.toggle("at-stage", Number(seg.dataset.stage) === stage);
       });
-
       const strip = document.getElementById("health-strip");
       const caption = document.getElementById("health-caption");
       if (strip) strip.hidden = false;
       if (caption) {
         const lang = window.__currentLang || "hi";
-        caption.textContent = HEALTH_CAPTIONS[lang][stage];
+        caption.textContent = HEALTH_CAPTIONS[lang][stage]();
         caption.dataset.stage = String(stage);
       }
     }
-    // Re-run the caption update when language changes (the existing
-    // applyLang callback re-renders the feed; we hook the health caption too).
+
+    // Poll every known relay's HTTP /info endpoint; count how many respond.
+    // The relays.json file is the seed list the deployed client uses, so
+    // it's also the right list to use for "what relays does this network
+    // claim to have."
+    async function pingAllRelays() {
+      try {
+        const r = await fetch("client/relays.json", { cache: "no-cache" });
+        if (!r.ok) return;
+        const json = await r.json();
+        const urls = Array.isArray(json) ? json : Array.isArray(json.relays) ? json.relays : [];
+        const valid = urls.filter(u => typeof u === "string" && /^wss?:\/\//.test(u));
+        relaysTotal = valid.length;
+        const results = await Promise.allSettled(valid.map(async (wsUrl) => {
+          const httpUrl = wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 5000);
+          try {
+            const resp = await fetch(httpUrl, { signal: controller.signal, cache: "no-cache" });
+            return resp.ok;
+          } catch { return false; }
+          finally { clearTimeout(timer); }
+        }));
+        relaysAlive = results.filter(r => r.status === "fulfilled" && r.value).length;
+        updateCockroachHealth();
+      } catch { /* ignore — keep last known counts */ }
+    }
+    pingAllRelays();
+    setInterval(pingAllRelays, 60 * 1000); // every minute
+
+    // Re-render the caption when the language toggle fires.
     const _origRender = window.__renderLiveFeed;
     window.__renderLiveFeed = function () {
       if (_origRender) _origRender();
@@ -759,15 +816,27 @@
         wall.hidden = false;
         const since24h = Math.floor(Date.now() / 1000) - 86400;
         const since7d = Math.floor(Date.now() / 1000) - 7 * 86400;
+        const since15m = Math.floor(Date.now() / 1000) - PEER_ACTIVE_WINDOW;
         ws.send(JSON.stringify(["REQ", "wall-r", { kinds: [1], since: since24h, limit: 500 }]));
         ws.send(JSON.stringify(["REQ", "wall-c", { kinds: [1], "#t": ["mainbhicockroach", "main-bhi-cockroach", "main_bhi_cockroach"], since: since7d, limit: 100 }]));
+        // Active peers — track distinct pubkeys publishing kind:10001 offers
+        // in the last 15 minutes.  Proxy for "peers currently meshing".
+        ws.send(JSON.stringify(["REQ", "wall-peers", { kinds: [10001], since: since15m, limit: 500 }]));
         renderStats();
         renderFeed();
       });
       ws.addEventListener("message", (e) => {
         let msg; try { msg = JSON.parse(e.data); } catch { return; }
         if (!Array.isArray(msg)) return;
-        if (msg[0] === "EVENT") { const ev = msg[2]; if (ev && ev.kind === 1) ingest(ev); }
+        if (msg[0] === "EVENT") {
+          const ev = msg[2];
+          if (!ev) return;
+          if (ev.kind === 1) ingest(ev);
+          else if (ev.kind === 10001) {
+            activePeerPubkeys.set(ev.pubkey, ev.created_at);
+            updateCockroachHealth();
+          }
+        }
         if (msg[0] === "EOSE") renderFeed();
       });
       ws.addEventListener("close", () => { connected = false; scheduleReconnect(); });
