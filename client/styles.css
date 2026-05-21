@@ -172,8 +172,20 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
   flex-wrap: wrap;
 }
 .report-card .score b { color: var(--fg); }
-.report-card .score .score-consensus { color: var(--good); }
-.report-card .score .score-progress { color: var(--accent); }
+.report-card .score .score-consensus {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.report-card .score .score-progress { color: var(--accent); font-weight: 600; }
+.report-card .score .score-count {
+  font-size: 12px;
+  opacity: 0.85;
+}
+.report-card .score .score-count b { color: inherit; }
+.report-card .score .score-good { color: var(--good); }
+.report-card .score .score-bad { color: var(--bad); }
+.report-card .score .score-warn { color: var(--warn); }
+.report-card .score .score-neutral { color: var(--muted); }
 .report-card .verify-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .report-card .verify-row button { font-size: 12px; padding: 6px 10px; border-radius: 8px; background: transparent; border: 1px solid var(--line); color: var(--muted); }
 .report-card .verify-row button:hover { color: var(--fg); border-color: var(--fg); }

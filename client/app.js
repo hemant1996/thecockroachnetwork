@@ -506,33 +506,64 @@ function publishVerification(reportId, verdict, note = "") {
 
 // ─── reputation ──────────────────────────────────────────────────────────
 
+// Per SPEC §4.2: at most one verification per (verifier_pubkey, report_id).
+// When multiple events exist, the one with the greatest created_at wins;
+// ties broken by lower id.  This MUST run before counting verifiers,
+// otherwise the same pubkey clicking "fake" three times satisfies a
+// "≥3 distinct verifiers" check, which is what was happening before.
+function dedupeVerifiers(vs) {
+  const latest = new Map();
+  for (const v of vs) {
+    const cur = latest.get(v.pubkey);
+    if (!cur
+        || v.created_at > cur.created_at
+        || (v.created_at === cur.created_at && v.id < cur.id)) {
+      latest.set(v.pubkey, v);
+    }
+  }
+  return latest;
+}
+
 function consensusVerdict(reportId) {
   const vs = verifications.get(reportId) || [];
-  if (vs.length < 3) return null;
-  const seen = new Set(); const counts = {};
-  for (const v of vs) {
-    if (seen.has(v.pubkey)) continue;
-    seen.add(v.pubkey);
+  const latest = dedupeVerifiers(vs);
+  // Per SPEC §8: ≥3 DISTINCT verifiers required for consensus.
+  if (latest.size < 3) return null;
+  const counts = {};
+  for (const v of latest.values()) {
     const verdict = v.tags.find(t => t[0] === "v")?.[1];
     if (verdict) counts[verdict] = (counts[verdict] || 0) + 1;
   }
   if (Object.keys(counts).length === 0) return null;
-  let best = null, bestN = 0;
-  for (const [k, n] of Object.entries(counts)) if (n > bestN) { best = k; bestN = n; }
-  return best;
+  // Modal verdict; deterministic tiebreaking by alphabetical verdict name.
+  const sorted = Object.entries(counts).sort(([a, an], [b, bn]) => bn - an || a.localeCompare(b));
+  return sorted[0][0];
 }
 
 function verdictCounts(reportId) {
   const vs = verifications.get(reportId) || [];
-  const counts = {}; const seen = new Set();
-  for (const v of vs) {
-    if (seen.has(v.pubkey)) continue;
-    seen.add(v.pubkey);
+  const latest = dedupeVerifiers(vs);
+  const counts = {};
+  for (const v of latest.values()) {
     const verdict = v.tags.find(t => t[0] === "v")?.[1];
     if (verdict) counts[verdict] = (counts[verdict] || 0) + 1;
   }
   return counts;
 }
+
+// Semantic mapping for the consensus display.  "true" and "resolved" are
+// positive outcomes (green); "fake" is a negative outcome (red);
+// "needs-more-proof" is uncertain (yellow); "duplicate" is neutral.
+const VERDICT_KIND = {
+  "true": "good", "resolved": "good",
+  "fake": "bad",
+  "duplicate": "neutral", "needs-more-proof": "warn",
+};
+const VERDICT_ICON = {
+  "true": "✓", "resolved": "✓",
+  "fake": "✗",
+  "duplicate": "⇿", "needs-more-proof": "⚠",
+};
 
 // ─── UI helpers ──────────────────────────────────────────────────────────
 
@@ -718,13 +749,33 @@ function renderFeed() {
     const cv = consensusVerdict(r.id);
     const totalVerifs = Object.values(counts).reduce((a, b) => a + b, 0);
 
-    // Hide the score line completely when nothing has been verified yet —
-    // a fresh report shouldn't shout "incomplete" at every reader.
+    // Verdict label respecting the current language; fall back to the raw verdict.
+    const verdictLabel = (v) => {
+      const tr = t("verdict." + v);
+      return tr === "verdict." + v ? v : tr;
+    };
+    // Compact counts line — shows all non-zero verdicts in their semantic color.
+    const countsHTML = Object.entries(counts).map(([k, n]) => {
+      const kind = VERDICT_KIND[k] || "neutral";
+      return `<span class="score-count score-${kind}">${VERDICT_ICON[k] || ""} ${escapeHTML(verdictLabel(k))} <b>${n}</b></span>`;
+    }).join("");
+
+    // Hide the score line completely when nothing has been verified yet.
     let scoreHTML = "";
     if (cv) {
-      scoreHTML = `<div class="score"><b class="score-consensus">✓ ${escapeHTML(t("verdict." + cv) !== "verdict." + cv ? t("verdict." + cv) : cv)}</b>${Object.entries(counts).map(([k, n]) => `<span>${escapeHTML(t("verdict." + k) !== "verdict." + k ? t("verdict." + k) : k)}: <b>${n}</b></span>`).join("")}</div>`;
+      // Consensus reached — show the verdict with its semantic icon + color.
+      const kind = VERDICT_KIND[cv] || "neutral";
+      const icon = VERDICT_ICON[cv] || "·";
+      scoreHTML = `<div class="score">
+        <b class="score-consensus score-${kind}">${icon} ${escapeHTML(verdictLabel(cv))}</b>
+        ${countsHTML}
+      </div>`;
     } else if (totalVerifs > 0) {
-      scoreHTML = `<div class="score"><span class="score-progress">${totalVerifs} verified</span>${Object.entries(counts).map(([k, n]) => `<span>${escapeHTML(t("verdict." + k) !== "verdict." + k ? t("verdict." + k) : k)}: <b>${n}</b></span>`).join("")}</div>`;
+      // Pre-consensus — show progress in muted accent.
+      scoreHTML = `<div class="score">
+        <span class="score-progress">${totalVerifs}/3 ${escapeHTML(t("feed.awaiting_verifications") || "verified")}</span>
+        ${countsHTML}
+      </div>`;
     }
 
     return `
