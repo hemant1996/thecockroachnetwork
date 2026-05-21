@@ -4,6 +4,25 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.2.4.1 — drop Helia, ship pragmatic local-first IPFS (2026-05-21)
+
+### Fixed
+
+- **Helia (browser-native IPFS) was bombing out with "Failed to fetch dynamically imported module" on real browsers.** The transitive `helia` → `libp2p` → `@chainsafe/*` import graph is too brittle for the esm.sh / jsdelivr CDN delivery path in 2026; even when it loads, the libp2p bootstrap dance fails often enough on mobile/NAT'd connections to be unshippable. Pulled it out.
+
+### Changed
+
+- `client/media.js` is now a 130-line zero-dependency module that computes real IPFS CIDv1 (raw codec, base32 multibase — what `ipfs add --cid-version=1 --raw-leaves` produces) locally using only `@noble/hashes/sha2` (already in the bundle).
+- Files are stored in browser IndexedDB keyed by CID. Survives reloads on the same device.
+- Compose-screen status flipped from `✓ pinned in browser` (which implied IPFS-network pinning) to `✓ saved locally` (the honest truth). New help text and a "copy CID" affordance so users can pin elsewhere if they want.
+- Feed cards still render media via `<img src=ipfs://CID resolved through public gateway>` for cross-user retrieval. Now ALSO upgrades to instant `blob:` URLs from local IndexedDB when the viewer is the uploader or has previously fetched the file. `upgradeLocalMedia()` runs after every feed render.
+
+### Honest decentralization status
+
+- Local-only by default. Anyone except the uploader gets the gateway fallback chain (`dweb.link` → `w3s.link` → `cf-ipfs.com`), which only succeeds if the CID is pinned somewhere. **We pin nothing.**
+- For cross-user permanence, advanced users need BYO Storacha / Pinata pin (Settings UI deferred to v0.2.5).
+- The CID itself is real and IPFS-gateway-compatible — anyone who manages to pin those bytes (by any means) makes the file available globally.
+
 ## v0.2.4 — IPFS media uploads via Helia (browser-native, no operator) (2026-05-21)
 
 ### Client
