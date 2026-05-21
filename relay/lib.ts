@@ -97,7 +97,11 @@ export function hexToBytes(h: string): Uint8Array {
 // ──────────────────────────────────────────────────────────────────────────
 // Event validation (per SPEC §3.1)
 
-const MAX_EVENT_BYTES = 8192;
+// 64 KiB is enough to carry one downscaled JPEG thumbnail (~480px, quality 60)
+// embedded as a base64 data: URL in a media tag (SPEC §3.4) while still being
+// small enough that a feed of 200 events over mobile is ~3-8 MB worst-case.
+// Was 8 KiB in v0.1-v0.4 (text-only era).
+const MAX_EVENT_BYTES = 65536;
 const FUTURE_TOLERANCE = 900;       // 15 minutes
 const PAST_TOLERANCE = 86400;       // 24 hours
 

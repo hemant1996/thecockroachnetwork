@@ -5,6 +5,7 @@
 import * as ed from "https://esm.sh/@noble/ed25519@2.3.0";
 import { sha256, sha512 } from "https://esm.sh/@noble/hashes@1.8.0/sha2";
 import { PeerPool } from "./peers.js";
+import { compressImage } from "./media.js";
 
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
@@ -481,12 +482,19 @@ pool.onOk = (id, accepted, reason, url) => {
 
 // ─── publishing ──────────────────────────────────────────────────────────
 
-function publishReport({ content, tags, lat, lon, precision }) {
+function publishReport({ content, tags, lat, lon, precision, media }) {
   const allTags = [
     ["g", geohashEncode(lat, lon, precision)],
     ...tags.map(t => ["t", t]),
     ["lang", navigator.language?.split("-")[0] || "en"],
   ];
+  // SPEC §3.4: media tag carries any URL form.  For in-event thumbnails the
+  // URL is a data:image/jpeg;base64,… URL; the bytes encoded in it are
+  // SHA-256-bound to the second field for downstream verification.
+  for (const m of (media || [])) {
+    if (!m || !m.dataUrl) continue;
+    allTags.push(["media", m.dataUrl, "sha256:" + m.sha256, m.mime, String(m.size)]);
+  }
   const partial = {
     pubkey: pkHex,
     created_at: Math.floor(Date.now() / 1000),
@@ -814,6 +822,25 @@ pool.on(() => {
 let renderTimer;
 function renderFeedDebounced() { clearTimeout(renderTimer); renderTimer = setTimeout(renderFeed, 80); }
 
+// SPEC §3.4: render media tags inline.  Accepts data:, https:, ipfs: etc.
+// data: URLs render instantly with no network call.  https:/ipfs:/etc. fall
+// through the browser's standard <img> loading and show broken if unreachable.
+// We do NOT validate the sha256 binding here — that's a defense-in-depth
+// item for a future client to add if anyone wants to verify bytes match the
+// tag claim.
+function renderMediaTags(r) {
+  const mediaTags = r.tags.filter(t => t[0] === "media" && typeof t[1] === "string");
+  if (mediaTags.length === 0) return "";
+  return `<div class="media-row">${mediaTags.map(t => {
+    const url = t[1];
+    // Permit data: and http(s): and ipfs:; reject other schemes to keep
+    // the surface area tight against future protocol confusion.
+    if (!/^(data:image\/|https?:\/\/|ipfs:\/\/)/.test(url)) return "";
+    const safe = url.startsWith("data:") ? url : escapeHTML(url);
+    return `<img class="media-item" loading="lazy" alt="" src="${safe}"/>`;
+  }).join("")}</div>`;
+}
+
 function renderFeed() {
   const container = $("#feed-list");
   const reports = [...events.values()]
@@ -891,6 +918,7 @@ function renderFeed() {
           </div>
         </div>
         <div class="content">${escapeHTML(r.content)}</div>
+        ${renderMediaTags(r)}
         ${tags.length ? `<div class="tags">${tags.map(t => `<span>#${escapeHTML(t)}</span>`).join("")}</div>` : ""}
         ${scoreHTML}
         <div class="verify-row">
@@ -1013,6 +1041,41 @@ window.addEventListener("DOMContentLoaded", async () => {
   $("#btn-locate").addEventListener("click", refreshGeo);
   precSel.addEventListener("change", refreshGeo);
 
+  // ── media attachment (in-event base64) ───────────────────────────────
+  let pendingMedia = null;
+  const mediaInput   = $("#media-input");
+  const mediaBtn     = $("#btn-attach-media");
+  const mediaStatus  = $("#media-status");
+  const mediaPreview = $("#media-preview");
+  function clearMedia() {
+    pendingMedia = null;
+    if (mediaInput) mediaInput.value = "";
+    if (mediaPreview) mediaPreview.innerHTML = "";
+    if (mediaStatus) mediaStatus.textContent = "no photo attached";
+  }
+  if (mediaBtn && mediaInput) {
+    mediaBtn.addEventListener("click", () => mediaInput.click());
+    mediaInput.addEventListener("change", async () => {
+      const file = mediaInput.files && mediaInput.files[0];
+      if (!file) return;
+      mediaStatus.textContent = "compressing…";
+      mediaPreview.innerHTML = "";
+      try {
+        const meta = await compressImage(file);
+        pendingMedia = meta;
+        const kb = (meta.size / 1024).toFixed(1);
+        mediaStatus.innerHTML = `<span style="color:var(--good)">✓ ready to publish</span> · ${kb} KB · embedded in event`;
+        mediaPreview.innerHTML = `<img src="${meta.dataUrl}" alt="" style="max-width:240px;max-height:180px;border-radius:6px;margin-top:8px"/>
+          <button type="button" id="btn-remove-media" class="ghost small" style="margin-top:6px">Remove</button>`;
+        const removeBtn = $("#btn-remove-media");
+        if (removeBtn) removeBtn.addEventListener("click", clearMedia);
+      } catch (e) {
+        mediaStatus.innerHTML = `<span style="color:var(--bad)">✗ ${escapeHTML(e.message)}</span>`;
+        pendingMedia = null;
+      }
+    });
+  }
+
   composeBtn.addEventListener("click", async () => {
     if (!lastFix) {
       try { await fetchLocation(); } catch { toast(t("compose.error.no_fix")); return; }
@@ -1030,8 +1093,10 @@ window.addEventListener("DOMContentLoaded", async () => {
         tags: [...selectedTags],
         lat: lastFix.lat, lon: lastFix.lon,
         precision: Number(precSel.value),
+        media: pendingMedia ? [pendingMedia] : [],
       });
       composeText.value = "";
+      clearMedia();
       showScreen("feed");
     } finally { composeBtn.disabled = false; }
   });

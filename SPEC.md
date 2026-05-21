@@ -341,6 +341,26 @@ The reference geohash encoder is informative; any correctly-implemented geohash 
 
 ## 7. Media
 
+Media is referenced by URL in a `media` tag (SPEC §3.4):
+
+```
+["media", "<url>", "sha256:<hex>", "<mime>", "<size-bytes>"]
+```
+
+The URL form is unconstrained:
+
+- `data:image/jpeg;base64,…` — bytes embedded directly in the event. Recommended for civic-signal thumbnails (≤ 48 KB raw, ≤ ~64 KB base64). The signed event itself carries the media; replication is automatic via relay-to-relay sync; no external storage layer. The reference client compresses uploaded photos to fit this budget.
+- `https://…` — externally hosted media. Reference clients should treat as untrusted until the byte stream's SHA-256 matches the tag claim.
+- `ipfs://<cid>` — content-addressed via IPFS. Same SHA-256 binding caveat.
+
+Implementations MUST respect the SPEC §3.1 64 KiB maximum on the canonical event size; this is the operating budget for in-event media.
+
+### 7.1 Verification
+
+A receiver MAY verify a media binding by computing SHA-256 over the bytes referenced by the URL and comparing to the tag claim. For `data:` URLs the bytes are present in the event itself; no network fetch is required. Verification mismatch is a strong signal of tampering.
+
+## 7.5. Legacy media notes
+
 Media MUST be referenced by content-address using the `["media", "sha256:<hex>", "<url>", ...]` tag. Clients fetching media MUST verify that `sha256(fetched_bytes)` equals the declared hash and MUST discard the bytes if it does not.
 
 The protocol does not standardize where media is stored. Recommended options: IPFS, web3.storage, the reporter's own phone over libp2p, any public HTTPS host. Multiple URLs MAY be provided as fallbacks.

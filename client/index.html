@@ -60,6 +60,19 @@
       </div>
 
       <div class="field">
+        <label>Photo <span style="color:var(--muted);font-weight:400">(optional, auto-shrunk)</span></label>
+        <div class="row" style="margin-bottom:6px;align-items:center;gap:10px">
+          <button id="btn-attach-media" type="button" class="ghost small">Attach photo</button>
+          <input id="media-input" type="file" accept="image/*" hidden />
+          <span id="media-status" style="font-size:13px;color:var(--muted)">no photo attached</span>
+        </div>
+        <div id="media-preview"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">
+          Photo is shrunk to ~480-720 px, JPEG quality ~60, embedded directly in your signed event as a data URL. No upload to any external service — the event IS the storage. Replicates across relays automatically.
+        </div>
+      </div>
+
+      <div class="field">
         <label data-i18n="compose.location_label">Location</label>
         <div class="row" style="margin-bottom:6px">
           <button id="btn-locate" class="ghost small" data-i18n="compose.get_gps">get GPS fix</button>

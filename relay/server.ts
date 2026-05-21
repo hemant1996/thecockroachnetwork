@@ -600,7 +600,7 @@ try {
     if (url.pathname === "/") {
       return new Response(JSON.stringify({
         name: "cockroach-relay",
-        version: "0.4.1",
+        version: "0.5.0",
         spec: "https://github.com/hemant1996/thecockroachnetwork/blob/main/SPEC.md",
         retention_days: RETENTION_DAYS,
         stats: getStats(),
@@ -732,7 +732,7 @@ try {
 }
 
 console.log("");
-console.log("  cockroach-relay v0.4.1 running");
+console.log("  cockroach-relay v0.5.0 running");
 console.log("");
 console.log(`  WebSocket:  ws://localhost:${server.port}`);
 console.log(`  Info:       http://localhost:${server.port}/`);

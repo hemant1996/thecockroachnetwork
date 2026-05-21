@@ -4,6 +4,40 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.5.0 — in-event base64 media: photos with zero operator (2026-05-21)
+
+The simpler answer that the Helia / IPFS detour was missing: civic thumbnails fit in 64 KiB if you downscale them, and the protocol already syncs events between relays. So the event itself can carry the photo.
+
+### Added
+
+- **`client/media.js`** — `compressImage(file)` uses the Canvas API to downscale (max 720 px longest edge, dropping to 320 px if needed) and re-encode as JPEG (quality 0.7 → 0.4 in 0.1 steps) until the raw payload fits in 48 KB. Returns `{ dataUrl, sha256, mime, size }`. SHA-256 is computed over the final byte stream so the media tag binding is verifiable (SPEC §7.1).
+- **File attach UI in compose** — bare-bones picker that runs `compressImage()`, previews the result, and shows the final size. The bytes go directly into the published event's `media` tag as a `data:image/jpeg;base64,…` URL.
+- **Inline render in feed cards** — `renderMediaTags()` accepts `data:`, `http(s):`, and `ipfs:` URLs. Data URLs render instantly (no network call); other schemes fall through standard `<img>` loading.
+- **SPEC §7** rewritten to document `data:` URLs as the recommended low-friction transport for thumbnails, with the SHA-256 binding rule restated as §7.1.
+
+### Changed
+
+- **`MAX_EVENT_BYTES`** in the reference relay bumped from 8 KiB → 64 KiB. Was sized for the text-only v0.1-v0.4 era; the new ceiling accommodates one thumbnail per event while still being modest enough that a 200-event feed over mobile stays in single-digit megabytes.
+- v0.4's gzip storage compression now applies to media-bearing events too — though JPEG bytes are already entropy-dense so the savings are modest (a few %).
+
+### Why this beat the IPFS path
+
+The Helia / IPFS browser approach (v0.2.4) was fundamentally fighting two things at once: ESM CDN brittleness and the IPFS DHT bootstrap difficulty. The fixed cost was high (hundreds of KB of libp2p, flaky in real browsers) and the variable cost (anything bigger than tiny isn't really decentralized without a pin). For the actual civic-signal use case — thumbnails of a broken road, a paper-leak screenshot, a paper-trail photo — in-event base64 IS the simplest decentralized answer:
+
+- Zero operator infrastructure required
+- Replicates via the same relay-to-relay sync we already built in v0.4
+- Renders in any browser natively via `data:` URLs
+- Content-addressed via the existing SHA-256 media-tag binding
+- No external service of any kind to pin, host, or trust
+
+The trade-off is event size. A 200-event feed where 30% have thumbnails is ~3 MB on first load, vs ~200 KB for text-only. Acceptable for the value of "no operator anywhere."
+
+### Operator action required
+
+The Fly relays (Mumbai + Singapore) need a `fly deploy` to pick up the new `MAX_EVENT_BYTES`. Until they do, the Mumbai/Singapore relays still reject any event larger than 8 KiB even though clients can now produce them.
+
+VERSION → 0.5.0.
+
 ## v0.4.1 — zero-config Render deploy: peers seeded from JSON + hardcoded backup (2026-05-21)
 
 ### Fixed — the "every new Render operator needs to set COCKROACH_PEERS in their dashboard" friction
