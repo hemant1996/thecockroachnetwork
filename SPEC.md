@@ -1,6 +1,6 @@
 # Cockroach Relay Protocol — SPEC
 
-**Version:** v0.1
+**Version:** v0.4
 **Status:** Draft
 **License:** CC0 — public domain. Fork freely.
 

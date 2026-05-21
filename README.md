@@ -16,7 +16,7 @@ WHITEPAPER.md      The "why" — vision, threat model, civic theory
 RELEASE.md         How to cut, mirror, and pin a release
 CHANGELOG.md       Versioned change log
 LICENSE            CC0 — public domain
-VERSION            Current version (0.1.0)
+VERSION            Current version (0.4.1)
 
 relay/             Reference relay (Bun + TypeScript + SQLite, L1 conformant)
   server.ts        WebSocket broker + permalink HTTP endpoint
@@ -126,7 +126,9 @@ cd relay && fly launch --copy-config && fly volumes create cockroach_data --size
 
 Full friction ladder with TLS, Tor hidden service, and operator policy notes: [`relay/RUN.md`](relay/RUN.md).
 
-**Coming in v0.2:** every PWA install of the client will join a WebRTC peer-relay mesh automatically — opening the client will make your device part of the network with no setup at all. Design: [`docs/v0.2-webrtc-peer-relay.md`](docs/v0.2-webrtc-peer-relay.md).
+**Shipped in v0.2:** WebRTC peer-relay mesh — every client browser tab joins a peer-to-peer mesh on by default, so events fan out across both relays and peer connections. Design: [`docs/v0.2-webrtc-peer-relay.md`](docs/v0.2-webrtc-peer-relay.md).
+
+**Shipped in v0.4:** share-URL relay discovery (a recipient opens a share link and the embedded relay auto-adds), relay-to-relay sync (relays mesh with each other to prevent siloed feeds), and zero-config Pehredaar onboarding (one-click Render deploys join the mesh on first boot via `relay/seeds.json`). Default seed list ships with the current public Pehredaars; operators can edit before first start.
 
 ## Quick start (host a client mirror)
 
@@ -147,21 +149,29 @@ Edit `client/relays.json` to ship your mirror's default seed list of relays you 
 ```sh
 cd relay
 bun test
-# 17 pass, 0 fail
+# 18 pass, 0 fail
 ```
 
 The relay suite covers signature verification, canonical serialization, filter matching, geohash encoding, and an end-to-end battery that spins up a live relay and drives it over WebSocket the way the browser client does — publishing reports, querying by tag, signing verifications, rejecting tampered events, live-stream delivery, and the HTML permalink rendering.
 
 ## Status
 
-**v0.1.0** — the spec is implementable, the reference relay is L1-conformant, the reference client is L3-conformant, the wire protocol is frozen for the foreseeable future. See [CHANGELOG.md](CHANGELOG.md) for the v0.2 roadmap.
+**v0.4.1** — the spec is implementable, the reference relay is L1-conformant, the reference client is L3-conformant, the wire protocol is stable. The network currently has **3 public Pehredaars** (Mumbai/Fly, Singapore/Fly, Render) running v0.4.x and meshed via relay-to-relay sync.
 
-**Known limits in v0.1:**
+Shipped between v0.1 and v0.4:
 
-- No in-client media upload (paste media URLs into the description for now). v0.2 adds direct IPFS upload.
-- No encrypted key backup. Losing the device loses the identity unless you export the key (Identity tab). v0.2 adds a seed-phrase backup flow.
-- No relay federation; clients fan out to multiple relays themselves.
+- v0.2 — WebRTC peer-relay mesh (on by default); peer-mesh signaling event kinds 10001/10002/10003
+- v0.2.2 — relay `/stats` endpoint with `ws_connected`, `unique_pubkeys_1h`, `peer_offers_15m`, `events_24h`
+- v0.2.3 — landing-page redesign (agitprop poster, live cockroach health)
+- v0.4.0 — share-URL discovery (`#relays=…` fragment), `PEERS` wire verb (client → relay peer hints), relay-to-relay WebSocket sync, gzip storage compression
+- v0.4.1 — zero-config peer seeding via `relay/seeds.json` + hardcoded backup constants
+
+**Known limits in v0.4:**
+
+- No in-client media upload. The protocol's `media` tag (SPEC §3.4) is content-addressed and intact; reference client doesn't produce or render it yet because there's no decentralized free-tier pin service to default to. Future BYO-pin Settings UI (Storacha / Pinata) is v0.5 work.
+- No encrypted key backup. Losing the device loses the identity unless you export the key (Identity tab). Seed-phrase backup is v0.5 work.
 - No native iOS/Android apps; PWA only.
+- Bootstrap is still mine — `client/relays.json` and `relay/seeds.json` are lists in this repo. As more independent Pehredaars come online they'll be added to those files; eventually consider transferring ownership to a multi-operator quorum.
 
 ## License
 
