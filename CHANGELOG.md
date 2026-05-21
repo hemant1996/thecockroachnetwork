@@ -4,6 +4,20 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.2.4 — IPFS media uploads via Helia (browser-native, no operator) (2026-05-21)
+
+### Client
+
+- **File attachments now upload to IPFS directly from the browser** via Helia (`client/media.js`). When a user attaches a file, a Helia node spins up in their browser, the bytes get a real IPFS CID, and the uploader's tab serves the file via libp2p + bitswap to any other IPFS node — including public gateways like Cloudflare's `cf-ipfs.com`, Protocol Labs' `dweb.link`, and Storacha's `w3s.link`. Helia is lazy-loaded (~500 KB) on first attach to keep the initial page fast.
+- The published event carries the media as a SPEC §3.4 tag: `["media", "ipfs://<cid>", "sha256:<hex>", "<mime>", "<size-bytes>"]`. SHA-256 is computed independently so non-IPFS readers can verify the bytes against the claim even if they fetched via an HTTP gateway.
+- Feed cards now render `ipfs://` media inline as `<img>` / `<video>` from the first public gateway. If a gateway 404s, the element's `onerror` falls through the gateway list. After all gateways fail the image stays broken — an honest signal that nobody has the CID anymore.
+- **Decentralization model**: we operate no pinning service. The protocol author and relay operators carry zero responsibility for media storage. A file is reachable as long as the uploader's tab is open OR somebody else pinned it (could be a public gateway that cached it during retrieval; could be a user's own Storacha/Pinata account). For permanence, advanced users can configure their own pinning credentials (Settings UI deferred to v0.2.5).
+- 20 MB per-file cap in the client; helps keep browser memory + DHT round-trips manageable.
+
+### Protocol / relay
+
+- No changes. SPEC §3.4 already specified the content-addressed `media` tag format; the client now produces it via real IPFS for the first time.
+
 ## v0.2.3 — landing redesign: agitprop poster with live cockroach (2026-05-21)
 
 ### Landing

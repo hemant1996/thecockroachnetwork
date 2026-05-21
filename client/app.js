@@ -5,6 +5,7 @@
 import * as ed from "https://esm.sh/@noble/ed25519@2.3.0";
 import { sha256, sha512 } from "https://esm.sh/@noble/hashes@1.8.0/sha2";
 import { PeerPool } from "./peers.js";
+import { uploadFile, warmupHelia, publicGatewayUrl, publicGatewayUrls } from "./media.js";
 
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
@@ -430,12 +431,20 @@ pool.onOk = (id, accepted, reason, url) => {
 
 // ─── publishing ──────────────────────────────────────────────────────────
 
-function publishReport({ content, tags, lat, lon, precision }) {
+function publishReport({ content, tags, lat, lon, precision, media }) {
   const allTags = [
     ["g", geohashEncode(lat, lon, precision)],
     ...tags.map(t => ["t", t]),
     ["lang", navigator.language?.split("-")[0] || "en"],
   ];
+  // Per SPEC §3.4: media tags are content-addressed.  Format:
+  //   ["media", "ipfs://<cid>", "sha256:<hex>", "<mime>", "<size-bytes>"]
+  // Storing both the IPFS URL and the SHA-256 lets non-IPFS readers verify
+  // the byte stream independently if they retrieve via an HTTP gateway.
+  for (const m of (media || [])) {
+    if (!m || !m.cid) continue;
+    allTags.push(["media", "ipfs://" + m.cid, "sha256:" + m.sha256, m.mime, String(m.size)]);
+  }
   const partial = {
     pubkey: pkHex,
     created_at: Math.floor(Date.now() / 1000),
@@ -714,6 +723,28 @@ pool.on(() => {
 let renderTimer;
 function renderFeedDebounced() { clearTimeout(renderTimer); renderTimer = setTimeout(renderFeed, 80); }
 
+// Render IPFS media attachments.  Each media tag is shaped as
+// ["media", "ipfs://<cid>", "sha256:<hex>", "<mime>", "<size>"].
+// We try the first public gateway by default; if it 404s the <img>'s
+// onerror handler swaps to the next one.  After all gateways fail the
+// image stays broken — honest signal that the CID is no longer reachable
+// (the uploader's tab closed and nobody pinned it).
+function renderMediaTags(r) {
+  const mediaTags = r.tags.filter(t => t[0] === "media" && /^ipfs:\/\//.test(t[1] || ""));
+  if (mediaTags.length === 0) return "";
+  return `<div class="media-row">${mediaTags.map(t => {
+    const cid = t[1].replace(/^ipfs:\/\//, "");
+    const mime = t[3] || "";
+    const urls = publicGatewayUrls(cid);
+    const isVideo = mime.startsWith("video/");
+    const urlsAttr = escapeHTML(JSON.stringify(urls));
+    if (isVideo) {
+      return `<video class="media-item" controls preload="metadata" data-urls='${urlsAttr}' data-i="0" onerror="this.dataset.i=String(+this.dataset.i+1);const u=JSON.parse(this.dataset.urls);if(u[+this.dataset.i])this.src=u[+this.dataset.i];" src="${escapeHTML(urls[0])}"></video>`;
+    }
+    return `<img class="media-item" loading="lazy" data-urls='${urlsAttr}' data-i="0" onerror="this.dataset.i=String(+this.dataset.i+1);const u=JSON.parse(this.dataset.urls);if(u[+this.dataset.i])this.src=u[+this.dataset.i];" alt="" src="${escapeHTML(urls[0])}"/>`;
+  }).join("")}</div>`;
+}
+
 function renderFeed() {
   const container = $("#feed-list");
   const reports = [...events.values()]
@@ -791,6 +822,7 @@ function renderFeed() {
           </div>
         </div>
         <div class="content">${escapeHTML(r.content)}</div>
+        ${renderMediaTags(r)}
         ${tags.length ? `<div class="tags">${tags.map(t => `<span>#${escapeHTML(t)}</span>`).join("")}</div>` : ""}
         ${scoreHTML}
         <div class="verify-row">
@@ -899,6 +931,53 @@ window.addEventListener("DOMContentLoaded", async () => {
   $("#btn-locate").addEventListener("click", refreshGeo);
   precSel.addEventListener("change", refreshGeo);
 
+  // ── media attachment (IPFS via Helia) ────────────────────────────────
+  let pendingMedia = null;
+  const mediaInput     = $("#media-input");
+  const mediaBtn       = $("#btn-attach-media");
+  const mediaStatus    = $("#media-status");
+  const mediaPreview   = $("#media-preview");
+  function clearMedia() {
+    pendingMedia = null;
+    mediaInput.value = "";
+    mediaPreview.innerHTML = "";
+    mediaStatus.textContent = "no file attached";
+  }
+  if (mediaBtn) {
+    mediaBtn.addEventListener("click", () => {
+      // Warm Helia up so the first real upload doesn't pay the full load cost.
+      warmupHelia();
+      mediaInput.click();
+    });
+  }
+  if (mediaInput) {
+    mediaInput.addEventListener("change", async () => {
+      const file = mediaInput.files && mediaInput.files[0];
+      if (!file) return;
+      mediaStatus.textContent = "computing CID…";
+      mediaPreview.innerHTML = "";
+      try {
+        const meta = await uploadFile(file);
+        pendingMedia = meta;
+        const shortCid = meta.cid.slice(0, 12) + "…" + meta.cid.slice(-6);
+        mediaStatus.innerHTML = `<span style="color:var(--good)">✓ pinned in browser</span> · <span class="mono" title="${meta.cid}">${shortCid}</span> · ${(meta.size / 1024).toFixed(1)} KB`;
+        if (file.type.startsWith("image/")) {
+          const url = URL.createObjectURL(file);
+          mediaPreview.innerHTML = `<img src="${url}" alt="" style="max-width:240px;max-height:180px;border-radius:6px;margin-top:8px"/>
+            <button type="button" id="btn-remove-media" class="ghost small" style="margin-top:6px">Remove</button>`;
+        } else {
+          mediaPreview.innerHTML = `<div style="font-size:13px;color:var(--muted);margin-top:6px">${file.name} (${file.type || "binary"})</div>
+            <button type="button" id="btn-remove-media" class="ghost small" style="margin-top:6px">Remove</button>`;
+        }
+        const removeBtn = $("#btn-remove-media");
+        if (removeBtn) removeBtn.addEventListener("click", clearMedia);
+      } catch (e) {
+        mediaStatus.innerHTML = `<span style="color:var(--bad)">✗ ${escapeHTML(e.message)}</span>`;
+        pendingMedia = null;
+      }
+    });
+  }
+
   composeBtn.addEventListener("click", async () => {
     if (!lastFix) {
       try { await fetchLocation(); } catch { toast(t("compose.error.no_fix")); return; }
@@ -916,8 +995,10 @@ window.addEventListener("DOMContentLoaded", async () => {
         tags: [...selectedTags],
         lat: lastFix.lat, lon: lastFix.lon,
         precision: Number(precSel.value),
+        media: pendingMedia ? [pendingMedia] : [],
       });
       composeText.value = "";
+      clearMedia();
       showScreen("feed");
     } finally { composeBtn.disabled = false; }
   });
