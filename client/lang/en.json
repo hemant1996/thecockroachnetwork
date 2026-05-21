@@ -35,9 +35,12 @@
   "verdict.fake": "fake",
   "verdict.actions": "more",
   "verdict.request_evidence": "request evidence",
+  "verdict.attach_evidence": "attach evidence",
   "verdict.mark_duplicate": "mark duplicate of…",
   "verdict.mark_resolved": "mark resolved",
   "verdict.reopen": "reopen",
+  "feed.load_more": "load more",
+  "feed.remaining": "remaining",
 
   "feed.empty": "No reports yet. Be the first.",
   "feed.share": "share",

@@ -37,9 +37,12 @@
   "verdict.fake": "झूठा",
   "verdict.actions": "और",
   "verdict.request_evidence": "सबूत माँगें",
+  "verdict.attach_evidence": "सबूत लगाएँ",
   "verdict.mark_duplicate": "दोहराव बताएँ…",
   "verdict.mark_resolved": "हल हो गया",
   "verdict.reopen": "फिर से खोलें",
+  "feed.load_more": "और देखें",
+  "feed.remaining": "बाक़ी",
 
   "feed.empty": "अभी कोई रिपोर्ट नहीं। पहले आप कीजिए।",
   "feed.share": "शेयर",

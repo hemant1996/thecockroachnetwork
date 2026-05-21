@@ -4,6 +4,45 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.1 — scale-safe feed + the give-proof flow (2026-05-22)
+
+Two issues surfaced post-ship that v0.7.0 left half-done. Both fixed in one patch — no protocol change, no relay change.
+
+### Feed wouldn't survive scale
+
+`renderFeed()` re-filtered the global event arrays for every card on every render. At ~1k reports × 10k events that's tens of millions of ops per render — mid-second jank on mobile. At 10k × 100k it freezes the tab for multiple seconds.
+
+**Fix: index-on-ingest.** Five new Maps populated as events arrive — `truthByReport`, `statusByReport`, `evidenceByReport`, `relationsBySource`, `evidenceAttachByReport`, plus a `myReportsByCell` counter and a `verifierByCell` Set. Per-card lookups go from O(M) to O(1). Out-of-order delivery handled by a pending-verifiers Map that flushes when the parent `kind:1` lands.
+
+`renderFeed` now uses fast-accessor wrappers (`truthCountsFast`, `latestStatusFast`, etc.) that read from the indexes instead of filtering. The pure helpers in `verdicts.js` stay the source of truth; the wrappers are just the performance path. Same outputs, dramatically faster.
+
+**Also: visible-cap.** Default 50 cards rendered, plus a `load more · N remaining` button at the bottom. Sort/filter changes reset the cap. Keeps the DOM cost bounded regardless of network size.
+
+### The "give proof" path was missing
+
+v0.7.0 added `↺ asking proof` (kind:4) but had no UI to *answer* it. Someone asked for proof, the badge updated, and the loop dead-ended.
+
+**Fix: evidence-reply composer.** A new `↳ attach evidence` button on every card (and in the `⋯ more` menu) stashes the parent report id and switches to the Report tab. A red-accented banner above the composer reads `↳ attaching evidence to #abcd · [× cancel]`. Publishing appends `["e", parent, "evidence"]` to the new `kind:1` event per SPEC §4.2.6. After publish the parent id clears.
+
+Inline rendering: evidence-attachment replies are hidden from the top-level feed and render as a small thread under the parent card. The closure badge counts them via `▸ N evidence`. The full reply flow now has an answer.
+
+### Files
+
+- `client/app.js` — index Maps + ingest routing + fast accessors + `renderCard` extraction + `evidenceReplyTo` state + click handlers (`load-more`, `attach-evidence`, `evidence-cancel`).
+- `client/index.html` — `#evidence-banner` markup, brand chip → `v0.7.1`.
+- `client/styles.css` — `.evidence-banner`, `.evidence-thread`, `.evidence-reply`, `.attach-btn`, `.load-more`.
+- `client/lang/en.json`, `client/lang/hi.json` — `verdict.attach_evidence`, `feed.load_more`, `feed.remaining`.
+
+### Dev probe
+
+Added a `window.lastFix` getter/setter on localhost only so headless QA can stub a GPS fix without the geolocation permission prompt. No-op on the production host.
+
+### Operator action required
+
+None.
+
+VERSION → 0.7.1.
+
 ## v0.7.0 — verdict honesty + ranking that matters (2026-05-22)
 
 The v0.6 five-verdict row (`true / fake / needs-more-proof / duplicate / resolved`) mashed three different questions into one mutually-exclusive click — *is the claim true?* *is the issue resolved?* *is this a copy?* — which trapped reports in "needs-more-proof" purgatory and made consensus math lose information. A skeptic clicking "needs proof" would silently drown out three honest "true" voters; reports stuck at "needs proof" had no defined path to resolution; "resolved" and "duplicate" weren't truth claims at all.

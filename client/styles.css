@@ -524,6 +524,82 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
 }
 .report-card .tags span::before { content: "#"; opacity: 0.6; }
 
+/* ── evidence-reply banner above the composer (v0.7.1) ─────────────── */
+.evidence-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; margin: 0 0 18px;
+  background: rgba(230,59,46,0.08);
+  border: 1px solid rgba(230,59,46,0.45); border-radius: 4px;
+  font-family: "JetBrains Mono", monospace; font-size: 12px;
+  color: var(--accent); letter-spacing: 0.04em;
+}
+.evidence-banner[hidden] { display: none; }
+.evidence-banner .short { color: var(--ink); font-weight: 500; }
+.evidence-banner button {
+  background: transparent; border: 1px solid var(--rule-2); color: var(--ink-dim);
+  font-family: "JetBrains Mono", monospace; font-size: 10px;
+  padding: 4px 10px; border-radius: 3px; letter-spacing: 0.06em;
+  text-transform: lowercase; box-shadow: none;
+}
+.evidence-banner button:hover { color: var(--accent); border-color: var(--accent); transform: none; box-shadow: none; }
+
+/* ── load more (v0.7.1 visible cap) ─────────────────────────────────── */
+.load-more {
+  display: block; width: 100%;
+  padding: 14px; margin: 4px 0 0;
+  background: transparent; border: 1px dashed var(--rule-2); color: var(--ink-dim);
+  border-radius: 4px; font-family: "JetBrains Mono", monospace; font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 400; box-shadow: none;
+}
+.load-more:hover { border-color: var(--accent); color: var(--accent); transform: none; box-shadow: none; }
+
+/* ── evidence thread under a parent card (v0.7.1) ──────────────────── */
+.report-card .evidence-thread {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.report-card .evidence-thread .thread-head {
+  font-family: "JetBrains Mono", monospace; font-size: 10px;
+  color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.report-card .evidence-reply {
+  background: rgba(244,234,213,0.025);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.report-card .evidence-reply .reply-meta {
+  display: flex; align-items: center; gap: 8px;
+  font-family: "JetBrains Mono", monospace; font-size: 10px;
+  color: var(--ink-faint); letter-spacing: 0.06em;
+}
+.report-card .evidence-reply .reply-meta .id { color: var(--ink); }
+.report-card .evidence-reply .reply-meta .feed-avatar {
+  width: 22px; height: 22px; border-radius: 4px;
+}
+.report-card .evidence-reply .reply-body {
+  font-size: 14px; line-height: 1.5; color: var(--ink);
+  white-space: pre-wrap; word-wrap: break-word;
+}
+.report-card .evidence-reply .media-item { max-height: 240px; }
+
+/* ── ↳ attach evidence quick-button on the verdict row (v0.7.1) ─────── */
+.report-card .verify-row .attach-btn {
+  font-family: "JetBrains Mono", monospace; font-size: 12px;
+  padding: 8px 14px; border-radius: 4px;
+  background: rgba(230,59,46,0.08); border: 1px solid rgba(230,59,46,0.45);
+  color: var(--accent); letter-spacing: 0.06em; text-transform: lowercase;
+  font-weight: 400; box-shadow: none;
+}
+.report-card .verify-row .attach-btn:hover {
+  background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+  transform: none; box-shadow: none;
+}
+
 /* ── closure-absence badge (SPEC §4.2 + §8.4) ──────────────────── */
 .report-card .closure {
   display: flex; flex-wrap: wrap; gap: 12px; align-items: center;

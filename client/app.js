@@ -419,7 +419,34 @@ const truthEvents = [];                // kind:2 truth-verdicts (post-translatio
 const statusEvents = [];               // kind:3 status events
 const evidenceEvents = [];             // kind:4 evidence-request events
 const relationEvents = [];             // kind:5 relation events
+
+// ── ingest-time indexes (v0.7.1) ────────────────────────────────────────
+// renderFeed used to re-filter the global event arrays for every card;
+// at scale that was O(N × M) per render. These maps are populated as events
+// arrive so per-card lookups are O(1) on a small slice.
+const truthByReport      = new Map();  // reportId -> kind:2[] for that report
+const statusByReport     = new Map();  // reportId -> kind:3[]
+const evidenceByReport   = new Map();  // reportId -> kind:4[]
+const relationsBySource  = new Map();  // sourceReportId -> kind:5[]
+const evidenceAttachByReport = new Map();  // originalReportId -> kind:1 evidence-attachments
+const myReportsByCell    = new Map();  // geohash-5 cell -> count of MY kind:1 reports
+const verifierByCell     = new Map();  // geohash-5 cell -> Set<pubkey> of voters on any kind:1 in that cell
+const reportCellById     = new Map();  // reportId -> geohash-5 cell of the report (cached for verifier indexing)
+
 const SUB_FEED = "feed";
+
+function _pushIndex(map, key, value) {
+  let arr = map.get(key);
+  if (!arr) { arr = []; map.set(key, arr); }
+  arr.push(value);
+}
+
+// kind:1 has `["e", origId, "evidence"]` when it's an evidence-attachment reply.
+function evidenceParentId(ev) {
+  if (ev.kind !== 1) return null;
+  const tag = ev.tags.find(t => t[0] === "e" && t[2] === "evidence");
+  return tag ? tag[1] : null;
+}
 
 function ingest(e) {
   if (events.has(e.id)) return false;
@@ -427,15 +454,66 @@ function ingest(e) {
   // resolved → kind:3, duplicate → discarded) before routing into stores.
   const ev = translateLegacyVerdict(e);
   if (ev === null) return false;
-  // Always remember the original by id so we don't re-ingest duplicates.
   events.set(e.id, e);
-  if (ev.kind === 2) truthEvents.push(ev);
-  else if (ev.kind === 3) statusEvents.push(ev);
-  else if (ev.kind === 4) evidenceEvents.push(ev);
-  else if (ev.kind === 5) relationEvents.push(ev);
-  // kind:1 reports live in the `events` Map; nothing more to do.
+
+  if (ev.kind === 1) {
+    // Cache geohash-5 cell for fast lookup by report-id when indexing verifiers.
+    const cell = geo5(gTagOf(ev));
+    if (cell) {
+      reportCellById.set(ev.id, cell);
+      // Out-of-order delivery: verifiers may have arrived before this kind:1.
+      const pending = _pendingVerifiers.get(ev.id);
+      if (pending) {
+        let set = verifierByCell.get(cell);
+        if (!set) { set = new Set(); verifierByCell.set(cell, set); }
+        for (const pk of pending) set.add(pk);
+        _pendingVerifiers.delete(ev.id);
+      }
+    }
+    // §8.3 voter-weight: count my own kind:1 reports per cell incrementally.
+    if (cell && ev.pubkey === pkHex) {
+      myReportsByCell.set(cell, (myReportsByCell.get(cell) || 0) + 1);
+    }
+    // Evidence-attachment reply: index under the parent report.
+    const parent = evidenceParentId(ev);
+    if (parent) _pushIndex(evidenceAttachByReport, parent, ev);
+  } else if (ev.kind === 2) {
+    truthEvents.push(ev);
+    const reportId = eTagOf(ev);
+    if (reportId) _pushIndex(truthByReport, reportId, ev);
+    _indexVerifierByCell(reportId, ev.pubkey);
+  } else if (ev.kind === 3) {
+    statusEvents.push(ev);
+    const reportId = eTagOf(ev);
+    if (reportId) _pushIndex(statusByReport, reportId, ev);
+    _indexVerifierByCell(reportId, ev.pubkey);
+  } else if (ev.kind === 4) {
+    evidenceEvents.push(ev);
+    const reportId = eTagOf(ev);
+    if (reportId) _pushIndex(evidenceByReport, reportId, ev);
+    _indexVerifierByCell(reportId, ev.pubkey);
+  } else if (ev.kind === 5) {
+    relationEvents.push(ev);
+    const eTags = ev.tags.filter(t => t[0] === "e").map(t => t[1]);
+    if (eTags[0]) _pushIndex(relationsBySource, eTags[0], ev);
+  }
   return true;
 }
+
+function _indexVerifierByCell(reportId, pubkey) {
+  if (!reportId) return;
+  // Verifier might arrive before the kind:1 it points at (out-of-order delivery
+  // over multiple relays). If so, we'll fix up when the kind:1 lands — see below.
+  const cell = reportCellById.get(reportId);
+  if (!cell) {
+    _pushIndex(_pendingVerifiers, reportId, pubkey);
+    return;
+  }
+  let set = verifierByCell.get(cell);
+  if (!set) { set = new Set(); verifierByCell.set(cell, set); }
+  set.add(pubkey);
+}
+const _pendingVerifiers = new Map();
 
 // Verify an event's id + signature.  Relays validate on receipt, but events
 // gossiped over WebRTC peer channels haven't been through a relay, so the
@@ -503,6 +581,10 @@ pool.onOk = (id, accepted, reason, url) => {
 
 // ─── publishing ──────────────────────────────────────────────────────────
 
+// v0.7.1 — when an evidence-reply is in flight, the parent report id sits here.
+// publishReport() reads it and appends ["e", parent, "evidence"] to the new kind:1.
+let evidenceReplyTo = null;
+
 function publishReport({ content, tags, lat, lon, precision, media }) {
   const allTags = [
     ["g", geohashEncode(lat, lon, precision)],
@@ -515,6 +597,10 @@ function publishReport({ content, tags, lat, lon, precision, media }) {
   for (const m of (media || [])) {
     if (!m || !m.dataUrl) continue;
     allTags.push(["media", m.dataUrl, "sha256:" + m.sha256, m.mime, String(m.size)]);
+  }
+  // SPEC §4.2.6 evidence-attachment: a kind:1 report tagged with the original.
+  if (evidenceReplyTo) {
+    allTags.push(["e", evidenceReplyTo, "evidence"]);
   }
   const partial = {
     pubkey: pkHex,
@@ -846,31 +932,49 @@ let feedFilter = "all";
 
 function tagsOf(e) { return e.tags.filter(t => t[0] === "t").map(t => t[1]); }
 
-// Count of follow-up evidence reports attached to a given report. Per
-// SPEC §4.2.6, an evidence-attachment is a kind:1 event tagged
-// ["e", <original-id>, "evidence"].
-function evidenceAttachmentCount(reportId) {
-  let n = 0;
-  for (const ev of events.values()) {
-    if (ev.kind !== 1) continue;
-    if (ev.tags.some(t => t[0] === "e" && t[1] === reportId && t[2] === "evidence")) n++;
-  }
-  return n;
+// ── per-report fast accessors (v0.7.1 — backed by ingest-time indexes) ──
+//
+// These mirror the same outputs as the pure helpers in verdicts.js but use
+// the O(1) index lookups instead of filtering the global arrays every time.
+// Pure helpers stay the source of truth for the algorithm; these wrappers
+// are the performance path.
+
+function truthCountsFast(reportId) {
+  return truthCounts(reportId, truthByReport.get(reportId) || []);
+}
+function truthConsensusFast(reportId) {
+  return truthConsensus(reportId, truthByReport.get(reportId) || []);
+}
+function latestStatusFast(reportId) {
+  return latestStatus(reportId, statusByReport.get(reportId) || []);
+}
+function evidenceRequestCountFast(reportId) {
+  return evidenceRequestCount(reportId, evidenceByReport.get(reportId) || []);
+}
+function duplicatesOfFast(reportId) {
+  return duplicatesOf(reportId, relationsBySource.get(reportId) || []);
+}
+function evidenceAttachmentCountFast(reportId) {
+  return (evidenceAttachByReport.get(reportId) || []).length;
+}
+function myActiveTruthFast(reportId) {
+  return myActiveTruth(reportId, pkHex, truthByReport.get(reportId) || []);
+}
+function voterLocalReportCountFast(cell) {
+  if (!cell) return 0;
+  return myReportsByCell.get(cell) || 0;
+}
+function cellVerifierCountFast(cell) {
+  if (!cell) return 0;
+  return (verifierByCell.get(cell) || new Set()).size;
 }
 
 // How many days a report has been "open" — since creation, or since the
 // most recent reopen if any kind:3 status=reopened exists.
 function daysOpen(reportId, createdAt) {
-  const st = latestStatus(reportId, statusEvents);
+  const st = latestStatusFast(reportId);
   const start = (st && st.status === "reopened") ? st.at : createdAt;
   return Math.floor((Date.now() / 1000 - start) / 86400);
-}
-
-// Reports list (read-only) for helpers that need to walk kind:1 events.
-function allReports() {
-  const out = [];
-  for (const ev of events.values()) if (ev.kind === 1) out.push(ev);
-  return out;
 }
 
 // SPEC §3.4: render media tags inline.  Accepts data:, https:, ipfs: etc.
@@ -892,44 +996,51 @@ function renderMediaTags(r) {
   }).join("")}</div>`;
 }
 
+// Page size for the visible feed. Anything beyond gets a "load more" button.
+// At 50 cards the DOM cost on mobile stays comfortable; sort still runs over
+// every report but that's O(N log N) and dominated by the network round-trip.
+const FEED_PAGE = 50;
+let feedVisible = FEED_PAGE;
+
 function renderFeed() {
   const container = $("#feed-list");
-  let reports = [...events.values()].filter(e => e.kind === 1);
+  // Top-level feed shows ONLY standalone kind:1 reports. Evidence-attachment
+  // replies (kind:1 tagged ["e", parent, "evidence"]) render inline under
+  // their parent, not as their own cards.
+  let reports = [];
+  for (const ev of events.values()) {
+    if (ev.kind !== 1) continue;
+    if (evidenceParentId(ev)) continue;
+    reports.push(ev);
+  }
 
   // Filter by selected tag chip.
   if (feedFilter !== "all") {
     reports = reports.filter(r => tagsOf(r).includes(feedFilter));
   }
 
-  // v0.7 sort modes — see SPEC §8.
+  // v0.7 sort modes — see SPEC §8. All comparators use O(1) fast accessors.
   if (feedSort === "most-verified") {
     reports.sort((a, b) => {
-      const ac = truthCounts(a.id, truthEvents);
-      const bc = truthCounts(b.id, truthEvents);
+      const ac = truthCountsFast(a.id);
+      const bc = truthCountsFast(b.id);
       const aw = (ac.true + ac.fake) * evidenceMultiplier(a);
       const bw = (bc.true + bc.fake) * evidenceMultiplier(b);
       return (bw - aw) || (b.created_at - a.created_at);
     });
   } else if (feedSort === "unresolved") {
     reports.sort((a, b) => {
-      const aRes = (latestStatus(a.id, statusEvents) || {}).status === "resolved";
-      const bRes = (latestStatus(b.id, statusEvents) || {}).status === "resolved";
+      const aRes = (latestStatusFast(a.id) || {}).status === "resolved";
+      const bRes = (latestStatusFast(b.id) || {}).status === "resolved";
       if (aRes !== bRes) return aRes ? 1 : -1;
-      const aTrue = truthCounts(a.id, truthEvents).true;
-      const bTrue = truthCounts(b.id, truthEvents).true;
-      // Old + confirmed + unresolved = the thing fixers should see first.
+      const aTrue = truthCountsFast(a.id).true;
+      const bTrue = truthCountsFast(b.id).true;
       return (bTrue - aTrue) || (a.created_at - b.created_at);
     });
   } else if (feedSort === "needs-proof") {
-    reports.sort((a, b) => {
-      const ae = evidenceRequestCount(a.id, evidenceEvents);
-      const be = evidenceRequestCount(b.id, evidenceEvents);
-      return (be - ae) || (b.created_at - a.created_at);
-    });
+    reports.sort((a, b) => (evidenceRequestCountFast(b.id) - evidenceRequestCountFast(a.id)) || (b.created_at - a.created_at));
   } else if (feedSort === "near-you") {
-    const myG = lastFix
-      ? geohashEncode(lastFix.lat, lastFix.lon, 7)
-      : null;
+    const myG = lastFix ? geohashEncode(lastFix.lat, lastFix.lon, 7) : null;
     reports.sort((a, b) => {
       const ma = geohashMatchLen(myG, gTagOf(a));
       const mb = geohashMatchLen(myG, gTagOf(b));
@@ -942,9 +1053,9 @@ function renderFeed() {
   // Side-effects that ride on every feed render.
   renderFilterChips();
   renderRail();
+  const totalCount = reports.length;
   const fc = document.getElementById("feed-count");
   if (fc) {
-    const totalCount = [...events.values()].filter(e => e.kind === 1).length;
     if (totalCount > 0) { fc.textContent = totalCount; fc.hidden = false; }
     else { fc.hidden = true; }
   }
@@ -956,112 +1067,142 @@ function renderFeed() {
     return;
   }
 
-  container.innerHTML = reports.map(r => {
-    const tags = r.tags.filter(t => t[0] === "t").map(t => t[1]);
-    const geo = r.tags.find(t => t[0] === "g")?.[1] || "";
-    const decoded = geo ? geohashDecode(geo) : null;
-    const cachedPlace = geo ? placeCache.get(geo) : null;
-    if (geo && decoded && cachedPlace === undefined) requestPlaceName(geo);
+  // Cap the visible slice. "Load more" appends another FEED_PAGE.
+  const visible = reports.slice(0, feedVisible);
+  const hasMore = totalCount > feedVisible;
 
-    let locHTML = "";
-    if (decoded) {
-      const label = cachedPlace || formatLatLon(decoded);
-      const mapUrl = `https://www.openstreetmap.org/?mlat=${decoded.lat.toFixed(5)}&mlon=${decoded.lon.toFixed(5)}#map=14/${decoded.lat.toFixed(5)}/${decoded.lon.toFixed(5)}`;
-      const titleAttr = `${formatLatLon(decoded)} · geohash ${geo} · OpenStreetMap`;
-      locHTML = `<a class="loc" data-geo="${escapeHTML(geo)}" href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener" title="${escapeHTML(titleAttr)}"><span class="loc-pin">📍</span><span class="loc-name">${escapeHTML(label)}</span></a>`;
-    } else if (geo) {
-      locHTML = `<span class="loc" title="geohash">📍 ${escapeHTML(geo)}</span>`;
-    }
+  const cardsHTML = visible.map(renderCard).join("");
+  const moreHTML = hasMore
+    ? `<button class="load-more" data-action="load-more">${escapeHTML(t("feed.load_more") || "load more")} · ${totalCount - feedVisible} ${escapeHTML(t("feed.remaining") || "remaining")}</button>`
+    : "";
+  container.innerHTML = cardsHTML + moreHTML;
+}
 
-    // v0.7 closure-absence badge — the headline line on every card.
-    const tc       = truthCounts(r.id, truthEvents);
-    const tcv      = truthConsensus(r.id, truthEvents);
-    const ereq     = evidenceRequestCount(r.id, evidenceEvents);
-    const eatt     = evidenceAttachmentCount(r.id);
-    const st       = latestStatus(r.id, statusEvents);
-    const resolved = st && st.status === "resolved";
-    const dOpen    = daysOpen(r.id, r.created_at);
-    const dups     = duplicatesOf(r.id, relationEvents);
+// Render one report card with its inline evidence thread (if any).
+function renderCard(r) {
+  const tags = r.tags.filter(t => t[0] === "t").map(t => t[1]);
+  const geo  = gTagOf(r) || "";
+  const decoded = geo ? geohashDecode(geo) : null;
+  const cachedPlace = geo ? placeCache.get(geo) : null;
+  if (geo && decoded && cachedPlace === undefined) requestPlaceName(geo);
 
-    const segs = [];
-    if (tc.true > 0) segs.push(`<span class="seg seg-true">✓ ${tc.true}</span>`);
-    if (tc.fake > 0) segs.push(`<span class="seg seg-fake">✗ ${tc.fake}</span>`);
-    if (ereq > 0)    segs.push(`<span class="seg seg-proof">↺ ${ereq} ${escapeHTML(t("feed.proof_requested") || "asking proof")}</span>`);
-    if (eatt > 0)    segs.push(`<span class="seg seg-evidence">▸ ${eatt} ${escapeHTML(t("feed.evidence_attached") || "evidence")}</span>`);
-    if (dups.length) segs.push(`<span class="seg seg-dup">⇿ duplicate of #${escapeHTML(dups[0].slice(0, 4))}</span>`);
-    segs.push(resolved
-      ? `<span class="seg seg-resolved">▣ ${escapeHTML(t("feed.resolved_by_short") || "resolved by")} #${escapeHTML(st.by.slice(0, 4))}</span>`
-      : `<span class="seg seg-open">${dOpen}d ${escapeHTML(t("feed.open_days") || "open")}</span>`);
+  let locHTML = "";
+  if (decoded) {
+    const label = cachedPlace || formatLatLon(decoded);
+    const mapUrl = `https://www.openstreetmap.org/?mlat=${decoded.lat.toFixed(5)}&mlon=${decoded.lon.toFixed(5)}#map=14/${decoded.lat.toFixed(5)}/${decoded.lon.toFixed(5)}`;
+    const titleAttr = `${formatLatLon(decoded)} · geohash ${geo} · OpenStreetMap`;
+    locHTML = `<a class="loc" data-geo="${escapeHTML(geo)}" href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener" title="${escapeHTML(titleAttr)}"><span class="loc-pin">📍</span><span class="loc-name">${escapeHTML(label)}</span></a>`;
+  } else if (geo) {
+    locHTML = `<span class="loc" title="geohash">📍 ${escapeHTML(geo)}</span>`;
+  }
 
-    const consensusPill = tcv
-      ? `<span class="consensus consensus-${tcv}">${tcv === "true" ? "✓ true" : "✗ fake"}</span>`
-      : "";
+  // v0.7 closure-absence badge — the headline line on every card.
+  const tc       = truthCountsFast(r.id);
+  const tcv      = truthConsensusFast(r.id);
+  const ereq     = evidenceRequestCountFast(r.id);
+  const eatt     = evidenceAttachmentCountFast(r.id);
+  const st       = latestStatusFast(r.id);
+  const resolved = st && st.status === "resolved";
+  const dOpen    = daysOpen(r.id, r.created_at);
+  const dups     = duplicatesOfFast(r.id);
 
-    // SPEC §8.4 — sparse-cell badge if this cell has fewer than 3 verifiers
-    // across all reports. Honest "we can't say" instead of misleading
-    // "awaiting verification".
-    const cell = geo5(geo);
-    const sparseHTML = (() => {
-      if (!cell) return "";
-      const n = cellVerifierCount(cell, allReports(), truthEvents, statusEvents, evidenceEvents);
-      if (n >= 3) return "";
-      return `<span class="seg seg-sparse">⚠ low-density area · ${n}/3 verifiers in cell</span>`;
-    })();
+  const segs = [];
+  if (tc.true > 0) segs.push(`<span class="seg seg-true">✓ ${tc.true}</span>`);
+  if (tc.fake > 0) segs.push(`<span class="seg seg-fake">✗ ${tc.fake}</span>`);
+  if (ereq > 0)    segs.push(`<span class="seg seg-proof">↺ ${ereq} ${escapeHTML(t("feed.proof_requested") || "asking proof")}</span>`);
+  if (eatt > 0)    segs.push(`<span class="seg seg-evidence">▸ ${eatt} ${escapeHTML(t("feed.evidence_attached") || "evidence")}</span>`);
+  if (dups.length) segs.push(`<span class="seg seg-dup">⇿ duplicate of #${escapeHTML(dups[0].slice(0, 4))}</span>`);
+  segs.push(resolved
+    ? `<span class="seg seg-resolved">▣ ${escapeHTML(t("feed.resolved_by_short") || "resolved by")} #${escapeHTML(st.by.slice(0, 4))}</span>`
+    : `<span class="seg seg-open">${dOpen}d ${escapeHTML(t("feed.open_days") || "open")}</span>`);
 
-    const closureHTML = `<div class="closure">
-      ${consensusPill}
-      ${segs.join("")}
-      ${sparseHTML}
+  const consensusPill = tcv
+    ? `<span class="consensus consensus-${tcv}">${tcv === "true" ? "✓ true" : "✗ fake"}</span>`
+    : "";
+
+  // SPEC §8.4 — sparse-cell badge (O(1) via cellVerifierCountFast).
+  const cell = geo5(geo);
+  const sparseHTML = (() => {
+    if (!cell) return "";
+    const n = cellVerifierCountFast(cell);
+    if (n >= 3) return "";
+    return `<span class="seg seg-sparse">⚠ low-density area · ${n}/3 verifiers in cell</span>`;
+  })();
+
+  const closureHTML = `<div class="closure">
+    ${consensusPill}
+    ${segs.join("")}
+    ${sparseHTML}
+  </div>`;
+
+  // SPEC §8.3 — voter weight legibility, O(1) via myReportsByCell.
+  const myWeight = voterLocalReportCountFast(cell);
+  const weightLabel = myWeight === 0
+    ? `${escapeHTML(t("feed.your_weight") || "your weight here")}: 0 (${escapeHTML(t("feed.new_here") || "new to this area")})`
+    : `${escapeHTML(t("feed.your_weight") || "your weight here")}: ${myWeight} ${myWeight === 1 ? "report" : "reports"}`;
+  const weightHTML = `<div class="voter-weight">${weightLabel}</div>`;
+
+  // Binary truth toggles + actions overflow. "↳ attach evidence" surfaces
+  // alongside when there's at least one outstanding evidence-request, so the
+  // give-proof path is one click from the ask-proof state.
+  const mine = myActiveTruthFast(r.id);
+  const attachHTML = ereq > 0
+    ? `<button class="attach-btn" data-action="attach-evidence">↳ ${escapeHTML(t("verdict.attach_evidence") || "attach evidence")}</button>`
+    : "";
+  const verifyHTML = `<div class="verify-row">
+    <button class="truth-btn ${mine.has("true") ? "cast cast-true" : ""}" data-verdict="true">
+      ✓ ${escapeHTML(t("verdict.true") || "true")}
+    </button>
+    <button class="truth-btn ${mine.has("fake") ? "cast cast-fake" : ""}" data-verdict="fake">
+      ✗ ${escapeHTML(t("verdict.fake") || "fake")}
+    </button>
+    <div class="actions-menu">
+      <button class="actions-toggle" data-action="actions-toggle" aria-haspopup="true">⋯ ${escapeHTML(t("verdict.actions") || "more")}</button>
+      <div class="actions-pop" hidden>
+        <button data-action="request-evidence">${escapeHTML(t("verdict.request_evidence") || "request evidence")}</button>
+        <button data-action="attach-evidence">${escapeHTML(t("verdict.attach_evidence") || "attach evidence")}</button>
+        <button data-action="mark-duplicate">${escapeHTML(t("verdict.mark_duplicate") || "mark duplicate of…")}</button>
+        <button data-action="mark-resolved">${escapeHTML(resolved ? (t("verdict.reopen") || "reopen") : (t("verdict.mark_resolved") || "mark resolved"))}</button>
+      </div>
+    </div>
+    ${attachHTML}
+    <button class="share-btn" data-action="share" title="${escapeHTML(t("feed.share_title") || "share")}">${escapeHTML(t("feed.share") || "share")}</button>
+  </div>`;
+
+  // Evidence-attachment replies, rendered inline under the parent as a small thread.
+  const replies = evidenceAttachByReport.get(r.id) || [];
+  const repliesSorted = replies.slice().sort((a, b) => a.created_at - b.created_at);
+  const repliesHTML = repliesSorted.length === 0 ? "" : `
+    <div class="evidence-thread">
+      <div class="thread-head">▸ ${repliesSorted.length} ${escapeHTML(t("feed.evidence_attached") || "evidence")}</div>
+      ${repliesSorted.map(rep => `
+        <div class="evidence-reply">
+          <div class="reply-meta">${avatarSvg(rep.pubkey, 22)}<span class="id mono">${shortId(rep.pubkey)}</span><span class="time">${fmtTimeAgo(rep.created_at)}</span></div>
+          <div class="reply-body">${escapeHTML(rep.content)}</div>
+          ${renderMediaTags(rep)}
+        </div>`).join("")}
     </div>`;
 
-    // SPEC §8.3 — voter weight legibility: show the user their own local-
-    // report count in the cell of the report they're about to vote on.
-    const myWeight = voterLocalReportCount(pkHex, cell, allReports());
-    const weightLabel = myWeight === 0
-      ? `${escapeHTML(t("feed.your_weight") || "your weight here")}: 0 (${escapeHTML(t("feed.new_here") || "new to this area")})`
-      : `${escapeHTML(t("feed.your_weight") || "your weight here")}: ${myWeight} ${myWeight === 1 ? "report" : "reports"}`;
-    const weightHTML = `<div class="voter-weight">${weightLabel}</div>`;
-
-    // Binary truth toggles + actions overflow.
-    const mine = myActiveTruth(r.id, pkHex, truthEvents);
-    const verifyHTML = `<div class="verify-row">
-      <button class="truth-btn ${mine.has("true") ? "cast cast-true" : ""}" data-verdict="true">
-        ✓ ${escapeHTML(t("verdict.true") || "true")}
-      </button>
-      <button class="truth-btn ${mine.has("fake") ? "cast cast-fake" : ""}" data-verdict="fake">
-        ✗ ${escapeHTML(t("verdict.fake") || "fake")}
-      </button>
-      <div class="actions-menu">
-        <button class="actions-toggle" data-action="actions-toggle" aria-haspopup="true">⋯ ${escapeHTML(t("verdict.actions") || "more")}</button>
-        <div class="actions-pop" hidden>
-          <button data-action="request-evidence">${escapeHTML(t("verdict.request_evidence") || "request evidence")}</button>
-          <button data-action="mark-duplicate">${escapeHTML(t("verdict.mark_duplicate") || "mark duplicate of…")}</button>
-          <button data-action="mark-resolved">${escapeHTML(resolved ? (t("verdict.reopen") || "reopen") : (t("verdict.mark_resolved") || "mark resolved"))}</button>
+  return `
+    <div class="report-card" data-id="${r.id}">
+      <div class="card-head">
+        <span class="avatar-wrap" title="${r.pubkey}">${avatarSvg(r.pubkey, 30)}</span>
+        <div class="meta">
+          <span class="id mono" title="${r.pubkey}">${shortId(r.pubkey)}</span>
+          ${locHTML ? `<span class="dot">·</span>${locHTML}` : ""}
+          <span class="dot">·</span>
+          <span class="time">${fmtTimeAgo(r.created_at)}</span>
+          ${r.pubkey === pkHex ? `<span class="you-tag">${escapeHTML(t("feed.you"))}</span>` : ""}
         </div>
       </div>
-      <button class="share-btn" data-action="share" title="${escapeHTML(t("feed.share_title") || "share")}">${escapeHTML(t("feed.share") || "share")}</button>
+      <div class="content">${escapeHTML(r.content)}</div>
+      ${renderMediaTags(r)}
+      ${tags.length ? `<div class="tags">${tags.map(t => `<span>#${escapeHTML(t)}</span>`).join("")}</div>` : ""}
+      ${closureHTML}
+      ${weightHTML}
+      ${verifyHTML}
+      ${repliesHTML}
     </div>`;
-
-    return `
-      <div class="report-card" data-id="${r.id}">
-        <div class="card-head">
-          <span class="avatar-wrap" title="${r.pubkey}">${avatarSvg(r.pubkey, 30)}</span>
-          <div class="meta">
-            <span class="id mono" title="${r.pubkey}">${shortId(r.pubkey)}</span>
-            ${locHTML ? `<span class="dot">·</span>${locHTML}` : ""}
-            <span class="dot">·</span>
-            <span class="time">${fmtTimeAgo(r.created_at)}</span>
-            ${r.pubkey === pkHex ? `<span class="you-tag">${escapeHTML(t("feed.you"))}</span>` : ""}
-          </div>
-        </div>
-        <div class="content">${escapeHTML(r.content)}</div>
-        ${renderMediaTags(r)}
-        ${tags.length ? `<div class="tags">${tags.map(t => `<span>#${escapeHTML(t)}</span>`).join("")}</div>` : ""}
-        ${closureHTML}
-        ${weightHTML}
-        ${verifyHTML}
-      </div>`;
-  }).join("");
 }
 
 // ─── feed side rail + filter chips (web design) ──────────────────────────
@@ -1242,6 +1383,15 @@ function renderRelayList() {
 // ─── geo ─────────────────────────────────────────────────────────────────
 
 let lastFix = null;
+// Dev probe — localhost only — exposes lastFix on window so headless QA can
+// stub a fix without granting geolocation permission. No-op in production.
+if (typeof window !== "undefined" && location.hostname === "localhost") {
+  Object.defineProperty(window, "lastFix", {
+    configurable: true,
+    get() { return lastFix; },
+    set(v) { lastFix = v; },
+  });
+}
 function fetchLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error("geolocation unavailable"));
@@ -1407,13 +1557,42 @@ window.addEventListener("DOMContentLoaded", async () => {
       });
       composeText.value = "";
       clearMedia();
+      // Evidence-reply state is one-shot: clear the parent ID and banner.
+      clearEvidenceReplyTo();
       renderLivePreview();
       showScreen("feed");
     } finally { composeBtn.disabled = false; }
   });
 
+  // v0.7.1 evidence-reply banner wiring.
+  function setEvidenceReplyTo(parentId) {
+    evidenceReplyTo = parentId;
+    const banner = document.getElementById("evidence-banner");
+    if (banner) {
+      banner.hidden = !parentId;
+      const short = banner.querySelector(".short");
+      if (short && parentId) short.textContent = "#" + parentId.slice(0, 4);
+    }
+  }
+  function clearEvidenceReplyTo() { setEvidenceReplyTo(null); }
+  // Expose to the feed click handler below (closure capture).
+  window.__attachEvidence = (parentId) => {
+    setEvidenceReplyTo(parentId);
+    showScreen("compose");
+    composeText?.focus();
+  };
+  document.getElementById("evidence-cancel")?.addEventListener("click", clearEvidenceReplyTo);
+
   // Feed buttons (verify + share, delegated)
   $("#feed-list").addEventListener("click", async (e) => {
+    // Load-more button lives at the bottom of #feed-list, outside any card.
+    const moreBtn = e.target.closest('[data-action="load-more"]');
+    if (moreBtn) {
+      feedVisible += FEED_PAGE;
+      renderFeed();
+      return;
+    }
+
     const card = e.target.closest(".report-card");
     if (!card) return;
     const reportId = card.dataset.id;
@@ -1463,6 +1642,11 @@ window.addEventListener("DOMContentLoaded", async () => {
       publishEvidenceRequest(reportId, note.trim());
       toast("evidence request signed");
       renderFeed();
+      return;
+    }
+    const attBtn = e.target.closest('[data-action="attach-evidence"]');
+    if (attBtn) {
+      window.__attachEvidence?.(reportId);
       return;
     }
     const dupBtn = e.target.closest('[data-action="mark-duplicate"]');
@@ -1646,6 +1830,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const li = e.target.closest("li[data-sort]");
     if (!li) return;
     feedSort = li.dataset.sort;
+    feedVisible = FEED_PAGE;
     for (const x of document.querySelectorAll("#sort-list li")) x.classList.toggle("on", x === li);
     renderFeed();
   });
@@ -1653,6 +1838,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const pill = e.target.closest("[data-filter]");
     if (!pill) return;
     feedFilter = pill.dataset.filter;
+    feedVisible = FEED_PAGE;
     renderFeed();
   });
   // Clicking a trending tag in the rail jumps the filter chip to that tag.
@@ -1660,6 +1846,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const row = e.target.closest("[data-filter-tag]");
     if (!row) return;
     feedFilter = row.dataset.filterTag;
+    feedVisible = FEED_PAGE;
     renderFeed();
   });
 
