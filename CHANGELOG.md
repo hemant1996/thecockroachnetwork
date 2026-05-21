@@ -4,6 +4,51 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.0 — verdict honesty + ranking that matters (2026-05-22)
+
+The v0.6 five-verdict row (`true / fake / needs-more-proof / duplicate / resolved`) mashed three different questions into one mutually-exclusive click — *is the claim true?* *is the issue resolved?* *is this a copy?* — which trapped reports in "needs-more-proof" purgatory and made consensus math lose information. A skeptic clicking "needs proof" would silently drown out three honest "true" voters; reports stuck at "needs proof" had no defined path to resolution; "resolved" and "duplicate" weren't truth claims at all.
+
+v0.7 splits the model into orthogonal axes. Each event kind answers one question. A voter may simultaneously hold a `true` truth-verdict, a `resolved` status, an outstanding evidence-request, and a duplicate-of relation on the same report — none of them compete.
+
+### Wire format (SPEC §4.2)
+
+| Kind | Purpose | Dedupe key |
+|---|---|---|
+| `2` truth-verdict | `v` ∈ {`true`, `fake`}. Binary. | `(pubkey, e-tag, v-tag)` |
+| `3` status | `status` ∈ {`resolved`, `reopened`} | `(pubkey, e-tag)` |
+| `4` evidence-request | A question, not a verdict | `(pubkey, e-tag)` |
+| `5` relation | `rel` ∈ {`duplicate-of`, `continuation-of`} with two `e` tags | `(pubkey, e-source, rel, e-target)` |
+
+Retraction (kind:2 only): republish with the same `(e, v)` plus `["state","retracted"]`. Status reverses by publishing `kind:3 status=reopened` after a `kind:3 status=resolved`.
+
+**Legacy translation (§4.2.6).** Pre-v0.7 clients published all five outcomes as `kind:2`. v0.7+ clients translate at ingestion: `v=needs-more-proof` → local-only `kind:4`, `v=resolved` → local-only `kind:3`, `v=duplicate` → discarded (no target id to interpret as a relation). Translated events are NOT re-broadcast. v0.7+ clients publish only the new forms. The translation block can be removed in a future revision after a deprecation window.
+
+### What you actually see (UI)
+
+- **Closure-absence badge** is now the headline line on every card: `[consensus pill] ✓ N · ✗ M · ↺ K asking proof · ▸ J evidence · Xd open` — or `▣ resolved by #abcd` once resolved. Old confirmed-and-unresolved reports are immediately visible as the most important thing on screen.
+- **Verdict row** is binary `✓ true / ✗ fake` toggles with an `⋯ more` overflow menu for *request evidence* / *mark duplicate of…* / *mark resolved*. Each truth button independently fills when cast and retracts when re-clicked.
+- **Voter weight (SPEC §8.3)** is surfaced on every card: `your weight here: N reports` or `your weight here: 0 (new to this area)`. Voting stops being a tribal click and starts being a stake — voters self-select toward places they actually know.
+- **Sparse-cell badge (SPEC §8.4)** appears on cards in cells with fewer than 3 distinct verifiers. Honest "low-density area · N/3 verifiers in cell" instead of misleading "awaiting verification" that will never resolve.
+- **Sort modes**: `newest` (default), `near you` (geohash prefix-match against your last GPS fix), `most verified` (truth-only count × evidence multiplier — `+0.5` for photo, `+0.3` for specific date/time mention), `unresolved` (unresolved first, then highest truth, then oldest — the fixer view), `needs proof` (most outstanding evidence-requests).
+
+### Client architecture
+
+- **New `client/verdicts.js`** — pure helper module, no DOM, no network, no globals. Exports `translateLegacyVerdict`, `dedupeTruthVerdicts`, `truthCounts`, `truthConsensus`, `latestStatus`, `evidenceRequestCount`, `duplicatesOf`, `myActiveTruth`, `voterLocalReportCount`, `cellVerifierCount`, `geohashMatchLen`, `evidenceMultiplier`. Tested via `client/test/verdicts.test.js` (29 assertions, `bun test`).
+- **Per-kind stores in `app.js`** replace the single `verifications` Map: `truthEvents`, `statusEvents`, `evidenceEvents`, `relationEvents`. The kind:1 `events` Map is unchanged.
+- **New publish helpers**: `publishTruthVerdict`, `publishStatus`, `publishEvidenceRequest`, `publishRelation`. All route through one `_signAndFanout` that handles ingest + relay fan-out + peer broadcast.
+- **Subscription extended** with kinds 3/4/5 (WebRTC signaling subscription unchanged).
+- **All ranking computation is client-local on the local event store.** No new shared state, no coordination, no learning. SPEC §8.1's full locality weighting remains a v0.10+ ambition; the v0.7 implementation is the floor: report-count-in-cell as a legibility signal, not a multiplier on consensus.
+
+### What was dropped from the original roadmap
+
+The originally-planned v1.0 feedback loop (track which signals predicted resolutions; tune ranking weights from observed correlations) is dropped. It can't be done simply *and* decentralized at this scale — any "learning" would need shared state across clients. The honest move is to ship the legible signals and let each client weight them; ranking-as-research belongs in a separate project.
+
+### Operator action required
+
+None. The relay code is unchanged. New kinds are additive (SPEC §11) and ignored by relays that don't know them. Pre-v0.7 clients continue to render correctly because v0.7+ clients translate legacy `kind:2` verdicts client-side. Relays do not need redeployment.
+
+VERSION → 0.7.0.
+
 ## v0.6.0 — web client redesign: typography, live preview, sort/filter rail (2026-05-22)
 
 A visual-only release. The protocol, signing, relay sync, peer mesh, geohash logic, verification consensus, and in-event media flow from v0.5.0 are unchanged byte-for-byte. The web client now wears the design that was prototyped in the Claude Design handoff and ported to the reference client.

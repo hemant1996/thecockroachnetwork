@@ -1,0 +1,10 @@
+{
+  "name": "cockroach-client",
+  "version": "0.7.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "bun test"
+  },
+  "license": "CC0-1.0"
+}

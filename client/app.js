@@ -6,6 +6,22 @@ import * as ed from "https://esm.sh/@noble/ed25519@2.3.0";
 import { sha256, sha512 } from "https://esm.sh/@noble/hashes@1.8.0/sha2";
 import { PeerPool } from "./peers.js";
 import { compressImage } from "./media.js";
+import {
+  translateLegacyVerdict,
+  truthCounts,
+  truthConsensus,
+  latestStatus,
+  evidenceRequestCount,
+  duplicatesOf,
+  myActiveTruth,
+  voterLocalReportCount,
+  cellVerifierCount,
+  geohashMatchLen,
+  evidenceMultiplier,
+  gTagOf,
+  eTagOf,
+  geo5,
+} from "./verdicts.js";
 
 ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
@@ -398,21 +414,26 @@ const pool = new RelayPool();
 
 // ─── event store ─────────────────────────────────────────────────────────
 
-const events = new Map();         // id -> event
-const verifications = new Map();  // reportId -> [verification]
+const events = new Map();              // id -> kind:1 report event (and originals of translated legacy events for dedup-by-id)
+const truthEvents = [];                // kind:2 truth-verdicts (post-translation)
+const statusEvents = [];               // kind:3 status events
+const evidenceEvents = [];             // kind:4 evidence-request events
+const relationEvents = [];             // kind:5 relation events
 const SUB_FEED = "feed";
 
 function ingest(e) {
   if (events.has(e.id)) return false;
+  // SPEC §4.2.6 — translate legacy kind:2 verdicts (needs-more-proof → kind:4,
+  // resolved → kind:3, duplicate → discarded) before routing into stores.
+  const ev = translateLegacyVerdict(e);
+  if (ev === null) return false;
+  // Always remember the original by id so we don't re-ingest duplicates.
   events.set(e.id, e);
-  if (e.kind === 2) {
-    const targetTag = e.tags.find(t => t[0] === "e");
-    if (targetTag) {
-      const tid = targetTag[1];
-      if (!verifications.has(tid)) verifications.set(tid, []);
-      verifications.get(tid).push(e);
-    }
-  }
+  if (ev.kind === 2) truthEvents.push(ev);
+  else if (ev.kind === 3) statusEvents.push(ev);
+  else if (ev.kind === 4) evidenceEvents.push(ev);
+  else if (ev.kind === 5) relationEvents.push(ev);
+  // kind:1 reports live in the `events` Map; nothing more to do.
   return true;
 }
 
@@ -548,81 +569,62 @@ function showPublishConfirmation(relayCount, peerCount) {
   window.__pubToastTimer = setTimeout(() => ptoast.classList.remove("show"), 3500);
 }
 
-function publishVerification(reportId, verdict, note = "") {
-  const partial = {
+// SPEC §4.2 — verification, status, and relation publishers. Each kind has
+// its own dedupe key (§4.2.5); the actual math lives in verdicts.js.
+
+function _signAndFanout({ kind, tags, content }) {
+  const event = signEvent({
     pubkey: pkHex,
     created_at: Math.floor(Date.now() / 1000),
-    kind: 2,
-    tags: [["e", reportId], ["v", verdict]],
-    content: note,
-  };
-  const event = signEvent(partial, sk);
+    kind, tags, content,
+  }, sk);
   ingest(event);
   pool.publish(event);
   peers.broadcast(event);
   return event;
 }
 
-// ─── reputation ──────────────────────────────────────────────────────────
-
-// Per SPEC §4.2: at most one verification per (verifier_pubkey, report_id).
-// When multiple events exist, the one with the greatest created_at wins;
-// ties broken by lower id.  This MUST run before counting verifiers,
-// otherwise the same pubkey clicking "fake" three times satisfies a
-// "≥3 distinct verifiers" check, which is what was happening before.
-function dedupeVerifiers(vs) {
-  const latest = new Map();
-  for (const v of vs) {
-    const cur = latest.get(v.pubkey);
-    if (!cur
-        || v.created_at > cur.created_at
-        || (v.created_at === cur.created_at && v.id < cur.id)) {
-      latest.set(v.pubkey, v);
-    }
+// SPEC §4.2.1 — binary truth-verdict. Retract by republishing with the same
+// (e, v) plus ["state","retracted"].
+function publishTruthVerdict(reportId, verdict, { retract = false } = {}) {
+  if (verdict !== "true" && verdict !== "fake") {
+    throw new Error("v0.7+ truth verdicts must be 'true' or 'fake'");
   }
-  return latest;
+  const tags = [["e", reportId], ["v", verdict]];
+  if (retract) tags.push(["state", "retracted"]);
+  return _signAndFanout({ kind: 2, tags, content: "" });
 }
 
-function consensusVerdict(reportId) {
-  const vs = verifications.get(reportId) || [];
-  const latest = dedupeVerifiers(vs);
-  // Per SPEC §8: ≥3 DISTINCT verifiers required for consensus.
-  if (latest.size < 3) return null;
-  const counts = {};
-  for (const v of latest.values()) {
-    const verdict = v.tags.find(t => t[0] === "v")?.[1];
-    if (verdict) counts[verdict] = (counts[verdict] || 0) + 1;
+// SPEC §4.2.2 — status update (resolved | reopened).
+function publishStatus(reportId, status) {
+  if (status !== "resolved" && status !== "reopened") {
+    throw new Error("status must be 'resolved' or 'reopened'");
   }
-  if (Object.keys(counts).length === 0) return null;
-  // Modal verdict; deterministic tiebreaking by alphabetical verdict name.
-  const sorted = Object.entries(counts).sort(([a, an], [b, bn]) => bn - an || a.localeCompare(b));
-  return sorted[0][0];
+  return _signAndFanout({
+    kind: 3,
+    tags: [["e", reportId], ["status", status]],
+    content: "",
+  });
 }
 
-function verdictCounts(reportId) {
-  const vs = verifications.get(reportId) || [];
-  const latest = dedupeVerifiers(vs);
-  const counts = {};
-  for (const v of latest.values()) {
-    const verdict = v.tags.find(t => t[0] === "v")?.[1];
-    if (verdict) counts[verdict] = (counts[verdict] || 0) + 1;
-  }
-  return counts;
+// SPEC §4.2.3 — evidence-request (a question, not a verdict).
+function publishEvidenceRequest(reportId, note = "") {
+  return _signAndFanout({
+    kind: 4,
+    tags: [["e", reportId]],
+    content: note,
+  });
 }
 
-// Semantic mapping for the consensus display.  "true" and "resolved" are
-// positive outcomes (green); "fake" is a negative outcome (red);
-// "needs-more-proof" is uncertain (yellow); "duplicate" is neutral.
-const VERDICT_KIND = {
-  "true": "good", "resolved": "good",
-  "fake": "bad",
-  "duplicate": "neutral", "needs-more-proof": "warn",
-};
-const VERDICT_ICON = {
-  "true": "✓", "resolved": "✓",
-  "fake": "✗",
-  "duplicate": "⇿", "needs-more-proof": "⚠",
-};
+// SPEC §4.2.4 — relation. v0.7 uses duplicate-of for the UI; continuation-of
+// is wire-compatible but not surfaced in the reference client yet.
+function publishRelation(reportId, targetId, rel = "duplicate-of") {
+  return _signAndFanout({
+    kind: 5,
+    tags: [["e", reportId], ["e", targetId], ["rel", rel]],
+    content: "",
+  });
+}
 
 // ─── UI helpers ──────────────────────────────────────────────────────────
 
@@ -832,13 +834,43 @@ pool.on(() => {
 let renderTimer;
 function renderFeedDebounced() { clearTimeout(renderTimer); renderTimer = setTimeout(renderFeed, 80); }
 
-// ─── feed sort/filter state (web design) ────────────────────────────────
-let feedSort = "newest";       // newest | verified | needs-proof
-let feedFilter = "all";        // "all" or a tag string
+// ─── feed sort/filter state ─────────────────────────────────────────────
+// v0.7 sort modes:
+//   newest        — by created_at desc (default)
+//   near-you      — by geohash prefix-match against lastFix (SPEC §8 spirit)
+//   most-verified — truth-verdict count × evidence multiplier (§8.1 hint)
+//   unresolved    — unresolved first, then highest truth, then oldest (fixer view)
+//   needs-proof   — by count of outstanding evidence-requests (kind:4)
+let feedSort = "newest";
+let feedFilter = "all";
 
 function tagsOf(e) { return e.tags.filter(t => t[0] === "t").map(t => t[1]); }
-function totalVerdicts(id) {
-  return Object.values(verdictCounts(id)).reduce((a, b) => a + b, 0);
+
+// Count of follow-up evidence reports attached to a given report. Per
+// SPEC §4.2.6, an evidence-attachment is a kind:1 event tagged
+// ["e", <original-id>, "evidence"].
+function evidenceAttachmentCount(reportId) {
+  let n = 0;
+  for (const ev of events.values()) {
+    if (ev.kind !== 1) continue;
+    if (ev.tags.some(t => t[0] === "e" && t[1] === reportId && t[2] === "evidence")) n++;
+  }
+  return n;
+}
+
+// How many days a report has been "open" — since creation, or since the
+// most recent reopen if any kind:3 status=reopened exists.
+function daysOpen(reportId, createdAt) {
+  const st = latestStatus(reportId, statusEvents);
+  const start = (st && st.status === "reopened") ? st.at : createdAt;
+  return Math.floor((Date.now() / 1000 - start) / 86400);
+}
+
+// Reports list (read-only) for helpers that need to walk kind:1 events.
+function allReports() {
+  const out = [];
+  for (const ev of events.values()) if (ev.kind === 1) out.push(ev);
+  return out;
 }
 
 // SPEC §3.4: render media tags inline.  Accepts data:, https:, ipfs: etc.
@@ -869,15 +901,39 @@ function renderFeed() {
     reports = reports.filter(r => tagsOf(r).includes(feedFilter));
   }
 
-  // Sort by mode. "verified" = highest total verdicts (any).
-  // "needs-proof" = most "needs-more-proof" verdicts.
-  if (feedSort === "verified") {
-    reports.sort((a, b) => (totalVerdicts(b.id) - totalVerdicts(a.id)) || (b.created_at - a.created_at));
+  // v0.7 sort modes — see SPEC §8.
+  if (feedSort === "most-verified") {
+    reports.sort((a, b) => {
+      const ac = truthCounts(a.id, truthEvents);
+      const bc = truthCounts(b.id, truthEvents);
+      const aw = (ac.true + ac.fake) * evidenceMultiplier(a);
+      const bw = (bc.true + bc.fake) * evidenceMultiplier(b);
+      return (bw - aw) || (b.created_at - a.created_at);
+    });
+  } else if (feedSort === "unresolved") {
+    reports.sort((a, b) => {
+      const aRes = (latestStatus(a.id, statusEvents) || {}).status === "resolved";
+      const bRes = (latestStatus(b.id, statusEvents) || {}).status === "resolved";
+      if (aRes !== bRes) return aRes ? 1 : -1;
+      const aTrue = truthCounts(a.id, truthEvents).true;
+      const bTrue = truthCounts(b.id, truthEvents).true;
+      // Old + confirmed + unresolved = the thing fixers should see first.
+      return (bTrue - aTrue) || (a.created_at - b.created_at);
+    });
   } else if (feedSort === "needs-proof") {
     reports.sort((a, b) => {
-      const an = (verdictCounts(a.id)["needs-more-proof"] || 0);
-      const bn = (verdictCounts(b.id)["needs-more-proof"] || 0);
-      return (bn - an) || (b.created_at - a.created_at);
+      const ae = evidenceRequestCount(a.id, evidenceEvents);
+      const be = evidenceRequestCount(b.id, evidenceEvents);
+      return (be - ae) || (b.created_at - a.created_at);
+    });
+  } else if (feedSort === "near-you") {
+    const myG = lastFix
+      ? geohashEncode(lastFix.lat, lastFix.lon, 7)
+      : null;
+    reports.sort((a, b) => {
+      const ma = geohashMatchLen(myG, gTagOf(a));
+      const mb = geohashMatchLen(myG, gTagOf(b));
+      return (mb - ma) || (b.created_at - a.created_at);
     });
   } else {
     reports.sort((a, b) => b.created_at - a.created_at);
@@ -917,38 +973,74 @@ function renderFeed() {
       locHTML = `<span class="loc" title="geohash">📍 ${escapeHTML(geo)}</span>`;
     }
 
-    const counts = verdictCounts(r.id);
-    const cv = consensusVerdict(r.id);
-    const totalVerifs = Object.values(counts).reduce((a, b) => a + b, 0);
+    // v0.7 closure-absence badge — the headline line on every card.
+    const tc       = truthCounts(r.id, truthEvents);
+    const tcv      = truthConsensus(r.id, truthEvents);
+    const ereq     = evidenceRequestCount(r.id, evidenceEvents);
+    const eatt     = evidenceAttachmentCount(r.id);
+    const st       = latestStatus(r.id, statusEvents);
+    const resolved = st && st.status === "resolved";
+    const dOpen    = daysOpen(r.id, r.created_at);
+    const dups     = duplicatesOf(r.id, relationEvents);
 
-    // Verdict label respecting the current language; fall back to the raw verdict.
-    const verdictLabel = (v) => {
-      const tr = t("verdict." + v);
-      return tr === "verdict." + v ? v : tr;
-    };
-    // Compact counts line — shows all non-zero verdicts in their semantic color.
-    const countsHTML = Object.entries(counts).map(([k, n]) => {
-      const kind = VERDICT_KIND[k] || "neutral";
-      return `<span class="score-count score-${kind}">${VERDICT_ICON[k] || ""} ${escapeHTML(verdictLabel(k))} <b>${n}</b></span>`;
-    }).join("");
+    const segs = [];
+    if (tc.true > 0) segs.push(`<span class="seg seg-true">✓ ${tc.true}</span>`);
+    if (tc.fake > 0) segs.push(`<span class="seg seg-fake">✗ ${tc.fake}</span>`);
+    if (ereq > 0)    segs.push(`<span class="seg seg-proof">↺ ${ereq} ${escapeHTML(t("feed.proof_requested") || "asking proof")}</span>`);
+    if (eatt > 0)    segs.push(`<span class="seg seg-evidence">▸ ${eatt} ${escapeHTML(t("feed.evidence_attached") || "evidence")}</span>`);
+    if (dups.length) segs.push(`<span class="seg seg-dup">⇿ duplicate of #${escapeHTML(dups[0].slice(0, 4))}</span>`);
+    segs.push(resolved
+      ? `<span class="seg seg-resolved">▣ ${escapeHTML(t("feed.resolved_by_short") || "resolved by")} #${escapeHTML(st.by.slice(0, 4))}</span>`
+      : `<span class="seg seg-open">${dOpen}d ${escapeHTML(t("feed.open_days") || "open")}</span>`);
 
-    // Hide the score line completely when nothing has been verified yet.
-    let scoreHTML = "";
-    if (cv) {
-      // Consensus reached — show the verdict with its semantic icon + color.
-      const kind = VERDICT_KIND[cv] || "neutral";
-      const icon = VERDICT_ICON[cv] || "·";
-      scoreHTML = `<div class="score">
-        <b class="score-consensus score-${kind}">${icon} ${escapeHTML(verdictLabel(cv))}</b>
-        ${countsHTML}
-      </div>`;
-    } else if (totalVerifs > 0) {
-      // Pre-consensus — show progress in muted accent.
-      scoreHTML = `<div class="score">
-        <span class="score-progress">${totalVerifs}/3 ${escapeHTML(t("feed.awaiting_verifications") || "verified")}</span>
-        ${countsHTML}
-      </div>`;
-    }
+    const consensusPill = tcv
+      ? `<span class="consensus consensus-${tcv}">${tcv === "true" ? "✓ true" : "✗ fake"}</span>`
+      : "";
+
+    // SPEC §8.4 — sparse-cell badge if this cell has fewer than 3 verifiers
+    // across all reports. Honest "we can't say" instead of misleading
+    // "awaiting verification".
+    const cell = geo5(geo);
+    const sparseHTML = (() => {
+      if (!cell) return "";
+      const n = cellVerifierCount(cell, allReports(), truthEvents, statusEvents, evidenceEvents);
+      if (n >= 3) return "";
+      return `<span class="seg seg-sparse">⚠ low-density area · ${n}/3 verifiers in cell</span>`;
+    })();
+
+    const closureHTML = `<div class="closure">
+      ${consensusPill}
+      ${segs.join("")}
+      ${sparseHTML}
+    </div>`;
+
+    // SPEC §8.3 — voter weight legibility: show the user their own local-
+    // report count in the cell of the report they're about to vote on.
+    const myWeight = voterLocalReportCount(pkHex, cell, allReports());
+    const weightLabel = myWeight === 0
+      ? `${escapeHTML(t("feed.your_weight") || "your weight here")}: 0 (${escapeHTML(t("feed.new_here") || "new to this area")})`
+      : `${escapeHTML(t("feed.your_weight") || "your weight here")}: ${myWeight} ${myWeight === 1 ? "report" : "reports"}`;
+    const weightHTML = `<div class="voter-weight">${weightLabel}</div>`;
+
+    // Binary truth toggles + actions overflow.
+    const mine = myActiveTruth(r.id, pkHex, truthEvents);
+    const verifyHTML = `<div class="verify-row">
+      <button class="truth-btn ${mine.has("true") ? "cast cast-true" : ""}" data-verdict="true">
+        ✓ ${escapeHTML(t("verdict.true") || "true")}
+      </button>
+      <button class="truth-btn ${mine.has("fake") ? "cast cast-fake" : ""}" data-verdict="fake">
+        ✗ ${escapeHTML(t("verdict.fake") || "fake")}
+      </button>
+      <div class="actions-menu">
+        <button class="actions-toggle" data-action="actions-toggle" aria-haspopup="true">⋯ ${escapeHTML(t("verdict.actions") || "more")}</button>
+        <div class="actions-pop" hidden>
+          <button data-action="request-evidence">${escapeHTML(t("verdict.request_evidence") || "request evidence")}</button>
+          <button data-action="mark-duplicate">${escapeHTML(t("verdict.mark_duplicate") || "mark duplicate of…")}</button>
+          <button data-action="mark-resolved">${escapeHTML(resolved ? (t("verdict.reopen") || "reopen") : (t("verdict.mark_resolved") || "mark resolved"))}</button>
+        </div>
+      </div>
+      <button class="share-btn" data-action="share" title="${escapeHTML(t("feed.share_title") || "share")}">${escapeHTML(t("feed.share") || "share")}</button>
+    </div>`;
 
     return `
       <div class="report-card" data-id="${r.id}">
@@ -965,12 +1057,9 @@ function renderFeed() {
         <div class="content">${escapeHTML(r.content)}</div>
         ${renderMediaTags(r)}
         ${tags.length ? `<div class="tags">${tags.map(t => `<span>#${escapeHTML(t)}</span>`).join("")}</div>` : ""}
-        ${scoreHTML}
-        <div class="verify-row">
-          ${["true", "duplicate", "resolved", "fake", "needs-more-proof"]
-            .map(v => `<button data-verdict="${v}">${escapeHTML(t("verdict." + v))}</button>`).join("")}
-          <button class="share-btn" data-action="share" title="${escapeHTML(t("feed.share_title"))}">${escapeHTML(t("feed.share"))}</button>
-        </div>
+        ${closureHTML}
+        ${weightHTML}
+        ${verifyHTML}
       </div>`;
   }).join("");
 }
@@ -1347,13 +1436,56 @@ window.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const vBtn = e.target.closest("button[data-verdict]");
-    if (!vBtn) return;
-    vBtn.disabled = true;
-    try {
-      publishVerification(reportId, vBtn.dataset.verdict);
-      toast(t("toast.signed_verdict", { verdict: vBtn.dataset.verdict }));
-    } finally { vBtn.disabled = false; }
+    // v0.7 binary truth toggle. Re-click of an active verdict retracts.
+    const vBtn = e.target.closest("button.truth-btn[data-verdict]");
+    if (vBtn) {
+      vBtn.disabled = true;
+      try {
+        const verdict = vBtn.dataset.verdict;
+        const mine = myActiveTruth(reportId, pkHex, truthEvents);
+        publishTruthVerdict(reportId, verdict, { retract: mine.has(verdict) });
+        toast(t("toast.signed_verdict", { verdict }));
+        renderFeed();
+      } finally { vBtn.disabled = false; }
+      return;
+    }
+
+    // Actions overflow menu — toggle, then route on inner-item clicks.
+    const aToggle = e.target.closest('[data-action="actions-toggle"]');
+    if (aToggle) {
+      const pop = aToggle.parentElement.querySelector(".actions-pop");
+      pop.hidden = !pop.hidden;
+      return;
+    }
+    const reqBtn = e.target.closest('[data-action="request-evidence"]');
+    if (reqBtn) {
+      const note = prompt(t("verdict.request_evidence") || "request evidence", "") || "";
+      publishEvidenceRequest(reportId, note.trim());
+      toast("evidence request signed");
+      renderFeed();
+      return;
+    }
+    const dupBtn = e.target.closest('[data-action="mark-duplicate"]');
+    if (dupBtn) {
+      const orig = prompt("original report id (hex):");
+      if (orig && /^[0-9a-f]{8,64}$/.test(orig.trim())) {
+        publishRelation(reportId, orig.trim(), "duplicate-of");
+        toast("duplicate relation signed");
+        renderFeed();
+      } else if (orig) {
+        toast("invalid id — expected hex");
+      }
+      return;
+    }
+    const resBtn = e.target.closest('[data-action="mark-resolved"]');
+    if (resBtn) {
+      const st = latestStatus(reportId, statusEvents);
+      const next = (st && st.status === "resolved") ? "reopened" : "resolved";
+      publishStatus(reportId, next);
+      toast(`status: ${next}`);
+      renderFeed();
+      return;
+    }
   });
 
   // Identity tab
@@ -1566,10 +1698,19 @@ window.addEventListener("DOMContentLoaded", async () => {
   const since = Math.floor(Date.now() / 1000) - 7 * 86400;
   pool.subscribe(SUB_FEED, [
     { kinds: [1], since, limit: 200 },
-    { kinds: [2], since, limit: 500 },
-    // WebRTC signaling — see SPEC §4.3 and peers.js.  Limit window to the
+    { kinds: [2], since, limit: 500 },     // truth-verdicts (+ legacy translation)
+    { kinds: [3], since, limit: 500 },     // status updates
+    { kinds: [4], since, limit: 500 },     // evidence-requests
+    { kinds: [5], since, limit: 500 },     // relations
+    // WebRTC signaling — see SPEC §4.4 and peers.js. Limit window to the
     // last hour since offers expire fast; 10002/10003 only when addressed to us.
     { kinds: [10001], since: Math.floor(Date.now() / 1000) - 3600 },
     { kinds: [10002, 10003], "#p": [pkHex] },
   ]);
+
+  // Click outside the actions menu dismisses it.
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".actions-menu")) return;
+    for (const pop of document.querySelectorAll(".actions-pop")) pop.hidden = true;
+  });
 });

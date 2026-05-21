@@ -524,62 +524,117 @@ main { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
 }
 .report-card .tags span::before { content: "#"; opacity: 0.6; }
 
-/* ── verification block (ported design + existing logic) ─ */
-.report-card .score {
-  border-top: 1px solid var(--rule);
-  padding-top: 14px; margin-top: 4px; margin-bottom: 12px;
-  display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
-  font-size: 12px;
+/* ── closure-absence badge (SPEC §4.2 + §8.4) ──────────────────── */
+.report-card .closure {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  padding: 10px 14px;
+  background: rgba(244,234,213,0.03);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  margin: 0 0 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px; letter-spacing: 0.06em;
 }
-.report-card .score b { color: var(--ink); }
-.report-card .score .score-consensus {
-  font-family: "JetBrains Mono", monospace; font-size: 11px;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 4px 10px; border-radius: 99px;
-  border: 1px solid currentColor;
-}
-.report-card .score .score-progress {
-  font-family: "JetBrains Mono", monospace; font-size: 11px;
-  letter-spacing: 0.06em; color: var(--accent); font-weight: 500;
-  text-transform: uppercase;
-}
-.report-card .score .score-count {
-  font-family: "JetBrains Mono", monospace; font-size: 11px;
-  letter-spacing: 0.04em; opacity: 1;
+.report-card .closure .seg {
+  color: var(--ink-dim);
   display: inline-flex; align-items: center; gap: 4px;
 }
-.report-card .score .score-count b { color: inherit; }
-.report-card .score .score-good { color: var(--good); }
-.report-card .score .score-bad { color: var(--warn); }
-.report-card .score .score-warn { color: var(--warn); }
-.report-card .score .score-neutral { color: var(--ink-dim); }
+.report-card .closure .seg-true     { color: var(--good); }
+.report-card .closure .seg-fake     { color: var(--warn); }
+.report-card .closure .seg-proof    { color: var(--ink-dim); }
+.report-card .closure .seg-evidence { color: var(--accent); }
+.report-card .closure .seg-dup      { color: var(--ink-faint); }
+.report-card .closure .seg-resolved { color: var(--good); }
+.report-card .closure .seg-open     { color: var(--warn); margin-left: auto; }
+.report-card .closure .seg-sparse {
+  color: var(--warn);
+  font-style: italic;
+  font-family: "Instrument Serif", serif;
+  font-size: 12px;
+  width: 100%;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--rule);
+  letter-spacing: 0;
+}
+.report-card .closure .consensus {
+  font-size: 10px; padding: 4px 10px; border-radius: 99px;
+  border: 1px solid currentColor;
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+.report-card .closure .consensus-true { color: var(--good); }
+.report-card .closure .consensus-fake { color: var(--warn); }
 
+/* SPEC §8.3 — voter-weight legibility */
+.report-card .voter-weight {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px; color: var(--ink-faint);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  margin: 0 0 10px; padding-left: 2px;
+}
+
+/* ── verdict row v0.7: binary truth toggles + actions overflow ───── */
 .report-card .verify-row {
   display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
 }
-.report-card .verify-row button {
+.report-card .truth-btn {
   font-family: "JetBrains Mono", monospace;
-  font-size: 11px; letter-spacing: 0.08em; text-transform: lowercase;
+  font-size: 12px; letter-spacing: 0.06em;
+  padding: 8px 16px; border-radius: 4px;
+  background: transparent; border: 1px solid var(--rule-2);
+  color: var(--ink-dim);
+  font-weight: 400; box-shadow: none;
+  text-transform: lowercase;
+  transition: all .12s;
+}
+.report-card .truth-btn:hover { color: var(--ink); border-color: var(--ink-dim); transform: none; box-shadow: none; }
+.report-card .truth-btn[data-verdict="true"]:hover { color: var(--good); border-color: var(--good); }
+.report-card .truth-btn[data-verdict="fake"]:hover { color: var(--warn); border-color: var(--warn); }
+.report-card .truth-btn.cast-true {
+  background: rgba(74,222,128,0.12); border-color: var(--good); color: var(--good);
+}
+.report-card .truth-btn.cast-fake {
+  background: rgba(245,158,11,0.12); border-color: var(--warn); color: var(--warn);
+}
+
+.report-card .actions-menu { position: relative; }
+.report-card .actions-toggle {
+  font-family: "JetBrains Mono", monospace; font-size: 12px;
   padding: 8px 14px; border-radius: 4px;
   background: transparent; border: 1px solid var(--rule-2);
-  color: var(--ink-dim); transition: all .12s;
-  font-weight: 400; box-shadow: none;
+  color: var(--ink-dim); font-weight: 400; box-shadow: none;
+  letter-spacing: 0.06em; text-transform: lowercase;
 }
-.report-card .verify-row button:hover { color: var(--ink); border-color: var(--ink-dim); transform: none; box-shadow: none; }
-.report-card .verify-row button[data-verdict="true"]:hover,
-.report-card .verify-row button[data-verdict="resolved"]:hover {
-  color: var(--good); border-color: var(--good);
+.report-card .actions-toggle:hover { color: var(--ink); border-color: var(--ink-dim); transform: none; box-shadow: none; }
+.report-card .actions-pop {
+  position: absolute; top: calc(100% + 4px); left: 0;
+  min-width: 200px;
+  background: var(--bg-2); border: 1px solid var(--rule-2); border-radius: 4px;
+  padding: 4px; display: flex; flex-direction: column; gap: 2px;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
-.report-card .verify-row button[data-verdict="fake"]:hover,
-.report-card .verify-row button[data-verdict="needs-more-proof"]:hover {
-  color: var(--warn); border-color: var(--warn);
+.report-card .actions-pop[hidden] { display: none; }
+.report-card .actions-pop button {
+  background: transparent; color: var(--ink-dim); border: 0;
+  padding: 8px 12px; text-align: left;
+  font-family: "JetBrains Mono", monospace; font-size: 11px;
+  letter-spacing: 0.04em; text-transform: lowercase;
+  font-weight: 400; box-shadow: none; border-radius: 3px;
 }
+.report-card .actions-pop button:hover { background: var(--card-hi); color: var(--ink); transform: none; box-shadow: none; }
+
 .report-card .verify-row .share-btn {
   margin-left: auto;
-  color: var(--accent); border-color: rgba(230,59,46,0.45);
+  font-family: "JetBrains Mono", monospace; font-size: 12px;
+  padding: 8px 14px; border-radius: 4px;
+  background: transparent; border: 1px solid rgba(230,59,46,0.45);
+  color: var(--accent); letter-spacing: 0.06em; text-transform: lowercase;
+  font-weight: 400; box-shadow: none;
 }
 .report-card .verify-row .share-btn:hover {
   background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+  transform: none; box-shadow: none;
 }
 
 /* ── right rail (Feed) ────────────────────────────────── */

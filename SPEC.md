@@ -1,6 +1,6 @@
 # Cockroach Relay Protocol — SPEC
 
-**Version:** v0.4
+**Version:** v0.7
 **Status:** Draft
 **License:** CC0 — public domain. Fork freely.
 
@@ -125,21 +125,77 @@ Example:
 }
 ```
 
-### 4.2 `kind: 2` — verification
+### 4.2 Verification, status, and relations (kinds 2-5)
 
-A signed opinion about a report. Required tags: exactly one `["e", "<report-id>"]` and exactly one `["v", "<verdict>"]`, where verdict is one of:
+v0.1-v0.6 mashed five outcomes (`true`, `fake`, `needs-more-proof`, `duplicate`, `resolved`) into a single `kind:2` verification event. That conflated three orthogonal questions ("is the claim true?", "is the issue still active?", "is this a copy of another report?") into one mutually-exclusive choice, which trapped reports in "needs-more-proof" purgatory and made consensus math lose information.
+
+v0.7 splits the model into four event kinds with separate dedupe rules. Each kind answers one question. A voter may simultaneously hold a `true` truth-verdict, a `resolved` status, an evidence-request, and a duplicate-of relation on the same report — none of them compete.
+
+#### 4.2.1 `kind: 2` — truth-verdict (binary)
+
+A signed claim about whether the events described in a report happened as stated. Required tags: exactly one `["e", "<report-id>"]` and exactly one `["v", "<verdict>"]`, where verdict is one of:
 
 | Verdict | Meaning |
 |---|---|
-| `true` | I observed this and it is real. |
-| `duplicate` | Same issue as another report; the `content` field MAY include the duplicate target id. |
-| `resolved` | This issue is no longer present. |
-| `fake` | I observed this and it is misleading or fabricated. |
-| `needs-more-proof` | The report may be real but lacks sufficient evidence to verify. |
+| `true`  | I have reason to believe the events described did happen. |
+| `fake`  | I have reason to believe the events did not happen or are materially misrepresented. |
 
-Optional `content` is a brief human note ("Walked past it this morning, still broken").
+Optional `content` is a brief human note ("Walked past it this morning, still broken"). An optional `["state", "retracted"]` tag retracts the voter's own prior verdict (see §4.2.5).
 
-Implementations MUST NOT count more than one verification per `(verifier_pubkey, report_id)` pair when computing scores; if multiple exist, the one with the greatest `created_at` wins, ties broken by lower `id`.
+#### 4.2.2 `kind: 3` — status
+
+A signed status update on a report: someone is asserting that the underlying issue has been resolved or has reopened. Required tags: exactly one `["e", "<report-id>"]` and exactly one `["status", "<value>"]`, where value is one of:
+
+| Status | Meaning |
+|---|---|
+| `resolved` | The issue described in the report is no longer present. |
+| `reopened` | The issue has recurred or was prematurely marked resolved. |
+
+Optional `content` carries a note. The author's pubkey is the record of who made the assertion — a municipally-bound key resolving an issue carries more meaning to a consumer than a random pubkey doing the same, but this is a client-side interpretation; the protocol does not adjudicate.
+
+#### 4.2.3 `kind: 4` — evidence-request
+
+A signed request asking for more evidence on a report. Required tag: exactly one `["e", "<report-id>"]`. Optional `content` carries the request text ("what's the date on the screenshot?").
+
+Evidence-requests are a question, not a verdict. They do not compete with truth-verdicts. A satisfied request has no retraction event — it gets answered by a follow-up `kind:1` report tagged `["e", "<original-id>", "evidence"]` (see §4.2.6).
+
+#### 4.2.4 `kind: 5` — relation
+
+A signed claim that two reports are related. Required tags: exactly two `["e", ...]` tags (first is the source report, second is the target) and exactly one `["rel", "<value>"]`, where value is one of:
+
+| Relation | Meaning |
+|---|---|
+| `duplicate-of` | The source report describes the same incident as the target. |
+| `continuation-of` | The source report continues, updates, or follows up on the target. |
+
+#### 4.2.5 Dedupe rules
+
+Each kind has its own "latest wins" dedupe. Implementations MUST apply these dedupes locally on the event store before counting verifiers, otherwise a single pubkey re-publishing the same verdict inflates the verifier count.
+
+| Kind | Dedupe key | Notes |
+|---|---|---|
+| `2` truth-verdict | `(pubkey, e-tag, v-tag)` | A voter may simultaneously hold a `true` verdict on report A and a `fake` verdict on report B. They MAY NOT simultaneously hold both `true` and `fake` on the same report — a fresh kind:2 with the opposite `v` value replaces the prior assertion (it has a later `created_at`, but the dedupe key differs, so both rows exist; clients SHOULD recognize this and surface only the most recent voter intent). |
+| `3` status | `(pubkey, e-tag)` | Latest assertion by that pubkey wins. Across pubkeys, the most recent `kind:3` event determines whether the report is currently open or resolved. |
+| `4` evidence-request | `(pubkey, e-tag)` | At most one outstanding request per voter per report. No retraction — requests are answered, not withdrawn. |
+| `5` relation | `(pubkey, e-tag-source, rel, e-tag-target)` | A voter may assert multiple relations from the same source to different targets. |
+
+Ties on `created_at` are broken by the lower lexicographic `id` in every case.
+
+**Retraction (kind:2 only).** A voter retracts their own prior truth-verdict by publishing a fresh `kind:2` with the same `e` and `v` tags plus a `["state", "retracted"]` tag. The retraction wins by `created_at`. Status and relations are not retracted — they are corrected by publishing a fresh assertion (a `kind:3 status=reopened` after a `kind:3 status=resolved`, for example).
+
+#### 4.2.6 Legacy verdict translation (transition rule, v0.7+)
+
+Pre-v0.7 clients published all five outcomes as `kind:2` events. v0.7+ clients MUST translate the three non-truth values at ingestion before applying §4.2.5 dedupe:
+
+| Incoming legacy event | Translated to |
+|---|---|
+| `kind:2` with `v=needs-more-proof` | Local-only `kind:4` evidence-request. Same `e`-tag, same author, same `created_at`, content empty. |
+| `kind:2` with `v=resolved` | Local-only `kind:3` status. Same `e`-tag, same author, same `created_at`, `status=resolved`. |
+| `kind:2` with `v=duplicate` | Discarded. Legacy duplicate votes lack a target id and cannot be re-interpreted as a relation. |
+
+The translated events MUST NOT be re-broadcast — they are a client-local interpretation, not a republication. v0.7+ clients publish only `kind:2 v=true|fake`, `kind:3`, `kind:4`, and `kind:5`. A future spec revision MAY remove this translation block after a deprecation window.
+
+**Evidence attachment.** Follow-up evidence is published as a `kind:1` report tagged `["e", "<original-id>", "evidence"]`. The follow-up renders under the original card and may carry its own media tag (per §7). Clients counting evidence-attachments for the closure badge count distinct kind:1 events with this tag-shape.
 
 ### 4.3 Reserved kind ranges
 
@@ -398,6 +454,18 @@ weight(v on r) = max(1, rep(v.pubkey))
 
 In any geohash-5 cell, in any 1-hour window, if `k >= 10` distinct fresh pubkeys (created within the last 30 days) publish `kind:1` events sharing at least one `t` tag, the effective reputation multiplier for those events rises to `log(k)`. This is what prevents legitimate crowd events (a sudden protest, a city-wide outage) from being suppressed as suspected sybil activity.
 
+### 8.3 Weight legibility (v0.7+)
+
+If a client computes any locality weight per §8.1 — even a simplified one like `local_reports = |{ kind:1 from pubkey in geohash-5(target_report) }|` — it SHOULD surface that weight to the voter before they cast a verdict on the report. Without the weight being legible, voters experience their clicks as if every vote counts equally, and the protocol's sybil defense degrades into silent punishment.
+
+The reference v0.7 client surfaces this on every feed card: `your weight here: <N>` where N is the count of prior `kind:1` reports the user has published within the same geohash-5 cell as the report being voted on. A fresh key in a new cell reads `your weight here: 0 (new to this area)`. This is intentionally a floor — it tells a voter that to make their vote on a Bangalore paper-leak actually count, they need to be in Bangalore reporting honestly for a while.
+
+### 8.4 Sparse-cell signal (v0.7+)
+
+A geohash-5 cell with fewer than three pubkeys who have ever voted on any kind:1 from it is sparse. Reports from sparse cells cannot reach the `≥3 distinct verifiers` consensus threshold by definition — there aren't three locals to ask. Clients SHOULD render a `low-density area` badge on cards in such cells rather than pretending the lack of consensus is a quality signal.
+
+This does not change the consensus math (no threshold drop, no compensating boost). It surfaces an honest "we can't say" rather than a misleading "awaiting verification" that will never resolve.
+
 ## 9. Threat model
 
 The protocol is designed to survive:
@@ -427,8 +495,8 @@ The protocol is designed to survive:
 | Level | Requirements |
 |---|---|
 | **L1 Relay** | §3, §5, §6 supported. Verifies signatures, indexes single-letter tags, serves filter queries. |
-| **L1 Client** | §3, §5 supported. Generates ed25519 keypairs, signs and publishes `kind:1` events with `g` and `t` tags, subscribes and renders incoming events, signs `kind:2` verifications. |
-| **L2 Client** | L1 + computes reputation per §8. |
+| **L1 Client** | §3, §5 supported. Generates ed25519 keypairs, signs and publishes `kind:1` events with `g` and `t` tags, subscribes and renders incoming events, signs `kind:2` truth-verdicts (`v` ∈ {`true`, `fake`} per §4.2.1), `kind:3` status, `kind:4` evidence-requests, `kind:5` relations. Implements §4.2.5 dedupe and §4.2.6 legacy translation. |
+| **L2 Client** | L1 + computes reputation per §8, surfaces voter weight per §8.3, renders sparse-cell badge per §8.4. |
 | **L3 Client** | L2 + media handling per §7, burst tolerance per §8.2. |
 
-The v0.1 reference relay is L1. The v0.1 reference client is L3.
+The v0.1 reference relay is L1. The v0.7 reference client is L3.
