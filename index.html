@@ -40,7 +40,7 @@
   <main>
     <!-- ─── HERO ──────────────────────────────────────────────────────── -->
     <section class="hero">
-      <svg class="mark" viewBox="0 0 200 200" aria-hidden="true">
+      <svg class="mark" id="hero-mark" viewBox="0 0 200 200" aria-hidden="true">
         <ellipse cx="100" cy="115" rx="40" ry="60" fill="currentColor"/>
         <ellipse cx="100" cy="55" rx="22" ry="18" fill="currentColor"/>
         <path d="M 88 42 Q 70 18 50 14" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
@@ -52,6 +52,20 @@
         <path d="M 140 120 Q 172 122 188 110" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
         <path d="M 135 150 Q 162 162 174 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
       </svg>
+
+      <!-- Live cockroach health meter — its colour reflects the network's
+           activity in real time.  Hidden until the WebSocket has resolved
+           a first state so we never show a stale "0/5 health" on load. -->
+      <div class="health-strip" id="health-strip" hidden>
+        <div class="health-meter">
+          <div class="health-segment" data-stage="0"></div>
+          <div class="health-segment" data-stage="1"></div>
+          <div class="health-segment" data-stage="2"></div>
+          <div class="health-segment" data-stage="3"></div>
+          <div class="health-segment" data-stage="4"></div>
+        </div>
+        <div class="health-caption" id="health-caption"></div>
+      </div>
 
       <!-- Hinglish -->
       <div data-lang-content="hi">
@@ -618,7 +632,64 @@
       elReports.textContent = reports24h.toLocaleString("en-IN");
       elCockroaches.textContent = cockroaches7d.toLocaleString("en-IN");
       elCities.textContent = cities.size.toLocaleString("en-IN");
+      updateCockroachHealth();
     }
+
+    // Cockroach health states.  Drives the hero mark's animation, color, and
+    // caption based on real network activity.  Each visitor who joins +
+    // publishes literally watches the cockroach get healthier in real time.
+    const HEALTH_CAPTIONS = {
+      hi: [
+        "Cockroach mar raha hai. Bachao.",
+        "Saans le raha hai. Aur Pehredaar chahiye.",
+        "Theek hai. Lekin ek hi network hai abhi.",
+        "Mazboot. Janta ka network jeeta hai.",
+        "Anabhinaad — hum sab cockroach.",
+      ],
+      en: [
+        "The cockroach is dying. Save it.",
+        "Barely breathing. Needs more Pehredaars.",
+        "Surviving. Only one network so far.",
+        "Strong. The people's network is alive.",
+        "Thriving — we are everywhere.",
+      ],
+    };
+    function updateCockroachHealth() {
+      // Score weights: cities is the strongest signal (geographic spread =
+      // actual adoption, not just one viral spike), then declarations, then
+      // raw report count.
+      const score = reports24h + cockroaches7d * 3 + cities.size * 5;
+      let stage = 0;
+      if (score >= 2000) stage = 4;
+      else if (score >= 200) stage = 3;
+      else if (score >= 20) stage = 2;
+      else if (score >= 1) stage = 1;
+
+      const mark = document.getElementById("hero-mark");
+      if (mark) mark.classList.remove("cockroach-state-0","cockroach-state-1","cockroach-state-2","cockroach-state-3","cockroach-state-4");
+      if (mark) mark.classList.add("cockroach-state-" + stage);
+
+      document.querySelectorAll(".health-segment").forEach((seg) => {
+        seg.classList.toggle("active", Number(seg.dataset.stage) <= stage);
+        seg.classList.toggle("at-stage", Number(seg.dataset.stage) === stage);
+      });
+
+      const strip = document.getElementById("health-strip");
+      const caption = document.getElementById("health-caption");
+      if (strip) strip.hidden = false;
+      if (caption) {
+        const lang = window.__currentLang || "hi";
+        caption.textContent = HEALTH_CAPTIONS[lang][stage];
+        caption.dataset.stage = String(stage);
+      }
+    }
+    // Re-run the caption update when language changes (the existing
+    // applyLang callback re-renders the feed; we hook the health caption too).
+    const _origRender = window.__renderLiveFeed;
+    window.__renderLiveFeed = function () {
+      if (_origRender) _origRender();
+      updateCockroachHealth();
+    };
 
     function renderFeed() {
       if (!connected) return;

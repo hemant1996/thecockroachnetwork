@@ -107,14 +107,120 @@ small, .small { font-size: 14px; color: var(--muted); }
   padding-top: 28px;
 }
 .hero .mark {
-  width: 84px;
-  height: 84px;
+  width: 92px;
+  height: 92px;
   color: var(--accent);
-  margin-bottom: 22px;
+  margin-bottom: 14px;
+  transition: filter 0.6s, opacity 0.6s;
+  will-change: filter, transform, opacity;
 }
 @media (max-width: 600px) {
   .hero { padding-top: 16px; }
-  .hero .mark { width: 68px; height: 68px; margin-bottom: 18px; }
+  .hero .mark { width: 76px; height: 76px; margin-bottom: 12px; }
+}
+
+/* ─── Cockroach health states ──────────────────────────────────────────
+   Each state has its own animation + color treatment.  The state class
+   is applied by JS based on real network activity; visitors who help
+   the network grow literally watch the cockroach get healthier.
+*/
+
+/* 0 — Dying.  Network has nothing yet.  Slow droopy breath, grayed out. */
+.cockroach-state-0 {
+  opacity: 0.42;
+  filter: grayscale(0.85) brightness(0.55) saturate(0.5);
+  animation: roach-dying 4.5s ease-in-out infinite;
+}
+@keyframes roach-dying {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50%      { transform: scale(0.95) translateY(3px); }
+}
+
+/* 1 — Weak.  Some activity.  Muted color, gentle breath. */
+.cockroach-state-1 {
+  opacity: 0.78;
+  filter: saturate(0.55) brightness(0.85);
+  animation: roach-weak 3.5s ease-in-out infinite;
+}
+@keyframes roach-weak {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(0.985); }
+}
+
+/* 2 — Surviving.  Healthy idle.  Full color, faint breathing. */
+.cockroach-state-2 {
+  opacity: 1;
+  animation: roach-idle 4s ease-in-out infinite;
+}
+@keyframes roach-idle {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.01); }
+}
+
+/* 3 — Strong.  Glowing.  Subtle accent halo. */
+.cockroach-state-3 {
+  opacity: 1;
+  filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.55));
+  animation: roach-strong 2.6s ease-in-out infinite;
+}
+@keyframes roach-strong {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+
+/* 4 — Thriving.  Bigger glow + slight wobble.  The "movement is real" tier. */
+.cockroach-state-4 {
+  opacity: 1;
+  filter: drop-shadow(0 0 14px var(--accent)) drop-shadow(0 0 32px rgba(249, 115, 22, 0.4));
+  animation: roach-thrive 2s ease-in-out infinite;
+}
+@keyframes roach-thrive {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25%      { transform: scale(1.05) rotate(1.5deg); }
+  75%      { transform: scale(1.05) rotate(-1.5deg); }
+}
+
+/* ─── Health meter ─────────────────────────────────────────────────── */
+.health-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 22px;
+  align-items: flex-start;
+}
+.health-meter {
+  display: flex;
+  gap: 4px;
+}
+.health-segment {
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--line);
+  transition: background 0.5s, transform 0.3s;
+}
+.health-segment.active { background: var(--accent); }
+.health-segment.at-stage {
+  transform: scaleY(1.4);
+  box-shadow: 0 0 6px rgba(249, 115, 22, 0.5);
+}
+.health-caption {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.005em;
+}
+.health-caption[data-stage="0"] { color: var(--bad); }
+.health-caption[data-stage="1"] { color: var(--warn); }
+.health-caption[data-stage="2"] { color: var(--muted); }
+.health-caption[data-stage="3"] { color: var(--accent); }
+.health-caption[data-stage="4"] { color: var(--good); animation: caption-thrive 2s ease-in-out infinite; }
+@keyframes caption-thrive {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}
+@media (max-width: 600px) {
+  .health-segment { width: 28px; }
 }
 .hero h1 .accent { color: var(--accent); }
 .hero .ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
