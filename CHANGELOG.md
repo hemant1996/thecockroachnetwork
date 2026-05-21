@@ -4,6 +4,31 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.3 — mobile fix: sort + filter no longer fight the viewport (2026-05-22)
+
+The v0.7 feed sidebar (Sort list + Filter chips) was sized for desktop; at mobile it collapsed into a side-by-side row that crammed both into a narrow column, wrapping the filter chips into a multi-line wall and squeezing the sort list into a vertical strip. This rewrites the mobile pattern entirely.
+
+### Mobile feed (<820px)
+
+- Sort list flips from a vertical column to a **horizontal scrollable pill row** (matching the chip aesthetic everywhere else in the design — `border-radius: 99px`, accent fill on the active item).
+- Filter chips switch to **horizontal scroll** (no-wrap) instead of multi-line wrap.
+- Both strips are full-width, stacked vertically, with their own small `<h5>` label. Scrollbars are hidden (`scrollbar-width: none`).
+- Card density at mobile: padding 16/18 → 14/14, content 15px → 14px, closure badge 11px → 10px, verdict buttons 11px → 10px, media `max-height` 240px → 220px.
+- Panel title 38px → 30px on mobile, 26px at <480px.
+- App-bar tabs scroll horizontally if needed; status chips tighten to 10px.
+- `<480px`: the `v0.7.x` chip in the brand hides (saves ~50px of header width on the smallest phones).
+
+### Other small things
+
+- `nav.tabs` overflow now hides the scrollbar visually but stays scrollable on touch.
+- Identity cards tighten on mobile: padding 24 → 18, headings 22 → 18.
+- Composer padding 22 → 18 on mobile so the textarea has more usable width.
+- Sign-row stacks vertically on mobile with `gap: 14px` so the big sign button has breathing room.
+
+Verified at 390×900 and 1480×900 — feed, report, identity all clean.
+
+VERSION → 0.7.3.
+
 ## v0.7.2 — density pass + seed reports + honest placeholders (2026-05-22)
 
 Three small things that came up the moment v0.7.1 went live.
