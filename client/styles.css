@@ -186,12 +186,6 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
 .report-card .score .score-bad { color: var(--bad); }
 .report-card .score .score-warn { color: var(--warn); }
 .report-card .score .score-neutral { color: var(--muted); }
-
-/* IPFS-attached media — content-addressed, fetched from public gateways. */
-.report-card .media-row { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 12px; }
-.report-card .media-item { max-width: 100%; max-height: 360px; border-radius: 6px; background: var(--line); object-fit: cover; }
-#media-preview img { display: block; }
-
 .report-card .verify-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .report-card .verify-row button { font-size: 12px; padding: 6px 10px; border-radius: 8px; background: transparent; border: 1px solid var(--line); color: var(--muted); }
 .report-card .verify-row button:hover { color: var(--fg); border-color: var(--fg); }

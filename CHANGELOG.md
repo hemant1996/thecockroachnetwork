@@ -4,6 +4,28 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.2.4.2 — pull media-upload feature (2026-05-21)
+
+### Removed
+
+- `client/media.js`, the file-attach UI in the compose form, and the
+  related render path. After landing v0.2.4 (Helia) and v0.2.4.1
+  (local-only CID), we concluded that media uploads without a
+  meaningful cross-user retrieval story aren't worth the surface area.
+  A local-only attach button promises something the network can't
+  currently deliver.
+- The protocol's content-addressed media tag format (SPEC §3.4) is
+  unchanged — events with `["media", "<url>", "sha256:<hex>"]` are still
+  valid and any future client can render them. We just don't produce or
+  display them right now.
+
+### What this means going forward
+
+- Media will return once there's a real cross-user storage story —
+  either (a) a BYO-pin Settings flow where users wire their own
+  Storacha/Pinata token, or (b) more Pehredaars choose to run an
+  optional IPFS pin alongside their relay. Both are v0.3 work.
+
 ## v0.2.4.1 — drop Helia, ship pragmatic local-first IPFS (2026-05-21)
 
 ### Fixed
