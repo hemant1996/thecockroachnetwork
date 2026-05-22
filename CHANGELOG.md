@@ -4,6 +4,33 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.8 — scroll fix (overflow-x: hidden → clip) (2026-05-22)
+
+Reported regression: vertical page scroll blocked on macOS Safari.
+
+### Root cause
+
+v0.7.5 added `html, body { overflow-x: hidden }` as a belt-and-braces guard against mobile horizontal overflow. On Safari (both macOS and iOS), `overflow-x: hidden` on the `html` element creates a new scrolling context that conflicts with the document's natural vertical scroll — pages tall enough to need scrolling stop responding to wheel/touch input.
+
+### Fix
+
+Swapped `overflow-x: hidden` → `overflow-x: clip` on both `html, body` and on `main` (mobile). `clip` is the modern equivalent — it suppresses overflow without creating a new scrolling/positioning context, so vertical scroll and `position: sticky` both keep working. Supported in Safari 16+ (Sept 2022), Chrome 90+ (April 2021), Firefox 81+ (Sept 2020).
+
+The actual mobile overflow fix from v0.7.5 — `min-width: 0` on grid/flex children plus `overflow-wrap: anywhere` on content blocks — still does the real work. `overflow-x: clip` is just the safety net.
+
+### Verified
+
+- Desktop 1480×900 on Feed (~4125px tall): scrolls smoothly to position 2000+.
+- Mobile 390×900 on Feed (~4589px tall): scrolls smoothly to position 800.
+- Sticky `.preview` / `.rail` / `.feed-side` at `top: 132px` still pin correctly when topbar is visible, slide to `96px` when topbar dismissed.
+
+### Versions
+
+- Client brand chip + about-card footer `v0.7.7 → v0.7.8`.
+- Service-worker cache key `v077 → v078`.
+
+VERSION → 0.7.8.
+
 ## v0.7.7 — "Hindi" mode is now actually Hinglish (Roman script) (2026-05-22)
 
 The `hi` language bundle was full of Devanagari (क्या टूटा है?, रिपोर्ट, फ़ीड, पहचान, etc.). Most of the audience reads and *types* Hindi in Roman letters on a phone — Devanagari is a register switch they rarely use casually. The intent was always Hinglish.
