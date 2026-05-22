@@ -4,6 +4,40 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.5 — mobile overflow fix + always-on lang pill + share-the-network UX (2026-05-22)
+
+### Mobile overflow — the blocker
+
+Long post content (the seeded CJI declaration in particular) was forcing the page wider than the viewport on mobile Safari. The cause: grid + flex children default to `min-width: auto` which lets intrinsic content size dictate width. The fix is two-part — `min-width: 0` on every grid/flex child at mobile, plus `overflow-wrap: anywhere` on the content blocks so long unbroken text can break at any character. Also `overflow-x: hidden` on `html, body` as a safety net.
+
+Verified: the seeded CJI report now wraps cleanly in a 390 px viewport — every line stays inside the card, no horizontal scroll, no clipped text.
+
+### Always-visible language toggle
+
+The Hindi/English switch was buried in Identity. Moved into the app-bar as a `[हिं · EN]` pill chip next to the relay/peer status — same visual pattern the landing page uses. Click flips `LANG_STORAGE` and reloads so every translated string updates from the freshly-loaded bundle.
+
+### Tell another cockroach — share UX
+
+The site had a per-card `↗ share` button but no clear "share the network itself" surface, and no copy explaining how sharing works. v0.7.5 adds a full-width accent-bordered card on the Identity tab:
+
+- **Headline**: `Tell another cockroach` / `Doosre cockroach ko bataiye`
+- **Body**: explains the link works without sign-up — anyone who opens it is in.
+- **How sharing works (Instrument Serif italic)**: every report has its own permalink (the existing per-card `↗ share` button); the whole network has one address (`thecockroachnetwork.com`); both work.
+- **📲 Get share link** primary CTA — uses the Web Share API when available, falls back to clipboard copy + toast.
+- **↗ Share on WhatsApp** secondary link — pre-fills the message text.
+
+i18n strings added for both languages (`share.tell_friend`, `share.tell_friend_blurb`, `share.tell_friend_how`, `share.tell_friend_btn`, `share.tell_friend_text`, `share.send_whatsapp`, `share.tell_friend_copied`).
+
+### Other stale-data fixes caught in the same pass
+
+- `client/index.html` about-card footer: `COCKROACH V0.2 · CC0 ...` (stale by 5 versions) → `V0.7.5`.
+- `client/lang/en.json` compose placeholder: "in-app upload lands in v0.2" (shipped in v0.5) → describes the photo attach button.
+- `client/lang/hi.json` compose placeholder: same stale "v0.2 mein aayega" claim → rewritten in Hinglish.
+- Client brand chip `v0.7.4` → `v0.7.5`.
+- Service-worker cache key `v074` → `v075`.
+
+VERSION → 0.7.5.
+
 ## v0.7.4 — open-source topbar + stale-data sweep (2026-05-22)
 
 A sweep of the whole repo for stale references, broken links, and pages still on the v0.4 mental model — plus a slim sticky announcement bar across the landing + client that says "we are open source, here is the repo."

@@ -8,7 +8,7 @@
   "status.connected_count": "{n}/{m} relays",
 
   "compose.what_broken": "What is broken?",
-  "compose.placeholder": "Describe the issue. Be specific. If you have a photo, paste its URL into this description for now (in-app upload lands in v0.2).",
+  "compose.placeholder": "Describe what happened. Be specific — date, place, who, what. Attach a photo with the button below if you have one.",
   "compose.tags_label": "Tags",
   "compose.add_tag_placeholder": "add a tag and press enter",
   "compose.location_label": "Location",
@@ -59,6 +59,14 @@
   "share.copied": "link copied to clipboard",
   "share.copy_manual": "Copy this link:",
   "share.no_relay": "no relay is reachable to host the shareable link",
+
+  "share.tell_friend": "Tell another cockroach",
+  "share.tell_friend_blurb": "Send this site to anyone. They don't need to sign up — they open the link and they're in. No account, no email, no OTP. Just open and write.",
+  "share.tell_friend_how": "How sharing works: every report you read has its own permalink (the ↗ share button on each card). The whole network has one address — thecockroachnetwork.com. Either one, sent to anyone with a phone, gets them in.",
+  "share.tell_friend_btn": "📲 Get share link",
+  "share.send_whatsapp": "↗ Share on WhatsApp",
+  "share.tell_friend_copied": "Link copied — paste it anywhere",
+  "share.tell_friend_text": "main bhi cockroach. signed civic reports — no account, no OTP, cannot be deleted.",
 
   "identity.your_identity": "Your identity",
   "identity.identity_blurb": "Your ed25519 public key. This is your account. There is no email, no signup, no recovery — if you lose this device and have not exported the key, you lose this identity.",

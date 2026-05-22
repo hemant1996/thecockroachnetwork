@@ -1413,6 +1413,39 @@ window.addEventListener("DOMContentLoaded", async () => {
   const langSel = $("#lang-select");
   if (langSel) langSel.value = currentLang;
 
+  // v0.7.5 — "Tell another cockroach" share button on the Identity tab.
+  // Uses the Web Share API on supported devices (iOS Safari, mobile Chrome)
+  // and falls back to clipboard copy + toast.
+  document.getElementById("btn-share-network")?.addEventListener("click", async () => {
+    const url = "https://thecockroachnetwork.com";
+    const text = t("share.tell_friend_text") || "main bhi cockroach. signed civic reports — koi account nahi, koi OTP nahi, mita nahi sakte.";
+    const data = { title: "The Cockroach Network", text, url };
+    if (navigator.share) {
+      try { await navigator.share(data); return; } catch { /* user cancelled */ }
+    }
+    try {
+      await navigator.clipboard.writeText(`${url} — ${text}`);
+      toast(t("share.tell_friend_copied") || "link copied — paste it anywhere");
+    } catch {
+      prompt(t("share.copy_manual") || "Copy this link:", url);
+    }
+  });
+
+  // v0.7.5 — always-visible language pill in the app-bar. Click flips
+  // between the two supported languages (en, hi) and reloads so every
+  // translated string updates from the freshly-loaded bundle.
+  const langPill = document.getElementById("lang-pill");
+  if (langPill) {
+    const cur = currentLang === "hi" ? "हिं" : "EN";
+    const other = currentLang === "hi" ? "EN" : "हिं";
+    langPill.innerHTML = `<span class="current">${cur}</span><span class="other">· ${other}</span>`;
+    langPill.addEventListener("click", () => {
+      const next = currentLang === "hi" ? "en" : "hi";
+      localStorage.setItem(LANG_STORAGE, next);
+      location.reload();
+    });
+  }
+
   // Tabs
   for (const s of screens) $(`#tab-${s}`).addEventListener("click", () => showScreen(s));
 

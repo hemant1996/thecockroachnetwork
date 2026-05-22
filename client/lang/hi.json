@@ -10,7 +10,7 @@
   "status.connected_count": "{n}/{m} रिले",
 
   "compose.what_broken": "क्या टूटा है?",
-  "compose.placeholder": "समस्या को स्पष्ट रूप से लिखें। अगर फ़ोटो है तो उसका लिंक यहीं डाल दें (फ़ोटो अपलोड v0.2 में आएगा)।",
+  "compose.placeholder": "Kya hua, kahan, kab — saaf saaf likhiye. Photo hai to neeche ke button se attach kar dijiye.",
   "compose.tags_label": "टैग",
   "compose.add_tag_placeholder": "टैग लिखें और एंटर दबाएँ",
   "compose.location_label": "स्थान",
@@ -61,6 +61,14 @@
   "share.copied": "लिंक कॉपी हो गया",
   "share.copy_manual": "यह लिंक कॉपी करें:",
   "share.no_relay": "शेयर के लिए कोई रिले उपलब्ध नहीं",
+
+  "share.tell_friend": "Doosre cockroach ko bataiye",
+  "share.tell_friend_blurb": "Yeh website kisi ko bhi bhej dijiye. Sign-up nahi karna padega — link kholiye aur aap network mein hain. Koi account, email, OTP nahi. Bas kholiye aur likhiye.",
+  "share.tell_friend_how": "Sharing kaise kaam karta hai: har report ka apna permalink hota hai (har card par ↗ share button hai). Poori network ka ek address hai — thecockroachnetwork.com. Dono mein se kuch bhi, kisi ko bhi bhejiye, woh seedha network mein aa jaayega.",
+  "share.tell_friend_btn": "📲 Share link laaiye",
+  "share.send_whatsapp": "↗ WhatsApp par bhejiye",
+  "share.tell_friend_copied": "Link copy ho gaya — kahin bhi paste kariye",
+  "share.tell_friend_text": "main bhi cockroach. signed civic reports — koi account nahi, OTP nahi, mita nahi sakte.",
 
   "identity.your_identity": "आपकी पहचान",
   "identity.identity_blurb": "आपकी ed25519 सार्वजनिक कुंजी। यही आपकी पहचान है। कोई ईमेल नहीं, कोई साइनअप नहीं, कोई रिकवरी नहीं — अगर यह उपकरण खो दिया और कुंजी एक्सपोर्ट नहीं की, तो पहचान खो जाएगी।",

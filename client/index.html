@@ -54,7 +54,7 @@
           <path d="M 135 150 Q 162 162 174 178" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
         </svg>
         <span>cockroach</span>
-        <span class="ver">v0.7.4</span>
+        <span class="ver">v0.7.5</span>
       </div>
 
       <nav class="tabs">
@@ -72,6 +72,7 @@
           <span id="peer-dot" class="dot"></span>
           <span><span id="peer-count">0 peers</span></span>
         </span>
+        <button class="lang-pill" id="lang-pill" type="button" aria-label="Switch language">हिं · EN</button>
       </div>
     </div>
   </header>
@@ -324,6 +325,16 @@
           </p>
         </div>
 
+        <div class="id-card full" style="border-color:rgba(230,59,46,0.35);background:rgba(230,59,46,0.04)">
+          <h3 data-i18n="share.tell_friend">Tell another cockroach</h3>
+          <p data-i18n="share.tell_friend_blurb">Send this site to anyone. They don't need to sign up — they open the link and they're in. No account, no email, no OTP. Just open and write.</p>
+          <p style="font-family:'Instrument Serif',serif;font-style:italic;font-size:14px;color:var(--ink-faint);max-width:64ch" data-i18n="share.tell_friend_how">How sharing works: every report you read has its own permalink (the ↗ share button on each card). The whole network has one address — thecockroachnetwork.com. Either one, sent to anyone with a phone, gets them in.</p>
+          <div class="row" style="gap:10px;margin-top:14px;flex-wrap:wrap">
+            <button id="btn-share-network" class="ghost" style="border-color:var(--accent);color:var(--accent);font-size:13px;padding:12px 20px"><span data-i18n="share.tell_friend_btn">📲 Get share link</span></button>
+            <a href="https://wa.me/?text=https%3A%2F%2Fthecockroachnetwork.com%20%E2%80%94%20main%20bhi%20cockroach.%20signed%20civic%20reports%2C%20koi%20account%20nahi%2C%20mita%20nahi%20sakte." target="_blank" rel="noopener" class="ghost" style="font-size:13px;padding:12px 20px;text-decoration:none"><span data-i18n="share.send_whatsapp">↗ Share on WhatsApp</span></a>
+          </div>
+        </div>
+
         <div class="id-card full">
           <h3 data-i18n="identity.about">About this client</h3>
           <p data-i18n="identity.about_blurb">This is a reference client for the Cockroach Relay Protocol. ~700 lines of plain JavaScript. Read it, fork it, host your own copy, replace it entirely.</p>
@@ -334,7 +345,7 @@
             <a href="https://github.com/hemant1996/thecockroachnetwork" class="ghost" style="padding:10px 16px;border:1px solid var(--rule-2);color:var(--ink);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none">Source on GitHub ↗</a>
           </div>
           <p style="margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:0.1em">
-            COCKROACH V0.2 · CC0 PUBLIC DOMAIN · JANTA KA NETWORK
+            COCKROACH V0.7.5 · CC0 PUBLIC DOMAIN · JANTA KA NETWORK
           </p>
         </div>
       </div>
