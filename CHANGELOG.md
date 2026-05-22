@@ -4,6 +4,30 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.9 — landing hero shrunk + new hero copy (2026-05-22)
+
+The `MAIN BHI COCKROACH` headline was eating ~70 % of the first viewport. Reduced to ~25 %. Sub-copy rewritten tighter on the founder's instruction.
+
+### Hero title sizing
+
+| Breakpoint | Before | After |
+|---|---|---|
+| Desktop | `clamp(72px, 13vw, 220px)` (192 px at 1480 vw) | `clamp(48px, 7vw, 110px)` (~104 px at 1480 vw) |
+| Mobile (<820 px) | `clamp(56px, 14vw, 120px)` | `clamp(38px, 11vw, 72px)` |
+
+Mascot block on the right now sits next to the title at desktop without being dwarfed.
+
+### Hero sub-copy
+
+| Lang | Before | After |
+|---|---|---|
+| Hinglish (`.hi`) | "CJI ne hume cockroach kaha. Ye naam ab humara hai. Aap jo likhenge, woh signed hoga — koi badal nahi sakta. Network jeeta rahega jab tak koi Pehredaar relay chala raha hai. Jitne zyada Pehredaar, utna sach." | "Yahan pe koi post delete nahi ho skti! Jab tak pehredar zinda hai aur apna kaam kar rhe hain." |
+| English (`.en`) | "A judge called us cockroaches. The name is ours now. What you write is signed — no one can alter it. The network stays alive as long as someone is running a relay. More Pehredaar, more truth." | "No post here can ever be deleted. As long as the Pehredaars are alive and doing their job." |
+
+Tightened from ~45 words to ~14 — same promise, no preamble.
+
+VERSION → 0.7.9.
+
 ## v0.7.8 — scroll fix (overflow-x: hidden → clip) (2026-05-22)
 
 Reported regression: vertical page scroll blocked on macOS Safari.
