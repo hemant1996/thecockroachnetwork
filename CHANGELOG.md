@@ -4,6 +4,49 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.6 — no name on the topbar + no auto-geolocation prompt (2026-05-22)
+
+Two fixes pulled directly from user feedback after v0.7.5.
+
+### Topbar no longer shows my GitHub username
+
+The slim "Open source · CC0 public domain · github.com/hemant1996/thecockroachnetwork →" strip exposed my username on every page load. The repo is open-source and CC0 — the *handle* isn't the point. Stripped the visible URL across all three pages while keeping the `href` targets unchanged:
+
+| Where | Before | After |
+|---|---|---|
+| Landing topbar | `· github.com/hemant1996/thecockroachnetwork` | `· Source on GitHub` |
+| Client topbar | (same) | `· Source on GitHub` |
+| `build/` topbar | `github.com/hemant1996/thecockroachnetwork` | `Source on GitHub` |
+| `build/` primary action subtitle | `github.com/hemant1996/thecockroachnetwork — spec, reference relay …` | `Spec, reference relay, reference client, deploy templates — all CC0 public domain on GitHub.` |
+| `build/` "Fork" section CTA | `github.com/hemant1996/thecockroachnetwork →` | `Open the source on GitHub →` |
+
+Mobile bug caught while testing: at <640 px the `.long` span was hiding ` · CC0 public domain · ` but left "Open source" and "Source on GitHub" smushed together with no separator. Fixed by wrapping the entire lead-in (including "Open source") in `.long` so mobile shows just `Source on GitHub` cleanly.
+
+### No more geolocation prompt on first page load
+
+A brand-new visitor opening the client triggered the browser's "allow location?" dialog immediately. That's terrible — they haven't even seen what the site does, much less indicated any intent to share location. Privacy-by-default rule: the geolocation prompt only fires in response to a deliberate user action.
+
+The three boot paths that called `fetchLocation()` implicitly:
+
+| Path | Behavior before | Behavior now |
+|---|---|---|
+| `showScreen("compose"); refreshGeo()` at boot | Prompted immediately on first load | Removed. No prompt until the user does something that needs location. |
+| `precSel.addEventListener("change", refreshGeo)` (precision dropdown) | Prompted when user picked a precision pill | If a fix already exists, re-encode at the new precision. Otherwise just re-render the live preview — no prompt. |
+| `precision-grid` click handler | (same as above — would prompt) | Same fix — only re-encode if `lastFix` exists. |
+
+What still prompts (correctly — these are deliberate actions):
+
+- Clicking the `get GPS fix` button.
+- Clicking `Sign and publish` without a fix (location is `REQUIRED` on `kind:1` per SPEC §3.2 — if no fix, we ask once, then publish; if denied, we toast and abort).
+
+### Versions
+
+- Client brand chip `v0.7.5 → v0.7.6`, about-card footer same.
+- Landing hero pill `v0.7.4 → v0.7.6`.
+- Service-worker cache key `v075 → v076`.
+
+VERSION → 0.7.6.
+
 ## v0.7.5 — mobile overflow fix + always-on lang pill + share-the-network UX (2026-05-22)
 
 ### Mobile overflow — the blocker

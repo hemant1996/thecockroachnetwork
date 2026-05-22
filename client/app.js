@@ -1514,7 +1514,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     renderLivePreview();
   }
   $("#btn-locate").addEventListener("click", refreshGeo);
-  precSel.addEventListener("change", () => { syncPrecisionPills(); refreshGeo(); });
+  // Precision change does NOT prompt for geolocation — only re-encodes the
+  // existing fix at the new precision. New users can configure precision
+  // before granting location permission.
+  precSel.addEventListener("change", () => { syncPrecisionPills(); if (lastFix) refreshGeo(); else renderLivePreview(); });
 
   // Precision pill grid → drives the hidden <select id="geo-precision">.
   function syncPrecisionPills() {
@@ -1528,7 +1531,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (!pill) return;
     precSel.value = pill.dataset.prec;
     syncPrecisionPills();
-    refreshGeo();
+    // Same rule as the <select> handler — no implicit geo prompt.
+    if (lastFix) refreshGeo();
+    else renderLivePreview();
   });
   syncPrecisionPills();
 
@@ -1904,7 +1909,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Boot
   showScreen("compose");
-  refreshGeo().catch(() => {});
+  // No auto-geolocation prompt — the user grants location only when they
+  // click "get GPS fix" or hit publish without a fix. This is the v0.7.6
+  // privacy-by-default rule: the browser's permission dialog should only
+  // appear in response to a deliberate user action.
   const relays = await loadRelayList();
   for (const url of relays) pool.add(url);
 
