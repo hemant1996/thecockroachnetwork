@@ -4,6 +4,60 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.7.7 — "Hindi" mode is now actually Hinglish (Roman script) (2026-05-22)
+
+The `hi` language bundle was full of Devanagari (क्या टूटा है?, रिपोर्ट, फ़ीड, पहचान, etc.). Most of the audience reads and *types* Hindi in Roman letters on a phone — Devanagari is a register switch they rarely use casually. The intent was always Hinglish.
+
+### Bundle rewrite (`client/lang/hi.json`)
+
+Every value converted from Devanagari to Roman-script Hinglish:
+
+| Key | Was | Now |
+|---|---|---|
+| `tab.compose` | `रिपोर्ट` | `Report` |
+| `tab.feed` | `फ़ीड` | `Feed` |
+| `tab.identity` | `पहचान` | `Pehchaan` |
+| `compose.what_broken` | `क्या टूटा है?` | `Kya tuta hai?` |
+| `compose.tags_label` | `टैग` | `Tags` |
+| `compose.add_tag_placeholder` | `टैग लिखें और एंटर दबाएँ` | `tag likhiye aur enter dabaiye` |
+| `compose.get_gps` | `GPS स्थान लें` | `GPS lijiye` |
+| `compose.privacy_note` | `कम सटीकता = ज़्यादा निजता…` | `Kam sateekta = zyada privacy…` |
+| `compose.publish` | `साइन करके भेजें` | `Sign karke bhejiye` |
+| `verdict.true` / `verdict.fake` | `सही` / `झूठा` | `sahi` / `jhutha` |
+| `verdict.request_evidence` | `सबूत माँगें` | `sabut maango` |
+| `feed.your_weight` | `यहाँ आपका भार` | `yahan aapka weight` |
+| `feed.new_here` | `नया इलाक़ा` | `naya ilaaka` |
+| `identity.your_identity` | `आपकी पहचान` | `Aapki pehchaan` |
+| `identity.relays` | `रिले` | `Relays` |
+| `identity.about` | `बारे में` | `Baare mein` |
+| `identity.privacy` | `निजता` | `Privacy` |
+| `identity.language` | `भाषा` | `Bhasha` |
+| `lang.hindi` | `हिन्दी` | `Hinglish` |
+
+All ~30+ Hinglish/Devanagari mixed strings rewritten in pure Roman script. The bundle key stays `hi` (so browser locale matching still works) but the `_note` at the top now explicitly explains the bundle is Hinglish.
+
+### Lang button label
+
+The toggle pill went from `हिं · EN` to `Hin · EN`. Same change in the landing's `<button id="lang-hi">` — was `हिं`, now `Hin`. The landing's bilingual `.hi` spans were already Roman-script — no changes needed there.
+
+### Identity tab language card
+
+| Field | Before | After |
+|---|---|---|
+| Description | "Switch the interface between English and हिन्दी." | "Switch the interface between English and Hinglish (Hindi in Roman letters — the way most people actually type Hindi on a phone)." |
+| Dropdown option | `<option>हिन्दी</option>` | `<option>Hinglish</option>` |
+| en.json `lang.hindi` value | `हिन्दी` | `Hinglish` |
+
+### Versions
+
+- Client brand chip + about-card footer `v0.7.6 → v0.7.7`.
+- Landing hero pill `v0.7.6 → v0.7.7`.
+- Service-worker cache key `v076 → v077`.
+
+Verified at desktop: switching to Hinglish mode shows `REPORT · FEED · PEHCHAAN` tabs, `KYA TUTA HAI?` composer label, `GPS LIJIYE` button, `Aapki pehchaan / Relays / Baare mein / Privacy / Bhasha` Identity headings — zero Devanagari anywhere on screen.
+
+VERSION → 0.7.7.
+
 ## v0.7.6 — no name on the topbar + no auto-geolocation prompt (2026-05-22)
 
 Two fixes pulled directly from user feedback after v0.7.5.

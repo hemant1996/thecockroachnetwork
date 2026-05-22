@@ -1436,8 +1436,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   // translated string updates from the freshly-loaded bundle.
   const langPill = document.getElementById("lang-pill");
   if (langPill) {
-    const cur = currentLang === "hi" ? "हिं" : "EN";
-    const other = currentLang === "hi" ? "EN" : "हिं";
+    const cur = currentLang === "hi" ? "Hin" : "EN";
+    const other = currentLang === "hi" ? "EN" : "Hin";
     langPill.innerHTML = `<span class="current">${cur}</span><span class="other">· ${other}</span>`;
     langPill.addEventListener("click", () => {
       const next = currentLang === "hi" ? "en" : "hi";
