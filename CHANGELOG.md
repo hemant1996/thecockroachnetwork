@@ -4,6 +4,47 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.8.5 — `/how/` content trim: every section ~50% shorter (2026-05-23)
+
+The page was *long* — not in font size, in word count. Trimmed every section to its essential 2-3 sentences. No size changes (the earlier v0.8.4 step-h2 sizing stays). Sizes were not the problem; sentence length and paragraph count were.
+
+### Word-count cuts per section
+
+| Section | Was (paragraphs) | Now |
+|---|---|---|
+| Hero lead | "Six pictures. Each one explains a piece of what 'decentralized' actually means here — why no company can shut this network down, and where trust comes from." (24 words) | "Six pictures. Why no company can shut this down, and where trust comes from." (14 words) |
+| §01 You sign yourself | 3 paragraphs (~80 words EN) | 2 short paragraphs (~40 words EN) |
+| §02 Write once, lands everywhere | 2 paragraphs (~55 words EN) | 2 sentences (~30 words EN) |
+| §03 Pehredaars talk | 2 paragraphs (~60 words EN) | 1 paragraph + tagline (~35 words EN) |
+| §04 One Pehredaar dies | 3 paragraphs (~90 words EN) | 2 paragraphs (~45 words EN) |
+| §05 Anyone can be a Pehredaar | 4 paragraphs (~75 words EN) | 3 short paragraphs (~50 words EN) |
+| §06 New Pehredaars through shares | 4 paragraphs (~135 words EN) | 4 *short* paragraphs (~70 words EN) |
+| Next CTA lead | "Decentralization isn't theory. It's what you experience when you actually use it — your report shows up on every relay, and what you signed stays signed forever." | "Not theory — try it. Write something. Every Pehredaar gets it, signed forever." |
+
+Overall page word count dropped roughly **45-50%**. Every claim and mechanic is preserved — just stated once, in fewer words.
+
+### What's gone
+
+- Filler ("Yahi asli decentralization test hai" lead-ins)
+- Redundant explanations ("kyunki §03 mein dekh chuke hain ke" — once is enough)
+- Repetition of "all signatures are verified" / "no fake events" within the same paragraph
+- Tangential examples (the URL example in §06 stays, the "or a Raspberry Pi, a $5 VPS, or an old laptop will do" was three options where one is enough — kept the variety since it's evocative)
+
+### What's the same
+
+- All 6 sections still there, same order, same numbered structure
+- All diagrams unchanged (already tight)
+- Both languages reduced in parallel (Hinglish + English)
+- All Pehredaar terminology + simple wording from v0.8.4 preserved
+- Hero h1 + step h2 font sizes restored to v0.8.4 values (user explicitly: "no sizes")
+
+### Versions
+
+- Landing hero pill `v0.8.4 → v0.8.5`.
+- `/how/` footer `v0.8.5`.
+
+VERSION → 0.8.5.
+
 ## v0.8.4 — `/how/` plain-language pass: Pehredaar everywhere, smaller headings, simpler words (2026-05-23)
 
 A common-person comprehension pass on `/how/`. Three things shifted:

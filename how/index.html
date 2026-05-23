@@ -348,10 +348,10 @@
     <span class="en">How this <span class="accent">network</span><br/>actually works.</span>
   </h1>
   <p class="lead hi">
-    6 images. Har ek se decentralization ka ek hissa samajh aayega — kis baat ka matlab hai ki <b>koi bhi company</b> ise band nahi kar sakti, aur trust kahan se aata hai.
+    6 images. <b>Koi company</b> ise band nahi kar sakti — kyun, aur trust kahan se aata hai.
   </p>
   <p class="lead en">
-    Six pictures. Each one explains a piece of what "decentralized" actually means here — why <b>no company</b> can shut this network down, and where trust comes from.
+    Six pictures. Why <b>no company</b> can shut this down, and where trust comes from.
   </p>
 </header>
 
@@ -367,14 +367,12 @@
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Sign-up nahi hai. Email nahi hai. OTP nahi hai. Aapka phone pehli baar app khulne par ek <b>secret key</b> banata hai aur usi phone par rakhta hai — kisi server par nahi jaati.</p>
-          <p>Jab aap kuch likhte ho, aapka phone us message par <b>aapki secret key se digital signature</b> lagata hai. Yeh signature aapki <span class="accent">public key</span> se bandha hota hai — sab koi check kar sakta hai ki "haan, yeh wahi pubkey hai jisne is post ko likha tha."</p>
-          <p>Identity = public key. Account = nahi hai. <code>ed25519</code> cryptography — bank-grade. Hum koi password rakh hi nahi sakte — kyunki tumhara password hamare paas hai hi nahi.</p>
+          <p>No signup, no email, no OTP. Pehli baar app khulne par aapka phone ek <b>secret key</b> banata hai — usi phone mein rehti hai, kisi server par nahi jaati.</p>
+          <p>Har report uss key se sign hoti hai. <b>Identity = aapki public key.</b> Account hai hi nahi — to password leak hone ka sawaal nahi.</p>
         </div>
         <div class="en">
-          <p>No signup. No email. No OTP. The first time you open the app, your phone generates a <b>secret key</b> and keeps it on the device — it never leaves.</p>
-          <p>When you publish, your phone attaches a <b>digital signature</b> using that secret key. The signature is bound to your <span class="accent">public key</span> — anyone can check "yes, this is the same pubkey that wrote the post."</p>
-          <p>Identity = the public key. Account = doesn't exist. <code>ed25519</code> cryptography — bank-grade. We literally can't store your password because we never have it.</p>
+          <p>No signup, no email, no OTP. The first time you open the app, your phone makes a <b>secret key</b> — it stays on the device and never leaves.</p>
+          <p>Every report is signed by that key. <b>Identity = your public key.</b> No account = no password to lose.</p>
         </div>
       </div>
     </div>
@@ -425,12 +423,12 @@
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Jab aap "Sign &amp; publish" daabate ho, aapka signed event ek server par nahi jaata — <b>ek saath sab Pehredaaron ke paas</b> pahuncha diya jaata hai. Abhi 3 public Pehredaar chal rahe hain (Mumbai, Singapore, Render). Teeno ke paas ek-ek copy hai.</p>
-          <p>Yeh Twitter/Insta jaisa nahi hai — wahan ek company ka ek server hai. Yahan <b>har Pehredaar alag insaan chala raha hai</b>. Mumbai wala band ho jaye, Singapore aur Render wala wahi data dikhate rahenge.</p>
+          <p>Publish dabaate hi aapki report <b>ek saath sab Pehredaaron ke paas</b> chali jaati hai. Abhi 3 chal rahe hain (Mumbai, Singapore, Render) — teeno ke paas ek-ek copy.</p>
+          <p>Twitter/Insta = ek company ka ek server. Yahan = <b>3 alag log, 3 alag servers</b>.</p>
         </div>
         <div class="en">
-          <p>When you hit "Sign &amp; publish", your signed event doesn't go to one server — it <b>fans out to every connected Pehredaar at once</b>. Right now there are 3 public Pehredaars running (Mumbai, Singapore, Render). All three get a copy.</p>
-          <p>This is the opposite of Twitter/Instagram — there it's one company's one server. Here <b>every Pehredaar is a different person</b>. If Mumbai goes down, Singapore and Render keep serving the same data.</p>
+          <p>Hit publish and your report goes to <b>every Pehredaar at once</b>. 3 running today (Mumbai, Singapore, Render) — each gets a copy.</p>
+          <p>Twitter/Insta = one company, one server. Here = <b>3 different people, 3 different servers</b>.</p>
         </div>
       </div>
     </div>
@@ -486,12 +484,12 @@
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Maan lo aap sirf Mumbai Pehredaar se connected ho, aur kisi aur ne sirf Singapore Pehredaar par apni report likhi — <b>phir bhi unki report aapko milegi</b>. Kyunki Pehredaar aapas mein lagaatar baat karte hain.</p>
-          <p>Har Pehredaar baaki Pehredaaron ko sun raha hota hai. Naye events ek doosre tak pahuncha dete hain. Pehle har event ki signature check karta hai — <b>koi bhi Pehredaar fake event daal nahi sakta</b>. Nateeja: <b>koi alag-alag feed nahi</b>. Sab Pehredaaron par sab kuch hota hai.</p>
+          <p>Aap Mumbai par, koi aur Singapore par publish karta hai — <b>phir bhi sab kuch sab ko dikhta hai</b>. Pehredaar aapas mein lagaatar reports pass karte hain. Signature check karke — koi bhi fake event daal nahi sakta.</p>
+          <p><b>No silos.</b> Sab Pehredaaron par sab kuch hota hai.</p>
         </div>
         <div class="en">
-          <p>Say you're only connected to the Mumbai Pehredaar, and someone else published to only the Singapore one — <b>you'll still see their report</b>. Because Pehredaars keep talking to each other.</p>
-          <p>Each Pehredaar listens to every other Pehredaar and passes new events between them. Every event's signature is checked first — <b>no Pehredaar can fake or insert events</b>. The result: <b>no separate feeds</b>. Every Pehredaar carries everything.</p>
+          <p>You publish to Mumbai, someone else to Singapore — <b>you both see both</b>. Pehredaars pass reports between themselves constantly. Each event's signature is checked first, so no one can fake anything.</p>
+          <p><b>No silos.</b> Every Pehredaar carries everything.</p>
         </div>
       </div>
     </div>
@@ -549,14 +547,12 @@
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Yahi asli decentralization test hai. Maan lo Mumbai Pehredaar band ho gaya — server crash, government ne notice bhej diya, ya jisne chala raha tha woh chhod gaya. <b>Koi farak nahi padta.</b> Doosre 2 Pehredaaron ke paas saara signed data abhi bhi hai — kyunki §03 mein dekh chuke hain ki Pehredaar aapas mein baat karte rehte hain.</p>
-          <p>Aapka phone apne aap baaki Pehredaaron se data dikhane lagega. Kuch khoya nahi. Iska matlab: <b>koi ek insaan ya company is network ko nahi mita sakti</b>. Ek ko band karaane se kuch nahi hota.</p>
-          <p>Jitne zyada Pehredaar, utna mazboot. Jitne kam, utna khatra. Isi liye Pehredaar chalu karne mein sirf 3 minute lagte hain — <a href="#run">koi bhi Pehredaar ban sakta hai</a>.</p>
+          <p>Mumbai Pehredaar band ho gaya — server crash ho, government notice aaye, ya operator chhod kar chala jaaye. <b>Koi farak nahi.</b> Baaki 2 ke paas saara data hai (§03). Phone apne aap unse padhne lagta hai.</p>
+          <p><b>Koi ek insaan ya company is network ko band nahi kar sakti.</b> Jitne zyada Pehredaar, utna mazboot — <a href="#run">aap bhi ban sakte ho</a>, 3 minute.</p>
         </div>
         <div class="en">
-          <p>This is the actual decentralization test. Suppose the Mumbai Pehredaar goes down — server crash, government notice, or whoever was running it walks away. <b>It doesn't matter.</b> The other 2 Pehredaars still hold every signed event — because as we saw in §03, Pehredaars gossip continuously.</p>
-          <p>Your phone automatically reads from whichever Pehredaars it can still reach. Nothing is lost. The point: <b>no single person or company can shut this network down</b>. Killing one does nothing.</p>
-          <p>More Pehredaars = more resilient. Fewer = more fragile. That's why we made starting a new Pehredaar a 3-minute job — <a href="#run">anyone can become one</a>.</p>
+          <p>Mumbai Pehredaar goes down — server crash, government notice, or the operator walks away. <b>Doesn't matter.</b> The other 2 still hold everything (§03). Your phone auto-reads from whoever's alive.</p>
+          <p><b>No single person or company can shut this down.</b> More Pehredaars = more resilient — <a href="#run">you can become one too</a>, 3 minutes.</p>
         </div>
       </div>
     </div>
@@ -618,16 +614,14 @@
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Hum (yeh website) sirf shuru karne wale hain — abhi ke 3 Pehredaar humare hain. Yeh permanent nahi hai. <b>Koi bhi insaan</b> apna Pehredaar chalu kar sakta hai:</p>
-          <p>→ Render.com par ek button dabakar 3 minute mein apna Pehredaar shuru ho jata hai (free, koi credit card nahi)<br/>→ Raspberry Pi, $5 ka VPS, ya purana laptop — kuch bhi chal sakta hai<br/>→ apna link share karke logon tak pahunchaiye (§06 dekho)</p>
-          <p>Code <b>CC0 public domain</b> hai — permission nahi maangni padti. Naya Pehredaar <b>apne aap</b> baaki Pehredaaron se mil jaata hai aur sab users tak pahunchne lagta hai.</p>
-          <p>Jitne zyada Pehredaar — utna sach. Yahi poora design hai.</p>
+          <p>Abhi ke 3 Pehredaar humare hain — yeh permanent nahi. <b>Koi bhi apna chalu kar sakta hai.</b></p>
+          <p>Render.com par ek button → 3 minute mein live (free, koi credit card nahi). Raspberry Pi, purana laptop, $5 ka VPS — kuch bhi chalega. Code <b>CC0 public domain</b>, permission nahi chahiye. Naya Pehredaar apne aap baaki ke saath jud jaata hai.</p>
+          <p>Jitne zyada Pehredaar — utna sach.</p>
         </div>
         <div class="en">
-          <p>We (this website) are just the seed — all 3 current Pehredaars happen to be ours. That's not permanent. <b>Anyone</b> can run their own:</p>
-          <p>→ one button on Render.com → your Pehredaar is live in 3 minutes (free, no credit card)<br/>→ a Raspberry Pi, a $5 VPS, or an old laptop will do<br/>→ share your link so others adopt it (see §06)</p>
-          <p>The code is <b>CC0 public domain</b> — no permission required. A new Pehredaar <b>automatically</b> meshes with the existing ones and starts reaching every user.</p>
-          <p>More Pehredaars = more truth. That's the whole design.</p>
+          <p>The 3 current Pehredaars happen to be ours — that's not permanent. <b>Anyone can run their own.</b></p>
+          <p>One button on Render.com → live in 3 minutes (free, no credit card). Or a Raspberry Pi, an old laptop, a $5 VPS — anything works. Code is <b>CC0 public domain</b>, no permission needed. A new Pehredaar auto-joins the rest.</p>
+          <p>More Pehredaars = more truth.</p>
         </div>
       </div>
     </div>
@@ -686,16 +680,16 @@
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Maan lo kisi ne apna naya Pehredaar chalu kiya (§05 mein dekha). Ab woh aapke phone tak kaise pahunchega? <b>Koi central admin nahi hai jo "approve" kare</b>. Toh kaise?</p>
-          <p>Jab koi apni report ka link share karta hai, us link ke andar uska Pehredaar address chhupa hota hai — kuch aisa: <code>thecockroachnetwork.com/r/abcd#relays=wss://naya-Pehredaar</code>. Aapka phone us link ko kholte hi <b>seedha us address par jaakar check karta hai</b> — sach mein cockroach Pehredaar hai ya nahi. Verify ho gaya, to <b>apne aap aapki list mein add ho jaata hai</b>, "<b>via share</b>" tag ke saath.</p>
-          <p><b>Bilkul torrent jaisa hai.</b> Torrent mein magnet link ke andar content + uske trackers ka address hota hai — jiske paas link, woh swarm mein jud jaata hai. Yahan bhi waisa hi — share-link mein Pehredaar ka address aata hai, jis kisi ne kholi uska phone us Pehredaar ko adopt kar leta hai.</p>
-          <p>Trust kahan se aaya? <b>Uss insaan se jisne aapko link share kiya.</b> WhatsApp dost, family group, jis Twitter handle ko aap follow karte ho — wahi log decide karte hain ki konse Pehredaar par bharosa kare. Identity tab khol ke dekho — har Pehredaar ke saath likha hai: "seed list" / "via share #abcd" / "manually added". <b>Trust ka full record.</b> Community ne banaya.</p>
+          <p>Naya Pehredaar aapke phone tak pahunchega kaise? <b>Koi admin "approve" nahi karta</b>. Toh kaise?</p>
+          <p>Jab koi report ka link share karta hai, us link ke andar Pehredaar ka address chhupa hota hai. Aapka phone link kholte hi seedha us address par check karta hai — sach mein cockroach Pehredaar hai? Pass ho gaya → <b>apne aap aapki list mein add ho jaata hai</b>, "via share" tag ke saath.</p>
+          <p><b>Bilkul torrent jaisa.</b> Magnet link → swarm. Share-link → Pehredaar network.</p>
+          <p>Trust kahan se aaya? <b>Uss insaan se jisne aapko link share kiya.</b> WhatsApp dost, family group, jis Twitter handle ko follow karte ho — wahi log decide karte hain. Community ne banaya.</p>
         </div>
         <div class="en">
-          <p>Say someone started a fresh Pehredaar (see §05). How does it ever reach your phone? <b>There's no central admin to "approve" it</b>. So how?</p>
-          <p>When someone shares a permalink to their report, the Pehredaar's address rides inside the link — something like <code>thecockroachnetwork.com/r/abcd#relays=wss://new-pehredaar</code>. The moment your phone opens it, the app <b>goes straight to that address and checks</b> — is this actually a cockroach Pehredaar? If yes, it's <b>automatically added to your list</b>, tagged "<b>via share</b>".</p>
-          <p><b>This works exactly like torrents.</b> A magnet link carries the content hash + tracker addresses — whoever has the link joins the swarm. Same idea here: a share-link carries the Pehredaar's address, and anyone who opens it adopts that Pehredaar.</p>
-          <p>Where does trust come from? <b>From the person who shared the link with you.</b> Your WhatsApp friend, your family group, the Twitter handle you follow — they're the ones deciding which Pehredaars to trust. Open the Identity tab and look: every Pehredaar shows where it came from — "seed list" / "via share #abcd" / "added manually". <b>A full audit trail of trust.</b> The community built it.</p>
+          <p>How does a new Pehredaar reach your phone? <b>No admin "approves" it.</b> So how?</p>
+          <p>When someone shares a report link, the Pehredaar's address rides inside the link. Your phone opens the link and goes straight to that address to check — is this actually a cockroach Pehredaar? If yes → <b>auto-added to your list</b>, tagged "via share".</p>
+          <p><b>Exactly like torrents.</b> Magnet link → swarm. Share-link → Pehredaar network.</p>
+          <p>Where does trust come from? <b>From the person who shared the link with you.</b> Your WhatsApp friend, your family group, the Twitter handle you follow — they decide. The community built it.</p>
         </div>
       </div>
     </div>
@@ -771,10 +765,10 @@
     <span class="en">Now be a <span class="accent">cockroach.</span></span>
   </h2>
   <p class="lead hi">
-    Decentralization theory nahi hai. Use karne mein decentralization dikhta hai — aap koi report likho, doosre relay par bhi mil jayegi, aur jo aapne signed kiya woh hamesha rahega.
+    Theory padhne se nahi, use karne se dikhta hai. Likhiye — har Pehredaar tak pahunchega, hamesha ke liye signed.
   </p>
   <p class="lead en">
-    Decentralization isn't theory. It's what you experience when you actually use it — your report shows up on every relay, and what you signed stays signed forever.
+    Not theory — try it. Write something. Every Pehredaar gets it, signed forever.
   </p>
   <div class="next-ctas">
     <a class="primary" href="../client/">
