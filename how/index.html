@@ -701,61 +701,61 @@
     </div>
 
     <div class="diagram">
-      <svg viewBox="0 0 420 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: Alice shares a permalink containing her relay's URL fragment; Bob's client verifies the relay's /info endpoint and adopts it, tagged 'via Alice'">
-        <!-- alice (top-left) -->
-        <rect class="d-bg-hi" x="20" y="20" width="100" height="56" rx="10" />
-        <text class="d-text-hi" x="70" y="44" text-anchor="middle">ALICE</text>
-        <text class="d-text-sm" x="70" y="62" text-anchor="middle">runs new relay</text>
+      <svg viewBox="0 0 420 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: three vertical panels showing how a new relay gets adopted — Alice publishes from her relay, a share-link with the relay address travels through chat apps to Bob, and the relay automatically appears in Bob's relay pool tagged via share">
+        <!-- ── Panel 1: Alice runs her relay ─────────────── -->
+        <text class="d-text-sm" x="20" y="22" fill="rgba(244,234,213,0.42)">① ALICE</text>
 
-        <!-- alice's relay (below alice) -->
-        <rect class="d-bg-good" x="20" y="95" width="100" height="38" rx="6" />
-        <text class="d-text-sm" x="70" y="119" text-anchor="middle" fill="#4ade80">wss://alice-relay</text>
+        <rect class="d-bg-hi" x="20" y="32" width="86" height="44" rx="8" />
+        <text class="d-text-hi" x="63" y="52" text-anchor="middle">ALICE</text>
+        <text class="d-text-sm" x="63" y="68" text-anchor="middle" font-size="9">phone</text>
 
-        <!-- share link bubble -->
-        <rect class="d-bg" x="140" y="40" width="160" height="70" rx="10" style="stroke:var(--accent);stroke-dasharray:3 3" />
-        <text class="d-text-sm" x="220" y="58" text-anchor="middle" fill="var(--accent)">SHARE LINK</text>
-        <text class="d-text-sm" x="148" y="76" font-size="9">/r/abcd</text>
-        <text class="d-text-sm" x="148" y="92" font-size="9" fill="var(--accent)">#relays=</text>
-        <text class="d-text-sm" x="148" y="105" font-size="9">wss://alice-relay</text>
+        <line class="d-line-hi" x1="108" y1="54" x2="138" y2="54" />
+        <polygon class="d-arrow-hi" points="138,49 148,54 138,59" />
+        <text class="d-text-sm" x="123" y="46" text-anchor="middle" font-size="9" fill="rgba(244,234,213,0.66)">runs</text>
 
-        <!-- arrow from alice to share link -->
-        <line class="d-line-hi" x1="122" y1="50" x2="138" y2="65" />
-        <polygon class="d-arrow-hi" points="136,60 144,68 136,72" />
+        <rect class="d-bg-good" x="150" y="32" width="250" height="44" rx="8" />
+        <text class="d-text-hi" x="275" y="52" text-anchor="middle" fill="#4ade80">NEW RELAY</text>
+        <text class="d-text-sm" x="275" y="68" text-anchor="middle" font-size="10">wss://alice-relay</text>
 
-        <!-- bob (top-right) -->
-        <rect class="d-bg-hi" x="320" y="20" width="80" height="56" rx="10" />
-        <text class="d-text-hi" x="360" y="44" text-anchor="middle">BOB</text>
-        <text class="d-text-sm" x="360" y="62" text-anchor="middle">opens link</text>
+        <!-- arrow down to panel 2 -->
+        <line class="d-line-hi" x1="210" y1="90" x2="210" y2="120" />
+        <polygon class="d-arrow-hi" points="205,119 210,129 215,119" />
+        <text class="d-text-sm" x="210" y="106" text-anchor="middle" font-size="9" fill="rgba(244,234,213,0.66)">alice shares a permalink</text>
 
-        <!-- arrow from share link to bob -->
-        <line class="d-line-hi" x1="302" y1="68" x2="318" y2="48" />
-        <polygon class="d-arrow-hi" points="316,46 322,40 320,52" />
-        <text class="d-text-sm" x="310" y="36" text-anchor="middle" font-size="9" fill="rgba(244,234,213,0.42)">via WhatsApp /</text>
-        <text class="d-text-sm" x="310" y="46" text-anchor="middle" font-size="9" fill="rgba(244,234,213,0.42)">Twitter / SMS</text>
+        <!-- ── Panel 2: the share link ───────────────────── -->
+        <text class="d-text-sm" x="20" y="142" fill="rgba(244,234,213,0.42)">② THE LINK</text>
 
-        <!-- verification arrow: bob → alice's relay /info -->
-        <line class="d-line-dashed" x1="320" y1="80" x2="125" y2="115" />
-        <text class="d-text-sm" x="220" y="135" text-anchor="middle" font-size="10" fill="rgba(244,234,213,0.66)">GET /info → "cockroach-relay" ✓</text>
+        <rect x="20" y="152" width="380" height="64" rx="8"
+              style="fill:rgba(230,59,46,0.06);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3" />
+        <text class="d-text-sm" x="34" y="172" font-size="10" fill="rgba(244,234,213,0.66)">thecockroachnetwork.com/r/abcd</text>
+        <text class="d-text-sm" x="34" y="194" font-size="11" fill="var(--accent)" font-weight="500">#relays=wss://alice-relay</text>
+        <text class="d-text-sm" x="34" y="208" font-size="9" fill="rgba(244,234,213,0.42)">↑ the relay address rides inside the URL fragment</text>
 
-        <!-- bob's relay pool (bottom) -->
-        <rect class="d-bg" x="60" y="190" width="300" height="138" rx="8" />
-        <text class="d-text-sm" x="210" y="212" text-anchor="middle" fill="rgba(244,234,213,0.42)">bob's relay pool — Identity tab</text>
+        <!-- arrow down to panel 3 -->
+        <line class="d-line-hi" x1="210" y1="222" x2="210" y2="268" />
+        <polygon class="d-arrow-hi" points="205,267 210,277 215,267" />
+        <text class="d-text-sm" x="210" y="240" text-anchor="middle" font-size="9" fill="rgba(244,234,213,0.66)">bob opens link · WhatsApp / Twitter / SMS</text>
+        <text class="d-text-sm" x="210" y="254" text-anchor="middle" font-size="9" fill="rgba(74,222,128,0.85)">→ client GETs /info → "cockroach-relay" ✓</text>
 
-        <!-- pool entries -->
-        <rect class="d-bg" x="75" y="225" width="270" height="22" rx="3" />
-        <text class="d-text-sm" x="85" y="240" font-size="10">wss://relay-mumbai</text>
-        <text class="d-text-sm" x="335" y="240" text-anchor="end" font-size="9" fill="rgba(244,234,213,0.42)">seed list</text>
+        <!-- ── Panel 3: bob's relay pool ─────────────────── -->
+        <text class="d-text-sm" x="20" y="282" fill="rgba(244,234,213,0.42)">③ BOB'S RELAY POOL — auto-added</text>
 
-        <rect class="d-bg" x="75" y="252" width="270" height="22" rx="3" />
-        <text class="d-text-sm" x="85" y="267" font-size="10">wss://relay-singapore</text>
-        <text class="d-text-sm" x="335" y="267" text-anchor="end" font-size="9" fill="rgba(244,234,213,0.42)">seed list</text>
+        <!-- pool background -->
+        <rect class="d-bg" x="20" y="290" width="380" height="84" rx="6" />
 
-        <!-- the NEW one, highlighted -->
-        <rect class="d-bg-hi" x="75" y="279" width="270" height="22" rx="3" />
-        <text class="d-text-sm" x="85" y="294" font-size="10" fill="var(--accent)">wss://alice-relay</text>
-        <text class="d-text-sm" x="335" y="294" text-anchor="end" font-size="9" fill="var(--accent)">via share #abcd</text>
+        <!-- row 1 -->
+        <text class="d-text-sm" x="34" y="307" font-size="10">wss://relay-mumbai</text>
+        <text class="d-text-sm" x="386" y="307" text-anchor="end" font-size="9" fill="rgba(244,234,213,0.42)">seed list</text>
 
-        <text class="d-text-sm" x="210" y="320" text-anchor="middle" font-size="9" fill="rgba(244,234,213,0.42)">↑ adopted automatically, with provenance recorded</text>
+        <!-- row 2 -->
+        <text class="d-text-sm" x="34" y="324" font-size="10">wss://relay-singapore</text>
+        <text class="d-text-sm" x="386" y="324" text-anchor="end" font-size="9" fill="rgba(244,234,213,0.42)">seed list</text>
+
+        <!-- row 3: the NEW relay, highlighted -->
+        <rect x="26" y="333" width="368" height="22" rx="3"
+              style="fill:rgba(230,59,46,0.10);stroke:var(--accent);stroke-width:1" />
+        <text class="d-text-sm" x="34" y="348" font-size="10" fill="var(--accent)" font-weight="500">wss://alice-relay</text>
+        <text class="d-text-sm" x="386" y="348" text-anchor="end" font-size="9" fill="var(--accent)">via share #abcd</text>
       </svg>
       <div class="caption hi">Magnet link → torrent swarm. Share-URL → cockroach mesh. Wahi mechanic, alag content.</div>
       <div class="caption en">Magnet link → torrent swarm. Share-URL → cockroach mesh. Same mechanic, different content.</div>

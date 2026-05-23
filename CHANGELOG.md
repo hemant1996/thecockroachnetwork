@@ -4,6 +4,31 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.8.3 — `/how/` §06 diagram rebuild (2026-05-23)
+
+v0.8.2's §06 diagram was a mess — overlapping labels ("via WhatsApp / Twitter / SMS" piling on top of the BOB box), diagonal verification arrows running across the canvas, the Alice/relay relationship visually disconnected, and labels extending past the SVG viewBox on mobile (so half the explanation was clipped).
+
+Rebuilt as a clean **vertical 3-panel comic** that reads top-to-bottom with clearly labeled transitions:
+
+| Panel | What's shown |
+|---|---|
+| ① **Alice** | Alice's phone (left) → arrow labeled `runs` → her new relay box `wss://alice-relay` (right, green). |
+| arrow | `alice shares a permalink` — centered. |
+| ② **The link** | Wide red-dashed bubble with the actual URL: `thecockroachnetwork.com/r/abcd` on top, `#relays=wss://alice-relay` highlighted in accent below, plus a small italic note `↑ the relay address rides inside the URL fragment`. |
+| arrow | `bob opens link · WhatsApp / Twitter / SMS` + (green) `→ client GETs /info → "cockroach-relay" ✓` — both centered, both fit. |
+| ③ **Bob's relay pool — auto-added** | Three rows: two seed-list relays, then the new `wss://alice-relay` highlighted in accent with `via share #abcd` tag on the right. |
+
+All inter-panel labels use `text-anchor="middle"` so they stay inside the viewBox at every viewport width. No diagonals, no overlaps, no clipping. Same story, much clearer reading.
+
+Verified at 1480×900 and 390×900.
+
+### Versions
+
+- Landing hero pill `v0.8.2 → v0.8.3`.
+- `/how/` footer `v0.8.3`.
+
+VERSION → 0.8.3.
+
 ## v0.8.2 — `/how/` §06: how new relays get adopted (torrent analogy) (2026-05-23)
 
 v0.8.1's explainer stopped at "anyone can deploy a relay" — true but incomplete. Deploying alone doesn't matter; the network grows only when a *new* relay gets *adopted* by other peoples' clients. That's the actual trust-bootstrap step, and it was missing.
