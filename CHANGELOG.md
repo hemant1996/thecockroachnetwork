@@ -4,6 +4,56 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.8.4 — `/how/` plain-language pass: Pehredaar everywhere, smaller headings, simpler words (2026-05-23)
+
+A common-person comprehension pass on `/how/`. Three things shifted:
+
+### 1. Step headings shrunk
+
+`.step h2` went from `clamp(30px, 4vw, 52px)` to `clamp(24px, 2.6vw, 36px)`. The hero h1 stays at `clamp(36px, 6vw, 78px)`. Now there's a clear typographic hierarchy: hero dominates, steps are visibly secondary. Previously every step heading was competing with the page title for size.
+
+### 2. "Relay" → "Pehredaar" everywhere it's conceptual
+
+Common readers hit "relay" as technical jargon. The project's brand word — *Pehredaar* (watchman/guardian) — already does the conceptual work in plain language. Swept across all six steps in both languages:
+
+- §02 heading body + diagram labels (`RELAY · MUM` → `PEHREDAAR · Mumbai`)
+- §03 heading "Relays khud ek doosre se baat karte hain" → "Pehredaar khud aapas mein baat karte hain"
+- §03 diagram (3 nodes labeled `Pehredaar` instead of `relay`)
+- §04 "Ek relay band ho jaye?" → "Ek Pehredaar band?"; body + diagram
+- §05 heading already used Pehredaar; body cleaned ("apna Pehredaar chalu kar sakta hai" instead of "deploy")
+- §06 heading "Naye relays share se milte hain" → "Naye Pehredaar share se milte hain"; full body + 3-panel diagram all updated
+- URL strings in diagrams: `wss://alice-relay` → `wss://alice-pehredaar`, `wss://relay-mumbai` → `wss://mumbai-pehredaar`, etc.
+
+The literal technical word "relay" is preserved only where it's the actual wire-protocol term that has to appear (e.g. the SPEC's "relay-to-relay sync" reference dropped entirely from the body — too jargon).
+
+### 3. Simpler wording across the board
+
+The "truly, but simply" principle. Cuts of formal/technical phrasing that didn't earn their place:
+
+| Was | Now |
+|---|---|
+| `Chhe tasveerein` | `6 images` |
+| `client GETs /info → "cockroach-relay" ✓` | `phone us address par jaakar check karta hai ✓` |
+| `canonical signature (name: "cockroach-relay")` | `sach mein cockroach Pehredaar hai ya nahi` |
+| `siloed feed` / `alag-alag feed` | `alag-alag feed` (kept; "siloed" was English jargon) |
+| `no single throat to grab architecture` | `koi ek insaan ya company is network ko nahi mita sakti` |
+| `reference operator` | `shuru karne wale` |
+| `deploy your own relay` / `relay deploy karo` | `apna Pehredaar chalu karo` |
+| `mesh in 1 sec` | `network mein judne mein 1 second` |
+| `relay-to-relay sync (SPEC §4a)` | (SPEC reference removed — the actual mechanic is described in the next sentence anyway) |
+| `bharosa ka audit trail` | `trust ka full record` (kept Hindi `record` reads cleaner than `audit trail`) |
+
+The diagram captions also got the same treatment. Truth is preserved everywhere — the mechanics are still all there. The page just reads like a friend explaining something instead of a spec excerpt.
+
+### Versions
+
+- Landing hero pill `v0.8.3 → v0.8.4`.
+- `/how/` footer `v0.8.4`.
+
+Verified Hinglish and English, desktop 1480×900, mobile 390×900. No console errors.
+
+VERSION → 0.8.4.
+
 ## v0.8.3 — `/how/` §06 diagram rebuild (2026-05-23)
 
 v0.8.2's §06 diagram was a mess — overlapping labels ("via WhatsApp / Twitter / SMS" piling on top of the BOB box), diagonal verification arrows running across the canvas, the Alice/relay relationship visually disconnected, and labels extending past the SVG viewBox on mobile (so half the explanation was clipped).

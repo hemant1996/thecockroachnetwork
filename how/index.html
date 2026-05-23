@@ -167,7 +167,7 @@
   }
   .step h2 {
     font-family: "Anton", sans-serif; text-transform: uppercase;
-    font-size: clamp(30px, 4vw, 52px); line-height: 0.95;
+    font-size: clamp(24px, 2.6vw, 36px); line-height: 1;
     margin: 0 0 18px; font-weight: 400;
   }
   .step h2 .accent { color: var(--accent); }
@@ -348,7 +348,7 @@
     <span class="en">How this <span class="accent">network</span><br/>actually works.</span>
   </h1>
   <p class="lead hi">
-    Chhe tasveerein. Har ek decentralization ka ek hissa samjhati hai — kis baat ka matlab hai ki <b>koi bhi company</b> ise band nahi kar sakti, aur bharosa kahan se aata hai.
+    6 images. Har ek se decentralization ka ek hissa samajh aayega — kis baat ka matlab hai ki <b>koi bhi company</b> ise band nahi kar sakti, aur trust kahan se aata hai.
   </p>
   <p class="lead en">
     Six pictures. Each one explains a piece of what "decentralized" actually means here — why <b>no company</b> can shut this network down, and where trust comes from.
@@ -425,12 +425,12 @@
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Jab aap "Sign & publish" daabate ho, aapka signed event ek server par nahi — <b>sab connected relays par ek saath</b> jaata hai. Abhi 3 public relays chal rahe hain (Mumbai, Singapore, Render). Sabhi ko ek copy milti hai.</p>
-          <p>Yeh aam Twitter/Insta jaisa nahi hai — wahan ek company ka ek database hai. Yahan <b>har relay ek alag operator</b> chala raha hai. Agar Mumbai wala band ho jaye, Singapore wala aur Render wala wahi data dikhate rahenge.</p>
+          <p>Jab aap "Sign &amp; publish" daabate ho, aapka signed event ek server par nahi jaata — <b>ek saath sab Pehredaaron ke paas</b> pahuncha diya jaata hai. Abhi 3 public Pehredaar chal rahe hain (Mumbai, Singapore, Render). Teeno ke paas ek-ek copy hai.</p>
+          <p>Yeh Twitter/Insta jaisa nahi hai — wahan ek company ka ek server hai. Yahan <b>har Pehredaar alag insaan chala raha hai</b>. Mumbai wala band ho jaye, Singapore aur Render wala wahi data dikhate rahenge.</p>
         </div>
         <div class="en">
-          <p>When you hit "Sign &amp; publish", your signed event doesn't go to one server — it <b>fans out to every connected relay at once</b>. Right now there are 3 public relays running (Mumbai, Singapore, Render). All three get a copy.</p>
-          <p>This is the opposite of Twitter/Instagram — there it's one company's one database. Here <b>every relay is a different operator</b>. If Mumbai goes down, Singapore and Render keep serving the same data.</p>
+          <p>When you hit "Sign &amp; publish", your signed event doesn't go to one server — it <b>fans out to every connected Pehredaar at once</b>. Right now there are 3 public Pehredaars running (Mumbai, Singapore, Render). All three get a copy.</p>
+          <p>This is the opposite of Twitter/Instagram — there it's one company's one server. Here <b>every Pehredaar is a different person</b>. If Mumbai goes down, Singapore and Render keep serving the same data.</p>
         </div>
       </div>
     </div>
@@ -454,22 +454,22 @@
 
         <!-- 3 relays -->
         <rect class="d-bg-good" x="280" y="30" width="120" height="60" rx="10" />
-        <text class="d-text-hi" x="340" y="55" text-anchor="middle" fill="#4ade80">RELAY · MUM</text>
-        <text class="d-text-sm" x="340" y="75" text-anchor="middle">Mumbai · Fly</text>
+        <text class="d-text-hi" x="340" y="55" text-anchor="middle" fill="#4ade80">PEHREDAAR</text>
+        <text class="d-text-sm" x="340" y="75" text-anchor="middle">Mumbai</text>
 
         <rect class="d-bg-good" x="280" y="130" width="120" height="60" rx="10" />
-        <text class="d-text-hi" x="340" y="155" text-anchor="middle" fill="#4ade80">RELAY · SGP</text>
-        <text class="d-text-sm" x="340" y="175" text-anchor="middle">Singapore · Fly</text>
+        <text class="d-text-hi" x="340" y="155" text-anchor="middle" fill="#4ade80">PEHREDAAR</text>
+        <text class="d-text-sm" x="340" y="175" text-anchor="middle">Singapore</text>
 
         <rect class="d-bg-good" x="280" y="230" width="120" height="60" rx="10" />
-        <text class="d-text-hi" x="340" y="255" text-anchor="middle" fill="#4ead4ade80" fill="#4ade80">RELAY · IN</text>
+        <text class="d-text-hi" x="340" y="255" text-anchor="middle" fill="#4ade80">PEHREDAAR</text>
         <text class="d-text-sm" x="340" y="275" text-anchor="middle">India · Render</text>
 
         <!-- "1 event = 3 copies" label -->
         <text class="d-text-sm" x="200" y="310" text-anchor="middle" fill="rgba(244,234,213,0.42)">1 event → 3 copies, atomically</text>
       </svg>
-      <div class="caption hi">Har relay ek hi event ko receive karta hai. Teen alag operator. Teen alag desh / cloud.</div>
-      <div class="caption en">Each relay receives the same event. Three different operators. Three different countries / clouds.</div>
+      <div class="caption hi">Har Pehredaar ko wahi event milta hai. 3 alag log. 3 alag desh / cloud.</div>
+      <div class="caption en">Each Pehredaar receives the same event. 3 different people. 3 different countries / clouds.</div>
     </div>
   </div>
 </section>
@@ -481,17 +481,17 @@
     <div>
       <div class="step-num">03 / 06</div>
       <h2>
-        <span class="hi">Relays khud ek doosre se<br/><span class="accent">baat karte hain.</span></span>
-        <span class="en">Relays talk to<br/><span class="accent">each other.</span></span>
+        <span class="hi">Pehredaar khud aapas mein<br/><span class="accent">baat karte hain.</span></span>
+        <span class="en">Pehredaars talk to<br/><span class="accent">each other.</span></span>
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Agar aap sirf Mumbai relay se connected ho, aur kisi aur ne sirf Singapore relay par publish kiya — phir bhi aapko unka event mil jaayega. Kaise? Kyunki relays khud ek doosre se baat karte hain (SPEC §4a — "relay-to-relay sync").</p>
-          <p>Har relay <b>doosre relays ko subscribe</b> karta hai aur naye signed events ko aapas mein gossip karta hai. Saari signatures verify hoti hain — koi relay kuch banakar daal nahi sakta. Result: <b>koi siloed feed nahi</b>. Sab relays par sab kuch hota hai.</p>
+          <p>Maan lo aap sirf Mumbai Pehredaar se connected ho, aur kisi aur ne sirf Singapore Pehredaar par apni report likhi — <b>phir bhi unki report aapko milegi</b>. Kyunki Pehredaar aapas mein lagaatar baat karte hain.</p>
+          <p>Har Pehredaar baaki Pehredaaron ko sun raha hota hai. Naye events ek doosre tak pahuncha dete hain. Pehle har event ki signature check karta hai — <b>koi bhi Pehredaar fake event daal nahi sakta</b>. Nateeja: <b>koi alag-alag feed nahi</b>. Sab Pehredaaron par sab kuch hota hai.</p>
         </div>
         <div class="en">
-          <p>If you're only connected to the Mumbai relay, and someone else published to only the Singapore relay — you'll still see their event. How? Because relays themselves talk to each other (SPEC §4a — "relay-to-relay sync").</p>
-          <p>Each relay <b>subscribes to the others</b> and gossips new signed events between them. All signatures are verified — no relay can fake or insert events. The result: <b>no siloed feeds</b>. Every relay carries everything.</p>
+          <p>Say you're only connected to the Mumbai Pehredaar, and someone else published to only the Singapore one — <b>you'll still see their report</b>. Because Pehredaars keep talking to each other.</p>
+          <p>Each Pehredaar listens to every other Pehredaar and passes new events between them. Every event's signature is checked first — <b>no Pehredaar can fake or insert events</b>. The result: <b>no separate feeds</b>. Every Pehredaar carries everything.</p>
         </div>
       </div>
     </div>
@@ -501,15 +501,15 @@
         <!-- triangle of 3 relays -->
         <rect class="d-bg-good" x="160" y="20" width="100" height="56" rx="8" />
         <text class="d-text-hi" x="210" y="44" text-anchor="middle" fill="#4ade80">MUMBAI</text>
-        <text class="d-text-sm" x="210" y="62" text-anchor="middle">relay</text>
+        <text class="d-text-sm" x="210" y="62" text-anchor="middle">Pehredaar</text>
 
         <rect class="d-bg-good" x="40" y="220" width="100" height="56" rx="8" />
         <text class="d-text-hi" x="90" y="244" text-anchor="middle" fill="#4ade80">SINGAPORE</text>
-        <text class="d-text-sm" x="90" y="262" text-anchor="middle">relay</text>
+        <text class="d-text-sm" x="90" y="262" text-anchor="middle">Pehredaar</text>
 
         <rect class="d-bg-good" x="280" y="220" width="100" height="56" rx="8" />
         <text class="d-text-hi" x="330" y="244" text-anchor="middle" fill="#4ade80">RENDER · IN</text>
-        <text class="d-text-sm" x="330" y="262" text-anchor="middle">relay</text>
+        <text class="d-text-sm" x="330" y="262" text-anchor="middle">Pehredaar</text>
 
         <!-- mutual sync lines (with double arrows) -->
         <line class="d-line-good" x1="170" y1="76" x2="110" y2="218" />
@@ -529,10 +529,10 @@
         <text class="d-text-sm" x="210" y="266" text-anchor="middle" fill="rgba(74,222,128,0.7)">sync</text>
 
         <!-- caption -->
-        <text class="d-text-sm" x="210" y="306" text-anchor="middle" fill="rgba(244,234,213,0.42)">no relay holds anything the others don't</text>
+        <text class="d-text-sm" x="210" y="306" text-anchor="middle" fill="rgba(244,234,213,0.42)">no Pehredaar holds anything the others don't</text>
       </svg>
-      <div class="caption hi">Mesh topology. Har relay sabko jaanta hai. Koi master nahi hai.</div>
-      <div class="caption en">Mesh topology. Every relay knows every other relay. There is no master.</div>
+      <div class="caption hi">Har Pehredaar baaki sabko jaanta hai. Koi master nahi hai.</div>
+      <div class="caption en">Every Pehredaar knows every other Pehredaar. There is no master.</div>
     </div>
   </div>
 </section>
@@ -544,19 +544,19 @@
     <div>
       <div class="step-num">04 / 06</div>
       <h2>
-        <span class="hi">Ek relay <span class="accent">band</span> ho jaye?<br/>Network <span class="stroke">zinda</span> hai.</span>
-        <span class="en">One relay <span class="accent">dies?</span><br/>Network <span class="stroke">lives.</span></span>
+        <span class="hi">Ek Pehredaar <span class="accent">band</span>?<br/>Network <span class="stroke">zinda</span> hai.</span>
+        <span class="en">One Pehredaar <span class="accent">dies?</span><br/>Network <span class="stroke">lives.</span></span>
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Yahi waala asli decentralization test hai. Maan lo Mumbai relay band ho gaya — server gir gaya, government ne notice bhej diya, ya operator chala gaya. <b>Koi farak nahi padta.</b> Doosre 2 relays par saara signed data abhi bhi pada hai — kyunki §03 mein hum dekh chuke hain ke relays gossip karte rehte hain.</p>
-          <p>Aapka phone apne aap baaki connected relays se data dikhayega. Kuch khoya nahi. Yeh "<b>no single throat to grab</b>" architecture hai — aap kisi ek operator ko target karke poora network band nahi kar sakte.</p>
-          <p>Jitne zyada Pehredaar (relay operators), utna mazboot. Jitne kam, utna khatra. Isi liye humne deploy 3 minute ka rakha hai — <a href="#run">koi bhi Pehredaar ban sakta hai</a>.</p>
+          <p>Yahi asli decentralization test hai. Maan lo Mumbai Pehredaar band ho gaya — server crash, government ne notice bhej diya, ya jisne chala raha tha woh chhod gaya. <b>Koi farak nahi padta.</b> Doosre 2 Pehredaaron ke paas saara signed data abhi bhi hai — kyunki §03 mein dekh chuke hain ki Pehredaar aapas mein baat karte rehte hain.</p>
+          <p>Aapka phone apne aap baaki Pehredaaron se data dikhane lagega. Kuch khoya nahi. Iska matlab: <b>koi ek insaan ya company is network ko nahi mita sakti</b>. Ek ko band karaane se kuch nahi hota.</p>
+          <p>Jitne zyada Pehredaar, utna mazboot. Jitne kam, utna khatra. Isi liye Pehredaar chalu karne mein sirf 3 minute lagte hain — <a href="#run">koi bhi Pehredaar ban sakta hai</a>.</p>
         </div>
         <div class="en">
-          <p>This is the actual decentralization test. Suppose the Mumbai relay goes down — server crash, government notice, or the operator quits. <b>It doesn't matter.</b> The other 2 relays still hold every signed event — because as we saw in §03, relays gossip continuously.</p>
-          <p>Your phone automatically reads from whichever relays it can still reach. Nothing is lost. This is the "<b>no single throat to grab</b>" architecture — you can't kill the network by leaning on one operator.</p>
-          <p>More Pehredaars (relay operators) = more resilient. Fewer = more fragile. That's why we made deploy a 3-minute job — <a href="#run">anyone can become a Pehredaar</a>.</p>
+          <p>This is the actual decentralization test. Suppose the Mumbai Pehredaar goes down — server crash, government notice, or whoever was running it walks away. <b>It doesn't matter.</b> The other 2 Pehredaars still hold every signed event — because as we saw in §03, Pehredaars gossip continuously.</p>
+          <p>Your phone automatically reads from whichever Pehredaars it can still reach. Nothing is lost. The point: <b>no single person or company can shut this network down</b>. Killing one does nothing.</p>
+          <p>More Pehredaars = more resilient. Fewer = more fragile. That's why we made starting a new Pehredaar a 3-minute job — <a href="#run">anyone can become one</a>.</p>
         </div>
       </div>
     </div>
@@ -566,18 +566,18 @@
         <!-- dead relay (top) -->
         <rect class="d-bg-bad" x="160" y="20" width="100" height="56" rx="8" />
         <text class="d-text-hi" x="210" y="44" text-anchor="middle" fill="#ef4444">MUMBAI</text>
-        <text class="d-text-sm" x="210" y="62" text-anchor="middle" fill="#ef4444">offline</text>
+        <text class="d-text-sm" x="210" y="62" text-anchor="middle" fill="#ef4444">Pehredaar · offline</text>
         <line class="d-x" x1="170" y1="30" x2="250" y2="66" />
         <line class="d-x" x1="250" y1="30" x2="170" y2="66" />
 
-        <!-- alive relays -->
+        <!-- alive Pehredaars -->
         <rect class="d-bg-good" x="40" y="160" width="100" height="56" rx="8" />
         <text class="d-text-hi" x="90" y="184" text-anchor="middle" fill="#4ade80">SINGAPORE</text>
-        <text class="d-text-sm" x="90" y="202" text-anchor="middle">alive ✓</text>
+        <text class="d-text-sm" x="90" y="202" text-anchor="middle">Pehredaar ✓</text>
 
         <rect class="d-bg-good" x="280" y="160" width="100" height="56" rx="8" />
         <text class="d-text-hi" x="330" y="184" text-anchor="middle" fill="#4ade80">RENDER · IN</text>
-        <text class="d-text-sm" x="330" y="202" text-anchor="middle">alive ✓</text>
+        <text class="d-text-sm" x="330" y="202" text-anchor="middle">Pehredaar ✓</text>
 
         <!-- dead links to dead relay (dashed) -->
         <line class="d-line-dashed" x1="170" y1="76" x2="110" y2="158" />
@@ -598,10 +598,10 @@
         <line class="d-line-hi" x1="250" y1="270" x2="305" y2="218" />
         <polygon class="d-arrow-hi" points="302,212 310,222 298,222" />
 
-        <text class="d-text-sm" x="210" y="316" text-anchor="middle" fill="rgba(244,234,213,0.42)">phone reads from survivors automatically</text>
+        <text class="d-text-sm" x="210" y="316" text-anchor="middle" fill="rgba(244,234,213,0.42)">phone reads from surviving Pehredaars</text>
       </svg>
-      <div class="caption hi">1 relay down ≠ network down. Sab data baaki ke paas hai.</div>
-      <div class="caption en">1 relay down ≠ network down. The other relays still hold all the data.</div>
+      <div class="caption hi">1 Pehredaar down ≠ network down. Saara data baaki ke paas hai.</div>
+      <div class="caption en">1 Pehredaar down ≠ network down. The others still hold all the data.</div>
     </div>
   </div>
 </section>
@@ -618,15 +618,15 @@
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Hum (yeh website) sirf ek <b>reference operator</b> hain — 3 me se 3 relays abhi humare paas hain. Lekin yeh permanent nahi hai. Koi bhi:</p>
-          <p>→ Render.com par ek button daba ke 3 minute mein apna relay deploy kar sakta hai (free, no credit card)<br/>→ Raspberry Pi ya $5 ka VPS ya purana laptop bhi chala sakta hai<br/>→ Apne ko share-URL se publicly seed list mein daal sakta hai</p>
-          <p>Code <b>CC0 public domain</b> hai — permission nahi maangni padti. Aapka relay <b>automatically</b> baaki relays se sync ho jaayega aur sab clients tak pahunchne lagega.</p>
-          <p>Jitne zyada Pehredaar — utna sach. Yahi original design intent hai.</p>
+          <p>Hum (yeh website) sirf shuru karne wale hain — abhi ke 3 Pehredaar humare hain. Yeh permanent nahi hai. <b>Koi bhi insaan</b> apna Pehredaar chalu kar sakta hai:</p>
+          <p>→ Render.com par ek button dabakar 3 minute mein apna Pehredaar shuru ho jata hai (free, koi credit card nahi)<br/>→ Raspberry Pi, $5 ka VPS, ya purana laptop — kuch bhi chal sakta hai<br/>→ apna link share karke logon tak pahunchaiye (§06 dekho)</p>
+          <p>Code <b>CC0 public domain</b> hai — permission nahi maangni padti. Naya Pehredaar <b>apne aap</b> baaki Pehredaaron se mil jaata hai aur sab users tak pahunchne lagta hai.</p>
+          <p>Jitne zyada Pehredaar — utna sach. Yahi poora design hai.</p>
         </div>
         <div class="en">
-          <p>We (this website) are just one <b>reference operator</b> — all 3 current relays happen to be ours. But that's not permanent. Anyone can:</p>
-          <p>→ deploy their own relay on Render.com in 3 minutes (free, no credit card)<br/>→ run it on a Raspberry Pi, a $5 VPS, or an old laptop<br/>→ publish their relay's URL via the share-link discovery so others adopt it</p>
-          <p>The code is <b>CC0 public domain</b> — no permission required. A new relay <b>automatically</b> meshes with the existing ones and starts reaching every client.</p>
+          <p>We (this website) are just the seed — all 3 current Pehredaars happen to be ours. That's not permanent. <b>Anyone</b> can run their own:</p>
+          <p>→ one button on Render.com → your Pehredaar is live in 3 minutes (free, no credit card)<br/>→ a Raspberry Pi, a $5 VPS, or an old laptop will do<br/>→ share your link so others adopt it (see §06)</p>
+          <p>The code is <b>CC0 public domain</b> — no permission required. A new Pehredaar <b>automatically</b> meshes with the existing ones and starts reaching every user.</p>
           <p>More Pehredaars = more truth. That's the whole design.</p>
         </div>
       </div>
@@ -637,15 +637,15 @@
         <!-- 3 alive relays -->
         <circle class="d-bg-good" cx="100" cy="80" r="32" />
         <text class="d-text-hi" x="100" y="78" text-anchor="middle" fill="#4ade80">MUM</text>
-        <text class="d-text-sm" x="100" y="94" text-anchor="middle">alive</text>
+        <text class="d-text-sm" x="100" y="94" text-anchor="middle">Pehredaar</text>
 
         <circle class="d-bg-good" cx="220" cy="80" r="32" />
         <text class="d-text-hi" x="220" y="78" text-anchor="middle" fill="#4ade80">SGP</text>
-        <text class="d-text-sm" x="220" y="94" text-anchor="middle">alive</text>
+        <text class="d-text-sm" x="220" y="94" text-anchor="middle">Pehredaar</text>
 
         <circle class="d-bg-good" cx="340" cy="80" r="32" />
         <text class="d-text-hi" x="340" y="78" text-anchor="middle" fill="#4ade80">IN</text>
-        <text class="d-text-sm" x="340" y="94" text-anchor="middle">alive</text>
+        <text class="d-text-sm" x="340" y="94" text-anchor="middle">Pehredaar</text>
 
         <!-- candidate slots: dashed circles -->
         <circle class="d-bg-bad" cx="60" cy="180" r="28" style="fill:transparent;stroke:var(--ink-faint);stroke-dasharray:4 3" />
@@ -653,7 +653,7 @@
 
         <circle class="d-bg-bad" cx="160" cy="220" r="28" style="fill:transparent;stroke:var(--accent);stroke-dasharray:4 3" />
         <text class="d-text-sm" x="160" y="218" text-anchor="middle" fill="var(--accent)">YOU?</text>
-        <text class="d-text-sm" x="160" y="232" text-anchor="middle" fill="rgba(244,234,213,0.42)">3 min</text>
+        <text class="d-text-sm" x="160" y="232" text-anchor="middle" fill="rgba(244,234,213,0.42)">3 min se kam</text>
 
         <circle class="d-bg-bad" cx="260" cy="220" r="28" style="fill:transparent;stroke:var(--ink-faint);stroke-dasharray:4 3" />
         <text class="d-text-sm" x="260" y="224" text-anchor="middle" fill="rgba(244,234,213,0.42)">?</text>
@@ -664,12 +664,12 @@
         <!-- arrow pointing to "YOU?" slot -->
         <line class="d-line-hi" x1="160" y1="278" x2="160" y2="252" />
         <polygon class="d-arrow-hi" points="154,254 160,244 166,254" />
-        <text class="d-text-hi" x="160" y="298" text-anchor="middle">deploy yours</text>
+        <text class="d-text-hi" x="160" y="298" text-anchor="middle">aap shuru karo</text>
 
-        <text class="d-text-sm" x="210" y="318" text-anchor="middle" fill="rgba(244,234,213,0.42)">network grows by addition, not permission</text>
+        <text class="d-text-sm" x="210" y="318" text-anchor="middle" fill="rgba(244,234,213,0.42)">network jodne se badhta hai, permission se nahi</text>
       </svg>
-      <div class="caption hi">CC0 = koi license clause nahi, koi permission nahi. Sirf deploy karo aur mesh mein ghus jao.</div>
-      <div class="caption en">CC0 = no license clause, no permission required. Just deploy and your relay joins the mesh.</div>
+      <div class="caption hi">CC0 = koi license, koi permission nahi. Bas Pehredaar chalu karo, network mein judne mein 1 second.</div>
+      <div class="caption en">CC0 = no license, no permission. Start your Pehredaar; it joins the network in 1 second.</div>
     </div>
   </div>
 </section>
@@ -681,21 +681,21 @@
     <div>
       <div class="step-num">06 / 06</div>
       <h2>
-        <span class="hi">Naye relays <span class="accent">share se</span><br/>milte hain. <span class="stroke">Torrent jaise.</span></span>
-        <span class="en">New relays come in<br/><span class="accent">through shares.</span> <span class="stroke">Like torrents.</span></span>
+        <span class="hi">Naye Pehredaar <span class="accent">share se</span><br/>milte hain. <span class="stroke">Torrent jaise.</span></span>
+        <span class="en">New Pehredaars come in<br/><span class="accent">through shares.</span> <span class="stroke">Like torrents.</span></span>
       </h2>
       <div class="body">
         <div class="hi">
-          <p>Toh maan lo kisi ne apna naya Pehredaar relay deploy kar liya (step 05 mein dekha). Ab woh kaise aapke phone tak pahunchega? <b>Koi central admin nahi hai jo "approve" kare</b>. Toh kaise?</p>
-          <p>Jab koi report ka link share karta hai, link ke hash mein relay ka address chhupa hota hai — kuch aisa: <code>thecockroachnetwork.com/r/abcd#relays=wss://naya-relay.com</code>. Aapka phone us link ko kholte hi check karta hai — `/info` endpoint dekha, canonical signature (`name: "cockroach-relay"`) mil gayi, to relay automatically aapke pool mein add ho jaata hai, "<b>via share</b>" tag ke saath.</p>
-          <p><b>Torrent jaisa kaam karta hai.</b> Torrent mein magnet link ke andar content + trackers ka address hota hai — jiske paas link, woh swarm mein judta hai. Yahan bhi waisa hi — share-link mein relay ka address aata hai, jis kisi ne kholi uska client adopt kar leta hai.</p>
-          <p>Trust kahan se aaya? <b>Uss insaan se jisne link share kiya.</b> WhatsApp dost, family group, jis Twitter handle ko follow karte ho — wahi log relays ko legitimacy dete hain. Identity tab khol ke dekho — har relay ke saath written hai: "seed list" / "via share #abcd" / "manually added". Bharosa ka audit trail. Community ne banaya.</p>
+          <p>Maan lo kisi ne apna naya Pehredaar chalu kiya (§05 mein dekha). Ab woh aapke phone tak kaise pahunchega? <b>Koi central admin nahi hai jo "approve" kare</b>. Toh kaise?</p>
+          <p>Jab koi apni report ka link share karta hai, us link ke andar uska Pehredaar address chhupa hota hai — kuch aisa: <code>thecockroachnetwork.com/r/abcd#relays=wss://naya-Pehredaar</code>. Aapka phone us link ko kholte hi <b>seedha us address par jaakar check karta hai</b> — sach mein cockroach Pehredaar hai ya nahi. Verify ho gaya, to <b>apne aap aapki list mein add ho jaata hai</b>, "<b>via share</b>" tag ke saath.</p>
+          <p><b>Bilkul torrent jaisa hai.</b> Torrent mein magnet link ke andar content + uske trackers ka address hota hai — jiske paas link, woh swarm mein jud jaata hai. Yahan bhi waisa hi — share-link mein Pehredaar ka address aata hai, jis kisi ne kholi uska phone us Pehredaar ko adopt kar leta hai.</p>
+          <p>Trust kahan se aaya? <b>Uss insaan se jisne aapko link share kiya.</b> WhatsApp dost, family group, jis Twitter handle ko aap follow karte ho — wahi log decide karte hain ki konse Pehredaar par bharosa kare. Identity tab khol ke dekho — har Pehredaar ke saath likha hai: "seed list" / "via share #abcd" / "manually added". <b>Trust ka full record.</b> Community ne banaya.</p>
         </div>
         <div class="en">
-          <p>Say someone deployed a fresh Pehredaar relay (step 05). How does it ever reach your phone? <b>There's no central admin to "approve" it</b>. So how?</p>
-          <p>When someone shares a permalink to a report, the link's hash carries the relay address — something like <code>thecockroachnetwork.com/r/abcd#relays=wss://new-relay.com</code>. The moment your phone opens it, the client checks the relay's <code>/info</code> endpoint, looks for the canonical signature (<code>name: "cockroach-relay"</code>), and if it matches, the relay is automatically added to your pool, tagged "<b>via share</b>".</p>
-          <p><b>This works exactly like torrents.</b> A magnet link carries the content hash + tracker addresses — whoever has the link can join the swarm. Same idea here: a share-link carries the relay address, and anyone who opens it adopts it.</p>
-          <p>Where does trust come from? <b>From the person who shared the link with you.</b> Your WhatsApp friend, your family group, the Twitter handle you follow — those are the people who give relays legitimacy. Open the Identity tab and look: every relay shows its provenance — "seed list" / "via share #abcd" / "added manually". An audit trail of trust. The community built it.</p>
+          <p>Say someone started a fresh Pehredaar (see §05). How does it ever reach your phone? <b>There's no central admin to "approve" it</b>. So how?</p>
+          <p>When someone shares a permalink to their report, the Pehredaar's address rides inside the link — something like <code>thecockroachnetwork.com/r/abcd#relays=wss://new-pehredaar</code>. The moment your phone opens it, the app <b>goes straight to that address and checks</b> — is this actually a cockroach Pehredaar? If yes, it's <b>automatically added to your list</b>, tagged "<b>via share</b>".</p>
+          <p><b>This works exactly like torrents.</b> A magnet link carries the content hash + tracker addresses — whoever has the link joins the swarm. Same idea here: a share-link carries the Pehredaar's address, and anyone who opens it adopts that Pehredaar.</p>
+          <p>Where does trust come from? <b>From the person who shared the link with you.</b> Your WhatsApp friend, your family group, the Twitter handle you follow — they're the ones deciding which Pehredaars to trust. Open the Identity tab and look: every Pehredaar shows where it came from — "seed list" / "via share #abcd" / "added manually". <b>A full audit trail of trust.</b> The community built it.</p>
         </div>
       </div>
     </div>
@@ -714,8 +714,8 @@
         <text class="d-text-sm" x="123" y="46" text-anchor="middle" font-size="9" fill="rgba(244,234,213,0.66)">runs</text>
 
         <rect class="d-bg-good" x="150" y="32" width="250" height="44" rx="8" />
-        <text class="d-text-hi" x="275" y="52" text-anchor="middle" fill="#4ade80">NEW RELAY</text>
-        <text class="d-text-sm" x="275" y="68" text-anchor="middle" font-size="10">wss://alice-relay</text>
+        <text class="d-text-hi" x="275" y="52" text-anchor="middle" fill="#4ade80">NAYA PEHREDAAR</text>
+        <text class="d-text-sm" x="275" y="68" text-anchor="middle" font-size="10">wss://alice-pehredaar</text>
 
         <!-- arrow down to panel 2 -->
         <line class="d-line-hi" x1="210" y1="90" x2="210" y2="120" />
@@ -728,37 +728,37 @@
         <rect x="20" y="152" width="380" height="64" rx="8"
               style="fill:rgba(230,59,46,0.06);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3" />
         <text class="d-text-sm" x="34" y="172" font-size="10" fill="rgba(244,234,213,0.66)">thecockroachnetwork.com/r/abcd</text>
-        <text class="d-text-sm" x="34" y="194" font-size="11" fill="var(--accent)" font-weight="500">#relays=wss://alice-relay</text>
-        <text class="d-text-sm" x="34" y="208" font-size="9" fill="rgba(244,234,213,0.42)">↑ the relay address rides inside the URL fragment</text>
+        <text class="d-text-sm" x="34" y="194" font-size="11" fill="var(--accent)" font-weight="500">#relays=wss://alice-pehredaar</text>
+        <text class="d-text-sm" x="34" y="208" font-size="9" fill="rgba(244,234,213,0.42)">↑ Pehredaar ka address link ke andar chhupa hai</text>
 
         <!-- arrow down to panel 3 -->
         <line class="d-line-hi" x1="210" y1="222" x2="210" y2="268" />
         <polygon class="d-arrow-hi" points="205,267 210,277 215,267" />
-        <text class="d-text-sm" x="210" y="240" text-anchor="middle" font-size="9" fill="rgba(244,234,213,0.66)">bob opens link · WhatsApp / Twitter / SMS</text>
-        <text class="d-text-sm" x="210" y="254" text-anchor="middle" font-size="9" fill="rgba(74,222,128,0.85)">→ client GETs /info → "cockroach-relay" ✓</text>
+        <text class="d-text-sm" x="210" y="240" text-anchor="middle" font-size="9" fill="rgba(244,234,213,0.66)">bob link kholta hai · WhatsApp / Twitter / SMS</text>
+        <text class="d-text-sm" x="210" y="254" text-anchor="middle" font-size="9" fill="rgba(74,222,128,0.85)">→ phone us address par jaakar check karta hai ✓</text>
 
         <!-- ── Panel 3: bob's relay pool ─────────────────── -->
-        <text class="d-text-sm" x="20" y="282" fill="rgba(244,234,213,0.42)">③ BOB'S RELAY POOL — auto-added</text>
+        <text class="d-text-sm" x="20" y="282" fill="rgba(244,234,213,0.42)">③ BOB'S PEHREDAAR LIST — apne aap add ho gaya</text>
 
         <!-- pool background -->
         <rect class="d-bg" x="20" y="290" width="380" height="84" rx="6" />
 
         <!-- row 1 -->
-        <text class="d-text-sm" x="34" y="307" font-size="10">wss://relay-mumbai</text>
+        <text class="d-text-sm" x="34" y="307" font-size="10">wss://mumbai-pehredaar</text>
         <text class="d-text-sm" x="386" y="307" text-anchor="end" font-size="9" fill="rgba(244,234,213,0.42)">seed list</text>
 
         <!-- row 2 -->
-        <text class="d-text-sm" x="34" y="324" font-size="10">wss://relay-singapore</text>
+        <text class="d-text-sm" x="34" y="324" font-size="10">wss://singapore-pehredaar</text>
         <text class="d-text-sm" x="386" y="324" text-anchor="end" font-size="9" fill="rgba(244,234,213,0.42)">seed list</text>
 
-        <!-- row 3: the NEW relay, highlighted -->
+        <!-- row 3: the NEW Pehredaar, highlighted -->
         <rect x="26" y="333" width="368" height="22" rx="3"
               style="fill:rgba(230,59,46,0.10);stroke:var(--accent);stroke-width:1" />
-        <text class="d-text-sm" x="34" y="348" font-size="10" fill="var(--accent)" font-weight="500">wss://alice-relay</text>
+        <text class="d-text-sm" x="34" y="348" font-size="10" fill="var(--accent)" font-weight="500">wss://alice-pehredaar</text>
         <text class="d-text-sm" x="386" y="348" text-anchor="end" font-size="9" fill="var(--accent)">via share #abcd</text>
       </svg>
-      <div class="caption hi">Magnet link → torrent swarm. Share-URL → cockroach mesh. Wahi mechanic, alag content.</div>
-      <div class="caption en">Magnet link → torrent swarm. Share-URL → cockroach mesh. Same mechanic, different content.</div>
+      <div class="caption hi">Magnet link → torrent swarm. Share-link → cockroach Pehredaar network. Wahi tareeqa, alag content.</div>
+      <div class="caption en">Magnet link → torrent swarm. Share-link → cockroach Pehredaar network. Same idea, different content.</div>
     </div>
   </div>
 </section>
