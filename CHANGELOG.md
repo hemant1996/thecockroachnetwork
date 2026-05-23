@@ -4,6 +4,56 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.8.6 — `/how/` §06 diagram rebuild (2 frames, not 3) (2026-05-23)
+
+Same complaint, sharper: the v0.8.3 three-panel layout (`① ALICE` / `② THE LINK` / `③ BOB'S LIST`) was visually messy — ALICE box, NAYA PEHREDAAR box, two arrows with two stacked text labels between panels 2 and 3, the `↑ Pehredaar address` callout inside the URL frame fighting for attention with the URL itself, and `①②③` numbering on top.
+
+### Rebuild
+
+Dropped to **two frames + one arrow.** The story is "the address rides in the link → it ends up in Bob's list" — that's the *whole* mechanic and two frames carry it perfectly. Alice doesn't need her own panel; the body paragraphs already establish who she is.
+
+```
+┌─────────────────────────────────────────┐
+│ SHARE-LINK                              │
+│                                         │
+│ thecockroachnetwork.com/r/abcd          │
+│ #relays=wss://alice-pehredaar  (accent) │
+│ ↑ Pehredaar address link ke andar       │
+└─────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────┐
+│ Bob's Pehredaar list — apne aap add     │
+│   wss://mumbai-pehredaar         seed   │
+│   wss://singapore-pehredaar      seed   │
+│ ┃ wss://alice-pehredaar     via share ┃ ← accent border
+└─────────────────────────────────────────┘
+```
+
+### What's removed
+
+- `① ALICE` panel — the ALICE phone box + `runs` arrow + NAYA PEHREDAAR box. Body text already names Alice.
+- `① ② ③` panel numbering — unnecessary scaffolding once panels are 2 not 3.
+- Two-line label between panels (`bob link kholta hai` + `→ phone us address par check karta hai ✓`) — collapsed into the SHARE-LINK frame's own `↑ Pehredaar address link ke andar` hint, since the URL frame is now the focal point.
+- `alice shares a permalink` arrow label between panels 1 and 2 — also dropped since panel 1 is gone.
+
+### What's preserved
+
+- The URL anatomy showing the `#relays=` fragment in accent (the actual mechanic — the address piggybacks on the share URL).
+- Bob's list with the new entry visibly highlighted (red border + `via share` tag).
+- The arrow between the two frames showing causation.
+- The torrent-analogy caption below the diagram, unchanged.
+
+Element count dropped from ~28 SVG primitives to ~16 — roughly 40% less visual noise for the same story.
+
+Verified desktop 1480×900 + mobile 390×900.
+
+### Versions
+
+- Landing hero pill `v0.8.5 → v0.8.6`.
+- `/how/` footer `v0.8.6`.
+
+VERSION → 0.8.6.
+
 ## v0.8.5 — `/how/` content trim: every section ~50% shorter (2026-05-23)
 
 The page was *long* — not in font size, in word count. Trimmed every section to its essential 2-3 sentences. No size changes (the earlier v0.8.4 step-h2 sizing stays). Sizes were not the problem; sentence length and paragraph count were.
