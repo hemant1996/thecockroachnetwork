@@ -1106,12 +1106,29 @@ function renderCard(r) {
   const dOpen    = daysOpen(r.id, r.created_at);
   const dups     = duplicatesOfFast(r.id);
 
+  // v0.8.0 — closure badge as one horizontal line.
+  // Per NN/g progressive-disclosure + card-as-snapshot: only the most relevant
+  // signals stay inline. Sparse-cell merges in as just another segment (no
+  // bordered row); voter-weight tucks into the verdict row's italic note
+  // when non-zero, and hides entirely when zero (the §8.3 legibility floor
+  // re-surfaces only after a voter has earned non-zero weight in the cell).
   const segs = [];
   if (tc.true > 0) segs.push(`<span class="seg seg-true">✓ ${tc.true}</span>`);
   if (tc.fake > 0) segs.push(`<span class="seg seg-fake">✗ ${tc.fake}</span>`);
   if (ereq > 0)    segs.push(`<span class="seg seg-proof">↺ ${ereq} ${escapeHTML(t("feed.proof_requested") || "asking proof")}</span>`);
   if (eatt > 0)    segs.push(`<span class="seg seg-evidence">▸ ${eatt} ${escapeHTML(t("feed.evidence_attached") || "evidence")}</span>`);
   if (dups.length) segs.push(`<span class="seg seg-dup">⇿ duplicate of #${escapeHTML(dups[0].slice(0, 4))}</span>`);
+
+  // Sparse-cell signal becomes a segment alongside the others — not its own
+  // dashed row. SPEC §8.4 still surfaces, just quieter.
+  const cell = geo5(geo);
+  if (cell) {
+    const nVerifiers = cellVerifierCountFast(cell);
+    if (nVerifiers < 3) {
+      segs.push(`<span class="seg seg-sparse">⚠ low-density · ${nVerifiers}/3 verifiers</span>`);
+    }
+  }
+
   segs.push(resolved
     ? `<span class="seg seg-resolved">▣ ${escapeHTML(t("feed.resolved_by_short") || "resolved by")} #${escapeHTML(st.by.slice(0, 4))}</span>`
     : `<span class="seg seg-open">${dOpen}d ${escapeHTML(t("feed.open_days") || "open")}</span>`);
@@ -1120,35 +1137,23 @@ function renderCard(r) {
     ? `<span class="consensus consensus-${tcv}">${tcv === "true" ? "✓ true" : "✗ fake"}</span>`
     : "";
 
-  // SPEC §8.4 — sparse-cell badge (O(1) via cellVerifierCountFast).
-  const cell = geo5(geo);
-  const sparseHTML = (() => {
-    if (!cell) return "";
-    const n = cellVerifierCountFast(cell);
-    if (n >= 3) return "";
-    return `<span class="seg seg-sparse">⚠ low-density area · ${n}/3 verifiers in cell</span>`;
-  })();
-
   const closureHTML = `<div class="closure">
     ${consensusPill}
     ${segs.join("")}
-    ${sparseHTML}
   </div>`;
 
-  // SPEC §8.3 — voter weight legibility, O(1) via myReportsByCell.
+  // SPEC §8.3 voter-weight: hidden entirely when zero (new users see no
+  // noise); shown as a small italic note inside the verdict row when the
+  // user has actually earned local weight.
   const myWeight = voterLocalReportCountFast(cell);
-  const weightLabel = myWeight === 0
-    ? `${escapeHTML(t("feed.your_weight") || "your weight here")}: 0 (${escapeHTML(t("feed.new_here") || "new to this area")})`
-    : `${escapeHTML(t("feed.your_weight") || "your weight here")}: ${myWeight} ${myWeight === 1 ? "report" : "reports"}`;
-  const weightHTML = `<div class="voter-weight">${weightLabel}</div>`;
-
-  // Binary truth toggles + actions overflow. "↳ attach evidence" surfaces
-  // alongside when there's at least one outstanding evidence-request, so the
-  // give-proof path is one click from the ask-proof state.
-  const mine = myActiveTruthFast(r.id);
-  const attachHTML = ereq > 0
-    ? `<button class="attach-btn" data-action="attach-evidence">↳ ${escapeHTML(t("verdict.attach_evidence") || "attach evidence")}</button>`
+  const weightInline = myWeight > 0
+    ? `<span class="voter-weight-inline">weight here: ${myWeight} ${myWeight === 1 ? "report" : "reports"}</span>`
     : "";
+
+  // Binary truth toggles + actions overflow. The redundant standalone
+  // "↳ attach evidence" button (v0.7.1) is gone — that action lives in the
+  // ⋯ more menu only. Hick's Law: limit visible primary actions.
+  const mine = myActiveTruthFast(r.id);
   const verifyHTML = `<div class="verify-row">
     <button class="truth-btn ${mine.has("true") ? "cast cast-true" : ""}" data-verdict="true">
       ✓ ${escapeHTML(t("verdict.true") || "true")}
@@ -1165,7 +1170,7 @@ function renderCard(r) {
         <button data-action="mark-resolved">${escapeHTML(resolved ? (t("verdict.reopen") || "reopen") : (t("verdict.mark_resolved") || "mark resolved"))}</button>
       </div>
     </div>
-    ${attachHTML}
+    ${weightInline}
     <button class="share-btn" data-action="share" title="${escapeHTML(t("feed.share_title") || "share")}">${escapeHTML(t("feed.share") || "share")}</button>
   </div>`;
 
@@ -1199,7 +1204,6 @@ function renderCard(r) {
       ${renderMediaTags(r)}
       ${tags.length ? `<div class="tags">${tags.map(t => `<span>#${escapeHTML(t)}</span>`).join("")}</div>` : ""}
       ${closureHTML}
-      ${weightHTML}
       ${verifyHTML}
       ${repliesHTML}
     </div>`;

@@ -4,6 +4,55 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.8.0 — feed cards: research-led declutter pass (2026-05-23)
+
+A focused UX pass on the feed card after reading what NN/g, Luke Wroblewski, and the broader UX-research literature actually say about card-based feeds, progressive disclosure, and information density. The card used to be a dossier — too many signals competing for attention. v0.8.0 makes it a snapshot.
+
+### Principles applied (and the source for each)
+
+| Principle | Source | What it means here |
+|---|---|---|
+| Cards are *snapshots* of related info, not dossiers | NN/g, *Cards: UI-Component Definition* (Feb 2024) | Strip the card to its essentials; put non-critical signals behind disclosure. |
+| Progressive disclosure: surface what most users need, defer the rest | Jakob Nielsen, *Progressive Disclosure* (1995/2006) | The standalone `↳ attach evidence` button + the same item inside the `⋯ more` menu = redundant disclosure. Pick one. |
+| Hick's Law: every additional button adds cognitive load | classic HCI | Verdict row primaries down from 5 visible to 3 (`✓ true / ✗ fake / ⋯ more`) plus `share`. |
+| Visual hierarchy: body wins, secondary recedes | NN/g, *Visual Hierarchy in UI/UX Design* | Drop the closure badge's border + background fill so it stops competing with post content. |
+| Mobile = one-column scrolling vertical stack | Luke W, *Interaction 09: Mobile UX Patterns* | Confirmed our layout; tightened only the densities. |
+
+### Six concrete changes
+
+**A. Standalone `↳ attach evidence` button removed.** It still lives inside the `⋯ more` menu (the only place a redundant action should live). The give-evidence flow is unchanged — one extra tap, far less clutter.
+
+**B. Sparse-cell warning is inline.** SPEC §8.4 "low-density · N/3 verifiers" used to sit on its own dashed full-width row under the closure badge. Now it's just another `<span class="seg seg-sparse">` alongside the truth counts and the days-open marker. Same signal, one-third the vertical space.
+
+**C. Voter-weight hides when zero.** "YOUR WEIGHT HERE: 0 (NEW TO THIS AREA)" appeared on every card for every new user — pure noise. Hidden when `myWeight === 0`. When non-zero, it tucks into the verdict row as a small italic note (`weight here: 3 reports`). SPEC §8.3 legibility is preserved exactly where it has signal — i.e. after the voter has actually earned some.
+
+**D. Closure badge has no border, no background.** Was a bordered translucent box that competed with the post body for attention. Now it's just a horizontal line of monospace text segments. Body content visually dominates the card.
+
+**E. Verdict row trimmed.** `✓ true / ✗ fake / ⋯ more / [weight inline] / share`. The `⋯ more` menu contains: request evidence · attach evidence · mark duplicate of… · mark resolved/reopen.
+
+**F. Mobile body density.** Content font 14 → 13.5 px, line-height 1.5 → 1.45. Closure segments 10 px on mobile, the sparse-cell italic 11 px.
+
+### Net effect
+
+A typical card on mobile went from ~12 stacked visual elements (body / tags / badge-row / sparse-row / weight-row / 4 buttons / share / attach-btn / replies) down to ~6 (body / tags / one-line badge / 4 buttons inc. share / replies). Card height shrinks roughly 30–35 % with **zero functionality lost** — every action is still reachable, just better organised.
+
+### Not yet shipped (separately worth considering)
+
+- *Tap-anywhere-on-card → expand details / open share-link permalink.* NN/g's recommended pattern for card UIs. Requires a decision about what the tap target does — separate discussion.
+- *Body collapse with "read more" past 3 lines.* Common on Twitter/Reddit. For civic reports the full content is often the point, so this is not an obvious win.
+
+### Versions
+
+- Client brand chip + about-card footer `v0.7.8 → v0.8.0`.
+- Landing hero pill `v0.7.9 → v0.8.0`.
+- Service-worker cache key `v078 → v080`.
+
+### Verified
+
+Desktop 1480×900 + mobile 390×900. Feed renders, every card shows the trimmed badge + verdict row, actions menu still contains all 4 options including `attach evidence`. No console errors. Click handler for `[data-action="attach-evidence"]` still wired (handler at app.js:1689 unchanged).
+
+VERSION → 0.8.0.
+
 ## v0.7.9 — landing hero shrunk + new hero copy (2026-05-22)
 
 The `MAIN BHI COCKROACH` headline was eating ~70 % of the first viewport. Reduced to ~25 %. Sub-copy rewritten tighter on the founder's instruction.

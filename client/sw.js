@@ -10,7 +10,7 @@
 // anything in the shell) wipes every visitor's stale cache on next SW
 // activation.
 
-const CACHE = "cockroach-shell-v078";
+const CACHE = "cockroach-shell-v080";
 const SHELL = [
   "./",
   "./index.html",

@@ -653,29 +653,22 @@ main { max-width: 1320px; margin: 0 auto; padding: 28px 28px 64px; }
 }
 .report-card .evidence-reply .media-item { max-height: 240px; }
 
-/* ── ↳ attach evidence quick-button on the verdict row (v0.7.1) ─────── */
-.report-card .verify-row .attach-btn {
-  font-family: "JetBrains Mono", monospace; font-size: 11px;
-  padding: 6px 11px; border-radius: 4px;
-  background: rgba(230,59,46,0.08); border: 1px solid rgba(230,59,46,0.45);
-  color: var(--accent); letter-spacing: 0.06em; text-transform: lowercase;
-  font-weight: 400; box-shadow: none;
-}
-.report-card .verify-row .attach-btn:hover {
-  background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
-  transform: none; box-shadow: none;
-}
+/* The v0.7.1 standalone .attach-btn was removed in v0.8.0 (redundant with
+   the ⋯ more menu — Hick's Law cleanup). The action still lives at
+   `data-action="attach-evidence"` inside `.actions-pop`. */
 
 /* ── closure-absence badge (SPEC §4.2 + §8.4) ──────────────────── */
+/* v0.8.0: no border, no background fill — one quiet horizontal line of
+   text so the post body keeps visual primacy on the card (NN/g card-as-
+   snapshot + visual-hierarchy principles). */
 .report-card .closure {
   display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-  padding: 7px 11px;
-  background: rgba(244,234,213,0.03);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  margin: 0 0 8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  margin: 0 0 10px;
   font-family: "JetBrains Mono", monospace;
-  font-size: 11px; letter-spacing: 0.06em;
+  font-size: 11px; letter-spacing: 0.04em;
 }
 .report-card .closure .seg {
   color: var(--ink-dim);
@@ -688,31 +681,31 @@ main { max-width: 1320px; margin: 0 auto; padding: 28px 28px 64px; }
 .report-card .closure .seg-dup      { color: var(--ink-faint); }
 .report-card .closure .seg-resolved { color: var(--good); }
 .report-card .closure .seg-open     { color: var(--warn); margin-left: auto; }
+/* Sparse-cell signal: inline italic, no longer a full-width bordered row. */
 .report-card .closure .seg-sparse {
   color: var(--warn);
   font-style: italic;
   font-family: "Instrument Serif", serif;
   font-size: 12px;
-  width: 100%;
-  margin-top: 4px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--rule);
   letter-spacing: 0;
 }
 .report-card .closure .consensus {
-  font-size: 10px; padding: 4px 10px; border-radius: 99px;
+  font-size: 10px; padding: 3px 9px; border-radius: 99px;
   border: 1px solid currentColor;
   text-transform: uppercase; letter-spacing: 0.1em;
 }
 .report-card .closure .consensus-true { color: var(--good); }
 .report-card .closure .consensus-fake { color: var(--warn); }
 
-/* SPEC §8.3 — voter-weight legibility */
-.report-card .voter-weight {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px; color: var(--ink-faint);
-  letter-spacing: 0.06em; text-transform: uppercase;
-  margin: 0 0 8px; padding-left: 2px;
+/* SPEC §8.3 — voter-weight legibility, v0.8.0 inline variant.
+   Hidden entirely when zero (no shouty "0 (NEW TO THIS AREA)" row);
+   shown as an italic note inside the verdict row only after the voter
+   has earned non-zero local weight. */
+.report-card .voter-weight-inline {
+  font-family: "Instrument Serif", serif; font-style: italic;
+  font-size: 12px; color: var(--ink-faint);
+  margin-left: 8px;
+  white-space: nowrap;
 }
 
 /* ── verdict row v0.7: binary truth toggles + actions overflow ───── */
@@ -1117,16 +1110,16 @@ code { font-family: "JetBrains Mono", monospace; font-size: 12px; background: rg
   .sign-row { flex-direction: column; align-items: stretch; gap: 14px; }
   .sign-row .meta { text-align: left; }
 
-  /* Card densitiy — slightly tighter on small screens. */
+  /* Card density — v0.8.0 NN/g info-density pass. Body wins; meta recedes. */
   .report-card { padding: 14px 14px; }
-  .report-card .content { font-size: 14px; }
-  .report-card .closure { padding: 6px 10px; gap: 8px; font-size: 10px; }
+  .report-card .content { font-size: 13.5px; line-height: 1.45; }
+  .report-card .closure { padding: 0; gap: 8px; font-size: 10px; }
   .report-card .closure .seg-open { margin-left: 0; }
-  .report-card .voter-weight { font-size: 9px; }
+  .report-card .closure .seg-sparse { font-size: 11px; }
+  .report-card .voter-weight-inline { font-size: 11px; margin-left: 0; width: 100%; }
   .report-card .truth-btn,
   .report-card .actions-toggle,
-  .report-card .verify-row .share-btn,
-  .report-card .verify-row .attach-btn { padding: 6px 10px; font-size: 10px; }
+  .report-card .verify-row .share-btn { padding: 6px 10px; font-size: 10px; }
   .report-card .media-item { max-width: 100%; max-height: 220px; }
 }
 
