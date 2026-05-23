@@ -4,6 +4,46 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.8.1 — new explainer page `/how/` with diagrams (2026-05-23)
+
+A dedicated explainer page for non-developer visitors who want to understand what "decentralized" actually means here — not by reading a 30-page whitepaper, but by looking at five pictures.
+
+### What it covers
+
+Five steps, each with a body paragraph + an inline SVG diagram. Bilingual Hinglish/English with the universal `.hi`/`.en` toggle CSS pattern.
+
+| # | Story | Diagram |
+|---|---|---|
+| 01 | **You sign yourself** — `ed25519` key on your phone, signature is the identity, no signup/email/OTP. | Phone (holds secret key) → signed event leaves the phone. |
+| 02 | **Write once, lands everywhere** — fan-out to every connected relay at once. | Phone publishes → 3 relays receive (Mumbai/Singapore/Render). |
+| 03 | **Relays talk to each other** — SPEC §4a relay-to-relay sync; no siloed feeds. | Triangle: 3 relays bidirectionally syncing. |
+| 04 | **One relay dies? Network lives** — the actual decentralization test. | One relay marked offline (red X), two survivors mesh-syncing, phone reads from survivors. |
+| 05 | **Anyone can be a Pehredaar** — CC0, 3-min deploy, the network grows by addition. | 3 alive relay circles + open candidate slots ("YOU?" marked in accent). |
+
+### Design
+
+- Self-contained `/how/index.html` — no shared CSS dependency. Same design system as landing/client (Anton / Instrument Serif / JetBrains Mono / Inter, `#e63b2e` accent, `#f4ead5` ink on `#0a0a0a` bg).
+- Inline SVG diagrams styled with CSS variables — work offline, scale perfectly, no image bandwidth, accessible (`role="img"` + `aria-label`).
+- Sticky topbar matches the landing exactly (`★ Open source · CC0 public domain · Source on GitHub`).
+- Persistent Hin/EN lang toggle that mirrors the landing's pattern; pref persists in `localStorage`.
+- Mobile (<820px): two-column step grid collapses to one column with diagram below the text. Mobile (<640px): nav simplifies to icon + HOME + OPEN + lang toggle.
+
+### Landing nav
+
+Added a new top-level link **`Decentralized`** in the landing nav that links to `/how/`. Slots between `Why` and `Pehredaar`. Existing `#how` anchor (the three-taps section) stays — they answer different questions ("how do I use it?" vs "how does it actually work?").
+
+### Bilingual rendering — universal toggle
+
+The earlier per-section toggle (`.step .hi/.en`) didn't cover the hero, CTAs, or diagram captions. v0.8.1 lifts it to a universal `.hi { display: revert }` + `body.lang-en .hi { display: none }` rule so every bilingual element on the page flips in one switch. The previous JS-driven inline-style toggle for captions is now unnecessary and removed.
+
+### Versions
+
+- Landing hero pill `v0.8.0 → v0.8.1`.
+- The `/how/` page is new; it ships with the same `v0.8.1` footer label.
+- No client / SW change needed (this page lives alongside, not inside, the client).
+
+VERSION → 0.8.1.
+
 ## v0.8.0 — feed cards: research-led declutter pass (2026-05-23)
 
 A focused UX pass on the feed card after reading what NN/g, Luke Wroblewski, and the broader UX-research literature actually say about card-based feeds, progressive disclosure, and information density. The card used to be a dossier — too many signals competing for attention. v0.8.0 makes it a snapshot.

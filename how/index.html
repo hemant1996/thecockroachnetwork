@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>How it works — The Cockroach Network</title>
+  <meta name="description" content="A picture-by-picture explanation of how the Cockroach Network actually works — what signing means, why no company can shut it down, and where your data lives." />
+  <meta name="theme-color" content="#0a0a0a" />
+  <link rel="canonical" href="https://thecockroachnetwork.com/how/" />
+  <link rel="icon" href="../client/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-2: #131210;
+    --ink: #f4ead5;
+    --ink-dim: rgba(244,234,213,0.66);
+    --ink-faint: rgba(244,234,213,0.42);
+    --accent: #e63b2e;
+    --accent-soft: rgba(230,59,46,0.18);
+    --good: #4ade80;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+    --rule: rgba(244,234,213,0.10);
+    --rule-2: rgba(244,234,213,0.18);
+    --paper: #f4ead5;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--ink);
+    font: 16px/1.55 "Inter", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+  body {
+    background:
+      radial-gradient(circle at 0% 0%, rgba(230,59,46,0.07), transparent 38%),
+      radial-gradient(circle at 100% 100%, rgba(230,59,46,0.05), transparent 42%),
+      var(--bg);
+  }
+  ::selection { background: var(--accent); color: var(--paper); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── topbar (matches landing/client) ───────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 7px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; letter-spacing: 0.04em;
+    color: var(--ink-dim);
+  }
+  .topbar a {
+    color: inherit; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .topbar a:hover { color: var(--accent); }
+  .topbar a svg { width: 14px; height: 14px; }
+  .topbar .star { color: var(--accent); margin-right: 2px; }
+  .topbar-arrow { opacity: 0.7; margin-left: 6px; }
+  .topbar-close {
+    background: transparent; border: 0; color: var(--ink-dim);
+    font-size: 14px; line-height: 1; cursor: pointer; padding: 4px 8px;
+    border-radius: 3px;
+  }
+  .topbar-close:hover { color: var(--accent); background: rgba(230,59,46,0.08); }
+  body.topbar-dismissed .topbar { display: none; }
+  body.topbar-dismissed .nav { top: 0; }
+  @media (max-width: 640px) {
+    .topbar { padding: 6px 12px; font-size: 10px; }
+    .topbar a span.long { display: none; }
+  }
+
+  /* ── nav ───────────────────────────────────────────── */
+  .nav {
+    position: sticky; top: 36px; z-index: 40;
+    background: color-mix(in oklab, var(--bg) 84%, transparent);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border-bottom: 1px solid var(--rule);
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: "Anton", sans-serif; text-transform: uppercase;
+    font-size: 15px; letter-spacing: 0.04em;
+    color: var(--ink);
+  }
+  .brand .roach {
+    display: inline-block; font-size: 22px;
+    animation: wiggle 3.4s ease-in-out infinite; transform-origin: 50% 70%;
+  }
+  @keyframes wiggle { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+  .nav-links {
+    display: flex; gap: 22px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .nav-links a { color: var(--ink-dim); }
+  .nav-links a:hover { color: var(--accent); text-decoration: none; }
+  .nav-links a.cta {
+    color: var(--accent); border: 1px solid var(--accent);
+    padding: 6px 12px; border-radius: 4px;
+  }
+  .nav-links a.cta:hover { background: var(--accent); color: var(--paper); }
+  @media (max-width: 640px) {
+    .nav-inner { padding: 12px 16px; gap: 10px; }
+    .brand span:not(.roach) { display: none; }  /* keep only the cockroach icon */
+    .nav-links { gap: 10px; font-size: 11px; }
+    .nav-links a.cta .report-cta-text { display: none; }
+    .nav-links a.cta::before { content: "Open"; }
+  }
+
+  /* ── hero ──────────────────────────────────────────── */
+  .hero {
+    max-width: 1200px; margin: 0 auto;
+    padding: 56px 24px 32px;
+  }
+  .hero .kicker {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    color: var(--accent); letter-spacing: 0.18em;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: "Anton", sans-serif; text-transform: uppercase;
+    font-size: clamp(36px, 6vw, 78px); line-height: 0.92;
+    margin: 0 0 18px; font-weight: 400;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero .lead {
+    font-family: "Instrument Serif", serif; font-style: italic;
+    font-size: clamp(17px, 1.6vw, 22px);
+    color: var(--ink-dim); max-width: 60ch; margin: 0;
+    line-height: 1.45;
+  }
+
+  /* ── section blocks ────────────────────────────────── */
+  .step {
+    max-width: 1200px; margin: 0 auto;
+    padding: 56px 24px;
+    border-top: 1px solid var(--rule);
+  }
+  .step:first-of-type { border-top: 0; padding-top: 32px; }
+  .step-grid {
+    display: grid; grid-template-columns: 0.95fr 1fr; gap: 56px;
+    align-items: center;
+  }
+  @media (max-width: 820px) {
+    .step { padding: 40px 18px; }
+    .step-grid { grid-template-columns: 1fr; gap: 28px; }
+  }
+
+  .step-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; color: var(--accent);
+    letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .step h2 {
+    font-family: "Anton", sans-serif; text-transform: uppercase;
+    font-size: clamp(30px, 4vw, 52px); line-height: 0.95;
+    margin: 0 0 18px; font-weight: 400;
+  }
+  .step h2 .accent { color: var(--accent); }
+  .step h2 .stroke {
+    color: transparent; -webkit-text-stroke: 1.5px var(--paper);
+  }
+  .step .body { color: var(--ink-dim); line-height: 1.6; font-size: 16px; }
+  .step .body p { margin: 0 0 14px; }
+  .step .body p:last-child { margin: 0; }
+  .step .body b, .step .body strong { color: var(--ink); font-weight: 600; }
+  .step .body .accent { color: var(--accent); }
+  .step .body code {
+    font-family: "JetBrains Mono", monospace; font-size: 13px;
+    background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 3px;
+    color: var(--accent);
+  }
+  /* Bilingual content — show only the active language. Works for
+     inline <span> in headings, <p>/<div> blocks, and CTA labels alike;
+     `display: revert` restores each element's intrinsic display value. */
+  .hi { display: revert; }
+  .en { display: none; }
+  body.lang-en .hi { display: none; }
+  body.lang-en .en { display: revert; }
+
+  /* ── diagram canvas ────────────────────────────────── */
+  .diagram {
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 28px;
+    position: relative;
+  }
+  .diagram svg { display: block; width: 100%; height: auto; }
+  .diagram .caption {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    color: var(--ink-faint); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-top: 16px;
+    padding-top: 14px; border-top: 1px dashed var(--rule);
+    text-align: center;
+  }
+  @media (max-width: 820px) {
+    .diagram { padding: 18px; }
+  }
+
+  /* ── shared SVG styling (every diagram uses these) ── */
+  .d-bg { fill: rgba(244,234,213,0.04); stroke: var(--rule-2); stroke-width: 1; }
+  .d-bg-hi { fill: rgba(230,59,46,0.10); stroke: var(--accent); stroke-width: 1.5; }
+  .d-bg-good { fill: rgba(74,222,128,0.10); stroke: var(--good); stroke-width: 1.5; }
+  .d-bg-bad { fill: rgba(239,68,68,0.10); stroke: var(--bad); stroke-width: 1.5; stroke-dasharray: 4 3; }
+  .d-line { stroke: var(--ink-dim); stroke-width: 1.5; fill: none; }
+  .d-line-hi { stroke: var(--accent); stroke-width: 2; fill: none; }
+  .d-line-good { stroke: var(--good); stroke-width: 2; fill: none; }
+  .d-line-dashed { stroke: var(--ink-faint); stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; }
+  .d-text {
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    fill: var(--ink); letter-spacing: 0.04em;
+  }
+  .d-text-sm {
+    font-family: "JetBrains Mono", monospace; font-size: 10px;
+    fill: var(--ink-dim); letter-spacing: 0.06em;
+  }
+  .d-text-hi {
+    font-family: "Anton", sans-serif; font-size: 13px; letter-spacing: 0.04em;
+    fill: var(--accent); text-transform: uppercase;
+  }
+  .d-label-bg { fill: var(--bg); }
+  .d-x { stroke: var(--bad); stroke-width: 3; stroke-linecap: round; }
+
+  /* arrowheads */
+  .d-arrow { fill: var(--ink-dim); }
+  .d-arrow-hi { fill: var(--accent); }
+  .d-arrow-good { fill: var(--good); }
+
+  /* ── what's next CTA ───────────────────────────────── */
+  .next {
+    max-width: 1200px; margin: 0 auto; padding: 80px 24px;
+    border-top: 1px solid var(--rule);
+  }
+  .next h2 {
+    font-family: "Anton", sans-serif; text-transform: uppercase;
+    font-size: clamp(34px, 5vw, 62px); line-height: 0.92;
+    margin: 0 0 18px; font-weight: 400;
+  }
+  .next h2 .accent { color: var(--accent); }
+  .next .lead {
+    font-family: "Instrument Serif", serif; font-style: italic;
+    font-size: 18px; color: var(--ink-dim);
+    max-width: 56ch; margin: 0 0 28px;
+  }
+  .next-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+  .next-ctas a {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 22px; border-radius: 6px;
+    font-family: "Anton", sans-serif; text-transform: uppercase;
+    font-size: 15px; letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: transform .12s, box-shadow .25s;
+  }
+  .next-ctas .primary {
+    background: var(--accent); color: var(--paper);
+  }
+  .next-ctas .primary:hover { transform: translateY(-1px); box-shadow: 0 0 28px rgba(230,59,46,0.35); text-decoration: none; }
+  .next-ctas .ghost {
+    background: transparent; border: 1px solid var(--rule-2); color: var(--ink);
+    font-family: "JetBrains Mono", monospace; text-transform: uppercase;
+    font-size: 12px; letter-spacing: 0.1em; padding: 14px 18px;
+  }
+  .next-ctas .ghost:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+  /* ── footer ────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 32px 24px;
+    text-align: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; color: var(--ink-faint);
+    letter-spacing: 0.08em;
+  }
+  footer a { color: var(--ink-dim); }
+  footer a:hover { color: var(--accent); }
+
+  /* ── lang toggle (matches landing) ─────────────────── */
+  .lang-toggle {
+    display: inline-flex; background: transparent;
+    border: 1px solid var(--rule-2); border-radius: 99px;
+    padding: 2px; gap: 0;
+  }
+  .lang-toggle button {
+    border: 0; background: transparent; color: var(--ink-dim);
+    padding: 5px 12px; border-radius: 99px; cursor: pointer;
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    letter-spacing: 0.06em; font-weight: 500;
+    transition: color .15s, background .15s;
+  }
+  .lang-toggle button:hover { color: var(--ink); }
+  .lang-toggle button.on { background: var(--accent); color: var(--paper); }
+</style>
+</head>
+<body>
+
+<script>
+  if (sessionStorage.getItem("cockroach.topbar.dismissed") === "1") {
+    document.documentElement.classList.add("topbar-dismissed-pre");
+  }
+</script>
+
+<div class="topbar" id="topbar">
+  <a href="https://github.com/hemant1996/thecockroachnetwork" target="_blank" rel="noopener" aria-label="Open source on GitHub">
+    <span class="star">★</span>
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.1.83-.26.83-.58v-2.04c-3.34.73-4.04-1.41-4.04-1.41-.54-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.84 2.8 1.31 3.49 1 .1-.78.42-1.31.76-1.61-2.66-.31-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.31-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.87.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.38.82 1.11.82 2.23v3.3c0 .32.22.69.83.58A12 12 0 0 0 12 .3"/></svg>
+    <span><span class="long"><b>Open source</b> · CC0 public domain · </span>Source on GitHub</span>
+    <span class="topbar-arrow">→</span>
+  </a>
+  <button class="topbar-close" type="button" aria-label="Dismiss" id="topbar-close">×</button>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <span class="roach">🪳</span>
+      <span>The Cockroach Network</span>
+    </a>
+    <div class="nav-links">
+      <a href="/" aria-label="Home">Home</a>
+      <a href="../client/" class="cta"><span class="report-cta-text">Open the app</span></a>
+      <div class="lang-toggle" role="tablist" aria-label="Language">
+        <button id="lang-hi" class="on" type="button">Hin</button>
+        <button id="lang-en" type="button">EN</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="kicker">/ how it works — picture by picture</div>
+  <h1>
+    <span class="hi">Yeh network <span class="accent">kaise</span><br/>kaam karta hai.</span>
+    <span class="en">How this <span class="accent">network</span><br/>actually works.</span>
+  </h1>
+  <p class="lead hi">
+    Paanch tasveerein. Har ek decentralization ka ek hissa samjhati hai — kis baat ka matlab hai ki <b>koi bhi company</b> ise band nahi kar sakti.
+  </p>
+  <p class="lead en">
+    Five pictures. Each one explains a piece of what "decentralized" actually means here — and why <b>no company</b> can shut this network down.
+  </p>
+</header>
+
+
+<!-- ─── STEP 1: SIGN YOURSELF ─────────────────────────────── -->
+<section class="step">
+  <div class="step-grid">
+    <div>
+      <div class="step-num">01 / 05</div>
+      <h2>
+        <span class="hi">Aap khud<br/><span class="accent">sign karte ho.</span></span>
+        <span class="en">You sign<br/><span class="accent">yourself.</span></span>
+      </h2>
+      <div class="body">
+        <div class="hi">
+          <p>Sign-up nahi hai. Email nahi hai. OTP nahi hai. Aapka phone pehli baar app khulne par ek <b>secret key</b> banata hai aur usi phone par rakhta hai — kisi server par nahi jaati.</p>
+          <p>Jab aap kuch likhte ho, aapka phone us message par <b>aapki secret key se digital signature</b> lagata hai. Yeh signature aapki <span class="accent">public key</span> se bandha hota hai — sab koi check kar sakta hai ki "haan, yeh wahi pubkey hai jisne is post ko likha tha."</p>
+          <p>Identity = public key. Account = nahi hai. <code>ed25519</code> cryptography — bank-grade. Hum koi password rakh hi nahi sakte — kyunki tumhara password hamare paas hai hi nahi.</p>
+        </div>
+        <div class="en">
+          <p>No signup. No email. No OTP. The first time you open the app, your phone generates a <b>secret key</b> and keeps it on the device — it never leaves.</p>
+          <p>When you publish, your phone attaches a <b>digital signature</b> using that secret key. The signature is bound to your <span class="accent">public key</span> — anyone can check "yes, this is the same pubkey that wrote the post."</p>
+          <p>Identity = the public key. Account = doesn't exist. <code>ed25519</code> cryptography — bank-grade. We literally can't store your password because we never have it.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 420 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: phone holds the secret key, signed event leaves the phone with the public key visible">
+        <!-- phone outline -->
+        <rect class="d-bg-hi" x="40" y="30" width="140" height="220" rx="18" />
+        <text class="d-text-hi" x="110" y="55" text-anchor="middle">YOUR PHONE</text>
+        <!-- screen shape inside phone -->
+        <rect class="d-bg" x="55" y="70" width="110" height="150" rx="6" />
+        <!-- key icon inside the phone -->
+        <circle class="d-bg-hi" cx="110" cy="120" r="14" />
+        <rect class="d-bg-hi" x="106" y="130" width="8" height="32" />
+        <rect class="d-bg-hi" x="106" y="150" width="14" height="4" />
+        <rect class="d-bg-hi" x="106" y="158" width="14" height="4" />
+        <text class="d-text-sm" x="110" y="200" text-anchor="middle">secret key</text>
+        <text class="d-text-sm" x="110" y="214" text-anchor="middle">stays here</text>
+
+        <!-- arrow + event leaving -->
+        <line class="d-line-hi" x1="185" y1="140" x2="245" y2="140" />
+        <polygon class="d-arrow-hi" points="245,134 257,140 245,146" />
+        <text class="d-text-sm" x="215" y="128" text-anchor="middle" fill="rgba(244,234,213,0.66)">signed</text>
+
+        <!-- event box -->
+        <rect class="d-bg-good" x="260" y="80" width="140" height="120" rx="6" />
+        <text class="d-text-hi" x="330" y="105" text-anchor="middle" fill="#4ade80">SIGNED EVENT</text>
+        <text class="d-text-sm" x="270" y="130">content: "..."</text>
+        <text class="d-text-sm" x="270" y="148">pubkey: ed25519:…</text>
+        <text class="d-text-sm" x="270" y="166">sig: 0x7a4b…cf09</text>
+        <text class="d-text-sm" x="270" y="184" fill="#4ade80">verifies ✓</text>
+      </svg>
+      <div class="caption hi">Secret key tumhare phone se kabhi nahi nikalti. Sirf signed event nikalta hai.</div>
+      <div class="caption en">The secret key never leaves the phone. Only the signed event leaves.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── STEP 2: ONE WRITE, MANY PLACES ────────────────────── -->
+<section class="step">
+  <div class="step-grid">
+    <div>
+      <div class="step-num">02 / 05</div>
+      <h2>
+        <span class="hi">Ek baar likho —<br/><span class="accent">kayi jagah</span> pahunche.</span>
+        <span class="en">Write once,<br/><span class="accent">lands everywhere.</span></span>
+      </h2>
+      <div class="body">
+        <div class="hi">
+          <p>Jab aap "Sign & publish" daabate ho, aapka signed event ek server par nahi — <b>sab connected relays par ek saath</b> jaata hai. Abhi 3 public relays chal rahe hain (Mumbai, Singapore, Render). Sabhi ko ek copy milti hai.</p>
+          <p>Yeh aam Twitter/Insta jaisa nahi hai — wahan ek company ka ek database hai. Yahan <b>har relay ek alag operator</b> chala raha hai. Agar Mumbai wala band ho jaye, Singapore wala aur Render wala wahi data dikhate rahenge.</p>
+        </div>
+        <div class="en">
+          <p>When you hit "Sign &amp; publish", your signed event doesn't go to one server — it <b>fans out to every connected relay at once</b>. Right now there are 3 public relays running (Mumbai, Singapore, Render). All three get a copy.</p>
+          <p>This is the opposite of Twitter/Instagram — there it's one company's one database. Here <b>every relay is a different operator</b>. If Mumbai goes down, Singapore and Render keep serving the same data.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: phone publishes one event, fans out to three relays">
+        <!-- phone (left, center vertically) -->
+        <rect class="d-bg-hi" x="20" y="130" width="90" height="60" rx="10" />
+        <text class="d-text-hi" x="65" y="155" text-anchor="middle">YOU</text>
+        <text class="d-text-sm" x="65" y="175" text-anchor="middle">phone</text>
+
+        <!-- fan-out lines -->
+        <line class="d-line-hi" x1="115" y1="160" x2="265" y2="60" />
+        <polygon class="d-arrow-hi" points="263,52 277,60 263,68" transform="rotate(34 270 60)" />
+
+        <line class="d-line-hi" x1="115" y1="160" x2="265" y2="160" />
+        <polygon class="d-arrow-hi" points="265,154 277,160 265,166" />
+
+        <line class="d-line-hi" x1="115" y1="160" x2="265" y2="260" />
+        <polygon class="d-arrow-hi" points="263,252 277,260 263,268" transform="rotate(-34 270 260)" />
+
+        <!-- 3 relays -->
+        <rect class="d-bg-good" x="280" y="30" width="120" height="60" rx="10" />
+        <text class="d-text-hi" x="340" y="55" text-anchor="middle" fill="#4ade80">RELAY · MUM</text>
+        <text class="d-text-sm" x="340" y="75" text-anchor="middle">Mumbai · Fly</text>
+
+        <rect class="d-bg-good" x="280" y="130" width="120" height="60" rx="10" />
+        <text class="d-text-hi" x="340" y="155" text-anchor="middle" fill="#4ade80">RELAY · SGP</text>
+        <text class="d-text-sm" x="340" y="175" text-anchor="middle">Singapore · Fly</text>
+
+        <rect class="d-bg-good" x="280" y="230" width="120" height="60" rx="10" />
+        <text class="d-text-hi" x="340" y="255" text-anchor="middle" fill="#4ead4ade80" fill="#4ade80">RELAY · IN</text>
+        <text class="d-text-sm" x="340" y="275" text-anchor="middle">India · Render</text>
+
+        <!-- "1 event = 3 copies" label -->
+        <text class="d-text-sm" x="200" y="310" text-anchor="middle" fill="rgba(244,234,213,0.42)">1 event → 3 copies, atomically</text>
+      </svg>
+      <div class="caption hi">Har relay ek hi event ko receive karta hai. Teen alag operator. Teen alag desh / cloud.</div>
+      <div class="caption en">Each relay receives the same event. Three different operators. Three different countries / clouds.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── STEP 3: RELAYS TALK TO EACH OTHER ─────────────────── -->
+<section class="step">
+  <div class="step-grid">
+    <div>
+      <div class="step-num">03 / 05</div>
+      <h2>
+        <span class="hi">Relays khud ek doosre se<br/><span class="accent">baat karte hain.</span></span>
+        <span class="en">Relays talk to<br/><span class="accent">each other.</span></span>
+      </h2>
+      <div class="body">
+        <div class="hi">
+          <p>Agar aap sirf Mumbai relay se connected ho, aur kisi aur ne sirf Singapore relay par publish kiya — phir bhi aapko unka event mil jaayega. Kaise? Kyunki relays khud ek doosre se baat karte hain (SPEC §4a — "relay-to-relay sync").</p>
+          <p>Har relay <b>doosre relays ko subscribe</b> karta hai aur naye signed events ko aapas mein gossip karta hai. Saari signatures verify hoti hain — koi relay kuch banakar daal nahi sakta. Result: <b>koi siloed feed nahi</b>. Sab relays par sab kuch hota hai.</p>
+        </div>
+        <div class="en">
+          <p>If you're only connected to the Mumbai relay, and someone else published to only the Singapore relay — you'll still see their event. How? Because relays themselves talk to each other (SPEC §4a — "relay-to-relay sync").</p>
+          <p>Each relay <b>subscribes to the others</b> and gossips new signed events between them. All signatures are verified — no relay can fake or insert events. The result: <b>no siloed feeds</b>. Every relay carries everything.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: three relays in a triangle, each syncing events with the other two">
+        <!-- triangle of 3 relays -->
+        <rect class="d-bg-good" x="160" y="20" width="100" height="56" rx="8" />
+        <text class="d-text-hi" x="210" y="44" text-anchor="middle" fill="#4ade80">MUMBAI</text>
+        <text class="d-text-sm" x="210" y="62" text-anchor="middle">relay</text>
+
+        <rect class="d-bg-good" x="40" y="220" width="100" height="56" rx="8" />
+        <text class="d-text-hi" x="90" y="244" text-anchor="middle" fill="#4ade80">SINGAPORE</text>
+        <text class="d-text-sm" x="90" y="262" text-anchor="middle">relay</text>
+
+        <rect class="d-bg-good" x="280" y="220" width="100" height="56" rx="8" />
+        <text class="d-text-hi" x="330" y="244" text-anchor="middle" fill="#4ade80">RENDER · IN</text>
+        <text class="d-text-sm" x="330" y="262" text-anchor="middle">relay</text>
+
+        <!-- mutual sync lines (with double arrows) -->
+        <line class="d-line-good" x1="170" y1="76" x2="110" y2="218" />
+        <polygon class="d-arrow-good" points="111,217 122,212 116,224" />
+        <polygon class="d-arrow-good" points="170,76 168,86 178,82" />
+
+        <line class="d-line-good" x1="250" y1="76" x2="310" y2="218" />
+        <polygon class="d-arrow-good" points="309,217 302,224 298,212" />
+        <polygon class="d-arrow-good" points="250,76 242,82 252,86" />
+
+        <line class="d-line-good" x1="140" y1="248" x2="280" y2="248" />
+        <polygon class="d-arrow-good" points="280,242 290,248 280,254" />
+        <polygon class="d-arrow-good" points="140,242 130,248 140,254" />
+
+        <text class="d-text-sm" x="100" y="160" text-anchor="middle" fill="rgba(74,222,128,0.7)">sync</text>
+        <text class="d-text-sm" x="320" y="160" text-anchor="middle" fill="rgba(74,222,128,0.7)">sync</text>
+        <text class="d-text-sm" x="210" y="266" text-anchor="middle" fill="rgba(74,222,128,0.7)">sync</text>
+
+        <!-- caption -->
+        <text class="d-text-sm" x="210" y="306" text-anchor="middle" fill="rgba(244,234,213,0.42)">no relay holds anything the others don't</text>
+      </svg>
+      <div class="caption hi">Mesh topology. Har relay sabko jaanta hai. Koi master nahi hai.</div>
+      <div class="caption en">Mesh topology. Every relay knows every other relay. There is no master.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── STEP 4: RESILIENCE — NO SINGLE THROAT TO GRAB ─────── -->
+<section class="step">
+  <div class="step-grid">
+    <div>
+      <div class="step-num">04 / 05</div>
+      <h2>
+        <span class="hi">Ek relay <span class="accent">band</span> ho jaye?<br/>Network <span class="stroke">zinda</span> hai.</span>
+        <span class="en">One relay <span class="accent">dies?</span><br/>Network <span class="stroke">lives.</span></span>
+      </h2>
+      <div class="body">
+        <div class="hi">
+          <p>Yahi waala asli decentralization test hai. Maan lo Mumbai relay band ho gaya — server gir gaya, government ne notice bhej diya, ya operator chala gaya. <b>Koi farak nahi padta.</b> Doosre 2 relays par saara signed data abhi bhi pada hai — kyunki §03 mein hum dekh chuke hain ke relays gossip karte rehte hain.</p>
+          <p>Aapka phone apne aap baaki connected relays se data dikhayega. Kuch khoya nahi. Yeh "<b>no single throat to grab</b>" architecture hai — aap kisi ek operator ko target karke poora network band nahi kar sakte.</p>
+          <p>Jitne zyada Pehredaar (relay operators), utna mazboot. Jitne kam, utna khatra. Isi liye humne deploy 3 minute ka rakha hai — <a href="#run">koi bhi Pehredaar ban sakta hai</a>.</p>
+        </div>
+        <div class="en">
+          <p>This is the actual decentralization test. Suppose the Mumbai relay goes down — server crash, government notice, or the operator quits. <b>It doesn't matter.</b> The other 2 relays still hold every signed event — because as we saw in §03, relays gossip continuously.</p>
+          <p>Your phone automatically reads from whichever relays it can still reach. Nothing is lost. This is the "<b>no single throat to grab</b>" architecture — you can't kill the network by leaning on one operator.</p>
+          <p>More Pehredaars (relay operators) = more resilient. Fewer = more fragile. That's why we made deploy a 3-minute job — <a href="#run">anyone can become a Pehredaar</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: one relay marked offline with X, two surviving relays still serve the phone">
+        <!-- dead relay (top) -->
+        <rect class="d-bg-bad" x="160" y="20" width="100" height="56" rx="8" />
+        <text class="d-text-hi" x="210" y="44" text-anchor="middle" fill="#ef4444">MUMBAI</text>
+        <text class="d-text-sm" x="210" y="62" text-anchor="middle" fill="#ef4444">offline</text>
+        <line class="d-x" x1="170" y1="30" x2="250" y2="66" />
+        <line class="d-x" x1="250" y1="30" x2="170" y2="66" />
+
+        <!-- alive relays -->
+        <rect class="d-bg-good" x="40" y="160" width="100" height="56" rx="8" />
+        <text class="d-text-hi" x="90" y="184" text-anchor="middle" fill="#4ade80">SINGAPORE</text>
+        <text class="d-text-sm" x="90" y="202" text-anchor="middle">alive ✓</text>
+
+        <rect class="d-bg-good" x="280" y="160" width="100" height="56" rx="8" />
+        <text class="d-text-hi" x="330" y="184" text-anchor="middle" fill="#4ade80">RENDER · IN</text>
+        <text class="d-text-sm" x="330" y="202" text-anchor="middle">alive ✓</text>
+
+        <!-- dead links to dead relay (dashed) -->
+        <line class="d-line-dashed" x1="170" y1="76" x2="110" y2="158" />
+        <line class="d-line-dashed" x1="250" y1="76" x2="310" y2="158" />
+
+        <!-- live sync line between survivors -->
+        <line class="d-line-good" x1="140" y1="188" x2="280" y2="188" />
+        <polygon class="d-arrow-good" points="280,182 290,188 280,194" />
+        <polygon class="d-arrow-good" points="140,182 130,188 140,194" />
+
+        <!-- phone connecting to both alive relays -->
+        <rect class="d-bg-hi" x="170" y="245" width="80" height="50" rx="10" />
+        <text class="d-text-hi" x="210" y="268" text-anchor="middle">YOU</text>
+        <text class="d-text-sm" x="210" y="284" text-anchor="middle">phone</text>
+
+        <line class="d-line-hi" x1="170" y1="270" x2="115" y2="218" />
+        <polygon class="d-arrow-hi" points="118,212 110,222 122,222" />
+        <line class="d-line-hi" x1="250" y1="270" x2="305" y2="218" />
+        <polygon class="d-arrow-hi" points="302,212 310,222 298,222" />
+
+        <text class="d-text-sm" x="210" y="316" text-anchor="middle" fill="rgba(244,234,213,0.42)">phone reads from survivors automatically</text>
+      </svg>
+      <div class="caption hi">1 relay down ≠ network down. Sab data baaki ke paas hai.</div>
+      <div class="caption en">1 relay down ≠ network down. The other relays still hold all the data.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── STEP 5: ANYONE CAN JOIN THE KEEP ──────────────────── -->
+<section class="step" id="run">
+  <div class="step-grid">
+    <div>
+      <div class="step-num">05 / 05</div>
+      <h2>
+        <span class="hi">Pehredaar <span class="accent">koi bhi</span><br/>ban sakta hai.</span>
+        <span class="en">Anyone <span class="accent">can be</span><br/>a Pehredaar.</span>
+      </h2>
+      <div class="body">
+        <div class="hi">
+          <p>Hum (yeh website) sirf ek <b>reference operator</b> hain — 3 me se 3 relays abhi humare paas hain. Lekin yeh permanent nahi hai. Koi bhi:</p>
+          <p>→ Render.com par ek button daba ke 3 minute mein apna relay deploy kar sakta hai (free, no credit card)<br/>→ Raspberry Pi ya $5 ka VPS ya purana laptop bhi chala sakta hai<br/>→ Apne ko share-URL se publicly seed list mein daal sakta hai</p>
+          <p>Code <b>CC0 public domain</b> hai — permission nahi maangni padti. Aapka relay <b>automatically</b> baaki relays se sync ho jaayega aur sab clients tak pahunchne lagega.</p>
+          <p>Jitne zyada Pehredaar — utna sach. Yahi original design intent hai.</p>
+        </div>
+        <div class="en">
+          <p>We (this website) are just one <b>reference operator</b> — all 3 current relays happen to be ours. But that's not permanent. Anyone can:</p>
+          <p>→ deploy their own relay on Render.com in 3 minutes (free, no credit card)<br/>→ run it on a Raspberry Pi, a $5 VPS, or an old laptop<br/>→ publish their relay's URL via the share-link discovery so others adopt it</p>
+          <p>The code is <b>CC0 public domain</b> — no permission required. A new relay <b>automatically</b> meshes with the existing ones and starts reaching every client.</p>
+          <p>More Pehredaars = more truth. That's the whole design.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: existing relays plus open slots that any new operator could fill">
+        <!-- 3 alive relays -->
+        <circle class="d-bg-good" cx="100" cy="80" r="32" />
+        <text class="d-text-hi" x="100" y="78" text-anchor="middle" fill="#4ade80">MUM</text>
+        <text class="d-text-sm" x="100" y="94" text-anchor="middle">alive</text>
+
+        <circle class="d-bg-good" cx="220" cy="80" r="32" />
+        <text class="d-text-hi" x="220" y="78" text-anchor="middle" fill="#4ade80">SGP</text>
+        <text class="d-text-sm" x="220" y="94" text-anchor="middle">alive</text>
+
+        <circle class="d-bg-good" cx="340" cy="80" r="32" />
+        <text class="d-text-hi" x="340" y="78" text-anchor="middle" fill="#4ade80">IN</text>
+        <text class="d-text-sm" x="340" y="94" text-anchor="middle">alive</text>
+
+        <!-- candidate slots: dashed circles -->
+        <circle class="d-bg-bad" cx="60" cy="180" r="28" style="fill:transparent;stroke:var(--ink-faint);stroke-dasharray:4 3" />
+        <text class="d-text-sm" x="60" y="184" text-anchor="middle" fill="rgba(244,234,213,0.42)">?</text>
+
+        <circle class="d-bg-bad" cx="160" cy="220" r="28" style="fill:transparent;stroke:var(--accent);stroke-dasharray:4 3" />
+        <text class="d-text-sm" x="160" y="218" text-anchor="middle" fill="var(--accent)">YOU?</text>
+        <text class="d-text-sm" x="160" y="232" text-anchor="middle" fill="rgba(244,234,213,0.42)">3 min</text>
+
+        <circle class="d-bg-bad" cx="260" cy="220" r="28" style="fill:transparent;stroke:var(--ink-faint);stroke-dasharray:4 3" />
+        <text class="d-text-sm" x="260" y="224" text-anchor="middle" fill="rgba(244,234,213,0.42)">?</text>
+
+        <circle class="d-bg-bad" cx="360" cy="180" r="28" style="fill:transparent;stroke:var(--ink-faint);stroke-dasharray:4 3" />
+        <text class="d-text-sm" x="360" y="184" text-anchor="middle" fill="rgba(244,234,213,0.42)">?</text>
+
+        <!-- arrow pointing to "YOU?" slot -->
+        <line class="d-line-hi" x1="160" y1="278" x2="160" y2="252" />
+        <polygon class="d-arrow-hi" points="154,254 160,244 166,254" />
+        <text class="d-text-hi" x="160" y="298" text-anchor="middle">deploy yours</text>
+
+        <text class="d-text-sm" x="210" y="318" text-anchor="middle" fill="rgba(244,234,213,0.42)">network grows by addition, not permission</text>
+      </svg>
+      <div class="caption hi">CC0 = koi license clause nahi, koi permission nahi. Sirf deploy karo aur mesh mein ghus jao.</div>
+      <div class="caption en">CC0 = no license clause, no permission required. Just deploy and your relay joins the mesh.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── next ─── -->
+<section class="next">
+  <h2>
+    <span class="hi">Ab <span class="accent">cockroach</span> ban jao.</span>
+    <span class="en">Now be a <span class="accent">cockroach.</span></span>
+  </h2>
+  <p class="lead hi">
+    Decentralization theory nahi hai. Use karne mein decentralization dikhta hai — aap koi report likho, doosre relay par bhi mil jayegi, aur jo aapne signed kiya woh hamesha rahega.
+  </p>
+  <p class="lead en">
+    Decentralization isn't theory. It's what you experience when you actually use it — your report shows up on every relay, and what you signed stays signed forever.
+  </p>
+  <div class="next-ctas">
+    <a class="primary" href="../client/">
+      <span class="hi">Network mein aaiye →</span>
+      <span class="en">Join the network →</span>
+    </a>
+    <a class="ghost" href="../#pehredaar">Pehredaar baniye · 3 min ↗</a>
+    <a class="ghost" href="../build/">Build / Fork ↗</a>
+    <a class="ghost" href="https://github.com/hemant1996/thecockroachnetwork/blob/main/WHITEPAPER.md" target="_blank" rel="noopener">Whitepaper ↗</a>
+  </div>
+</section>
+
+
+<footer>
+  <p>COCKROACH V0.8.0 · CC0 PUBLIC DOMAIN · JANTA KA NETWORK</p>
+  <p style="margin-top:6px"><a href="/">← thecockroachnetwork.com</a></p>
+</footer>
+
+
+<script>
+  // ── topbar dismiss ─────────────────────────────────────────────────────
+  if (document.documentElement.classList.contains("topbar-dismissed-pre")) {
+    document.body.classList.add("topbar-dismissed");
+  }
+  document.getElementById("topbar-close")?.addEventListener("click", () => {
+    sessionStorage.setItem("cockroach.topbar.dismissed", "1");
+    document.body.classList.add("topbar-dismissed");
+  });
+
+  // ── language toggle (Hinglish / English) — purely client-side ─────────
+  const LANG_KEY = "cockroach.lang";
+  const hiBtn = document.getElementById("lang-hi");
+  const enBtn = document.getElementById("lang-en");
+  function applyLang(code) {
+    const isEn = code === "en";
+    document.body.classList.toggle("lang-en", isEn);
+    hiBtn?.classList.toggle("on", !isEn);
+    enBtn?.classList.toggle("on", isEn);
+    // The .hi / .en visibility is handled by the universal CSS rule above
+    // (`.hi { display: revert; .en { display: none }` with body.lang-en
+    // inverting). No per-element JS needed.
+    try { localStorage.setItem(LANG_KEY, code); } catch {}
+  }
+  const initial = (() => {
+    try { return localStorage.getItem(LANG_KEY) || "hi"; } catch { return "hi"; }
+  })();
+  applyLang(initial);
+  hiBtn?.addEventListener("click", () => applyLang("hi"));
+  enBtn?.addEventListener("click", () => applyLang("en"));
+</script>
+
+</body>
+</html>
