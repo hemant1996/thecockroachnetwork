@@ -4,6 +4,43 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.8.2 — `/how/` §06: how new relays get adopted (torrent analogy) (2026-05-23)
+
+v0.8.1's explainer stopped at "anyone can deploy a relay" — true but incomplete. Deploying alone doesn't matter; the network grows only when a *new* relay gets *adopted* by other peoples' clients. That's the actual trust-bootstrap step, and it was missing.
+
+Added a sixth section: **"New relays come in through shares. Like torrents."**
+
+### What §06 covers
+
+- A share-permalink to any report carries the source relay in its `#relays=…` fragment (SPEC §4.8 share-URL discovery, shipped in v0.4).
+- The recipient's client `GET /info` on the URL and verifies the canonical signature (`name: "cockroach-relay"`) before adopting — so a hostile URL can't trick a client into trusting a fake server. The actual `verifyRelayUrl()` function in `client/app.js:686` does this work.
+- The adopted relay is tagged with provenance: `seed list` / `via share #abcd` / `added manually 5d ago`. Visible in the Identity tab. An audit trail of where each piece of your trust came from.
+- **The torrent analogy** is exact: a magnet link carries content hash + tracker URLs; whoever has the link joins the swarm. A cockroach share-link carries the relay URL; whoever has the link adopts the relay. Same mechanic, different content.
+
+### Why this matters for the "decentralization" story
+
+Without §06 the page implied "anyone can deploy" was enough. It isn't. The bigger half is: **trust travels along the same social ties where people share political content anyway** — WhatsApp forwards, Twitter, family groups. No central registry decides which relays exist; the community decides by whose links they open.
+
+### The diagram
+
+A six-element flow:
+
+1. Alice (top-left) running her new relay
+2. A red-dashed `SHARE LINK` bubble showing the URL with the `#relays=wss://alice-relay` fragment
+3. Travel arrow labelled `via WhatsApp / Twitter / SMS`
+4. Bob (top-right) opens the link
+5. Dashed verification line: `GET /info → "cockroach-relay" ✓`
+6. Bob's relay pool at the bottom — 3 rows, the new `wss://alice-relay` highlighted in accent with `via share #abcd` tag
+
+### Versions
+
+- Hero lead text "Five pictures" → "Six pictures" (+ "where trust comes from" added in both languages).
+- All step counters `01 / 05` → `01 / 06` (etc.) across the existing five sections.
+- Landing hero pill `v0.8.1 → v0.8.2`.
+- `/how/` footer ships `v0.8.2`.
+
+VERSION → 0.8.2.
+
 ## v0.8.1 — new explainer page `/how/` with diagrams (2026-05-23)
 
 A dedicated explainer page for non-developer visitors who want to understand what "decentralized" actually means here — not by reading a 30-page whitepaper, but by looking at five pictures.
