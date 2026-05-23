@@ -617,7 +617,7 @@ try {
     if (url.pathname === "/") {
       return new Response(JSON.stringify({
         name: "cockroach-relay",
-        version: "0.5.0",
+        version: "0.8.8",
         spec: "https://github.com/hemant1996/thecockroachnetwork/blob/main/SPEC.md",
         retention_days: RETENTION_DAYS,
         stats: getStats(),

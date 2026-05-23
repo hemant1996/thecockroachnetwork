@@ -4,6 +4,36 @@ All notable changes to the Cockroach Relay Protocol and its reference implementa
 
 The format follows the spirit of [Keep a Changelog](https://keepachangelog.com). The protocol versioning policy is in [SPEC.md §11](SPEC.md#11-forward-compatibility): new event kinds and new tag names are additive; only changes to the event format, signing rules, or wire verbs bump the major version.
 
+## v0.8.8 — relay /info version bump + redeploy round (2026-05-23)
+
+Discovered during the v0.8.7 audit: the relay's `/info` endpoint was reporting `version: "0.5.0"` and `relay/package.json` was at `0.1.0` — both stale since v0.5 shipped. Aligned both to the current project version so operators reading `/info` see what's actually running.
+
+This commit is a redeploy trigger for the relays — the v0.8.7 security-header changes (`x-content-type-options`, `referrer-policy`, `content-security-policy` on `/r/<id>`) need a `fly deploy` on Mumbai + Singapore. Render auto-deploys on push.
+
+### Changed
+
+- `relay/server.ts:603` — `version: "0.5.0"` → `version: "0.8.8"`.
+- `relay/package.json` — `0.1.0` → `0.8.8`.
+- Landing hero pill `v0.8.7` → `v0.8.8`.
+- Client brand chip + about-card footer `v0.8.7` → `v0.8.8`.
+- `VERSION` → `0.8.8`.
+
+### Operator action — redeploy the 3 public relays
+
+```bash
+cd relay
+fly deploy --app cockroach-relay-hemant1996 --config fly.toml
+fly deploy --app cockroach-relay-singapore --config fly.singapore.toml
+# Render auto-deploys on this push via render.yaml.
+```
+
+Verify after each deploy:
+
+```bash
+curl -s https://<relay-host>/ | grep -F '"version": "0.8.8"'
+curl -sI https://<relay-host>/ | grep -iE 'x-content-type-options|referrer-policy'
+```
+
 ## v0.8.7 — security audit fixes: 2 CRITICAL + 3 MEDIUM patched (2026-05-23)
 
 Fixes every finding from `/cso` (`.gstack/security-reports/2026-05-23-cso.json`). Two CRITICAL findings would have allowed full network-wide key exfiltration; three MEDIUM findings are hardening.
