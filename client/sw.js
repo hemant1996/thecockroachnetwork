@@ -10,7 +10,7 @@
 // anything in the shell) wipes every visitor's stale cache on next SW
 // activation.
 
-const CACHE = "cockroach-shell-v080";
+const CACHE = "cockroach-shell-v087";
 const SHELL = [
   "./",
   "./index.html",
@@ -24,6 +24,9 @@ const SHELL = [
   "./relays.json",
   "./lang/en.json",
   "./lang/hi.json",
+  // v0.8.7 — same-origin crypto bundles (replaces esm.sh imports).
+  "./vendor/vendor-ed25519.js",
+  "./vendor/vendor-hashes.js",
 ];
 
 self.addEventListener("install", (e) => {

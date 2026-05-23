@@ -2,8 +2,15 @@
 // All crypto is in-browser. The keypair never leaves this device.
 // Spec: ../SPEC.md
 
-import * as ed from "https://esm.sh/@noble/ed25519@2.3.0";
-import { sha256, sha512 } from "https://esm.sh/@noble/hashes@1.8.0/sha2";
+// SECURITY: load the cryptographic substrate from same-origin vendored bundles,
+// not from a third-party CDN. The earlier v0.5-v0.8 code imported these from
+// esm.sh with no Subresource Integrity, which gave whoever controlled esm.sh
+// the ability to swap our sign() for one that also exfiltrates the secret key.
+// Same-origin removes the lever entirely. Bundles built by `bun run build:vendor`
+// from pinned versions in client/package.json. Checksums in client/vendor/CHECKSUMS.
+// See .gstack/security-reports/2026-05-23-cso.json finding #2.
+import * as ed from "./vendor/vendor-ed25519.js";
+import { sha256, sha512 } from "./vendor/vendor-hashes.js";
 import { PeerPool } from "./peers.js";
 import { compressImage } from "./media.js";
 import {
@@ -23,7 +30,8 @@ import {
   geo5,
 } from "./verdicts.js";
 
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
+// sha512Sync wiring done inside vendor/vendor-ed25519.js; sha512 import above
+// keeps the symbol available here for any future direct use.
 
 // ─── canonical JSON + ids ────────────────────────────────────────────────
 
@@ -803,9 +811,26 @@ async function processShareHashDiscovery() {
   }
 }
 
+// Hosts that must never receive a share-URL probe fetch. The previous
+// implementation only filtered the URL scheme, which let a crafted share-link
+// (e.g. wss://192.168.1.1/cgi-bin/factory_reset) make the recipient's browser
+// fire blind GETs into their own LAN. CORS hides the response but side-effect
+// endpoints on consumer routers / IoT devices still trigger.
+// See .gstack/security-reports/2026-05-23-cso.json finding #4.
+function isPrivateOrLocalHost(host) {
+  const h = (host || "").toLowerCase();
+  if (h === "" || h === "localhost" || h === "0.0.0.0" || h === "::" || h === "::1") return true;
+  if (h.startsWith("127.") || h.startsWith("10.") || h.startsWith("192.168.") || h.startsWith("169.254.")) return true;
+  if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h)) return true;            // 172.16/12 (RFC1918)
+  if (h.startsWith("fe80:") || h.startsWith("fc") || h.startsWith("fd")) return true; // IPv6 link-local + ULA
+  return false;
+}
+
 async function verifyRelayUrl(wsUrl) {
   try {
     const httpUrl = wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+    const u = new URL(httpUrl);
+    if (isPrivateOrLocalHost(u.hostname)) return false;
     const ctl = new AbortController();
     const t = setTimeout(() => ctl.abort(), 5000);
     const r = await fetch(httpUrl, { signal: ctl.signal, cache: "no-cache" });
@@ -991,8 +1016,13 @@ function renderMediaTags(r) {
     // Permit data: and http(s): and ipfs:; reject other schemes to keep
     // the surface area tight against future protocol confusion.
     if (!/^(data:image\/|https?:\/\/|ipfs:\/\/)/.test(url)) return "";
-    const safe = url.startsWith("data:") ? url : escapeHTML(url);
-    return `<img class="media-item" loading="lazy" alt="" src="${safe}"/>`;
+    // SECURITY: ALWAYS escape the URL before interpolating into the src
+    // attribute. The earlier v0.5-v0.8 code branched on `startsWith("data:")`
+    // and passed data URLs through unescaped — that allowed XSS via a
+    // crafted media tag like  data:image/x;," onerror="..." foo="
+    // because the regex above only validates the prefix, not the tail.
+    // See .gstack/security-reports/2026-05-23-cso.json finding #1.
+    return `<img class="media-item" loading="lazy" alt="" src="${escapeHTML(url)}"/>`;
   }).join("")}</div>`;
 }
 

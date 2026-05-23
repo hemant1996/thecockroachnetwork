@@ -585,6 +585,23 @@ function getStats() {
 // ──────────────────────────────────────────────────────────────────────────
 // HTTP + WebSocket server
 
+// Security headers applied to every HTTP response. Defense-in-depth — the
+// escapers in renderPermalinkHTML are correct today, but `script-src 'none'`
+// neutralizes a future regression to immediate XSS. See
+// .gstack/security-reports/2026-05-23-cso.json finding #5.
+const BASE_SECURITY_HEADERS: Record<string, string> = {
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "strict-origin-when-cross-origin",
+};
+const HTML_CSP = "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+function withSecurityHeaders(headers: Record<string, string>, opts: { html?: boolean } = {}): Record<string, string> {
+  return {
+    ...BASE_SECURITY_HEADERS,
+    ...(opts.html ? { "content-security-policy": HTML_CSP } : {}),
+    ...headers,
+  };
+}
+
 let server: ReturnType<typeof Bun.serve>;
 try {
   server = Bun.serve({
@@ -594,7 +611,7 @@ try {
     // upgrade request also arrives at "/".
     if (req.headers.get("upgrade")?.toLowerCase() === "websocket") {
       if (srv.upgrade(req)) return undefined;
-      return new Response("upgrade failed", { status: 400 });
+      return new Response("upgrade failed", { status: 400, headers: withSecurityHeaders({}) });
     }
     const url = new URL(req.url);
     if (url.pathname === "/") {
@@ -604,7 +621,7 @@ try {
         spec: "https://github.com/hemant1996/thecockroachnetwork/blob/main/SPEC.md",
         retention_days: RETENTION_DAYS,
         stats: getStats(),
-      }, null, 2), { headers: { "content-type": "application/json", "access-control-allow-origin": "*" } });
+      }, null, 2), { headers: withSecurityHeaders({ "content-type": "application/json", "access-control-allow-origin": "*" }) });
     }
     // SPEC §6 — public list of peers this relay syncs with.  Operators
     // and clients can inspect; no auth needed — peer URLs are not secret.
@@ -617,25 +634,27 @@ try {
         connected: peerConnections.has(p.url),
       }));
       return new Response(JSON.stringify({ peers }, null, 2), {
-        headers: { "content-type": "application/json", "access-control-allow-origin": "*" },
+        headers: withSecurityHeaders({ "content-type": "application/json", "access-control-allow-origin": "*" }),
       });
     }
     if (url.pathname === "/og.svg") {
       return new Response(OG_SVG, {
-        headers: { "content-type": "image/svg+xml", "cache-control": "public, max-age=86400" },
+        headers: withSecurityHeaders({ "content-type": "image/svg+xml", "cache-control": "public, max-age=86400" }),
       });
     }
     if (url.pathname.startsWith("/r/")) {
       const id = url.pathname.slice(3);
-      if (!/^[0-9a-f]{64}$/.test(id)) return new Response("invalid event id", { status: 400 });
+      if (!/^[0-9a-f]{64}$/.test(id)) {
+        return new Response("invalid event id", { status: 400, headers: withSecurityHeaders({}) });
+      }
       const row = db.query("SELECT raw, compressed FROM events WHERE id = ?").get(id) as { raw: string, compressed: number } | undefined;
-      if (!row) return new Response("not found on this relay — try another", { status: 404 });
+      if (!row) return new Response("not found on this relay — try another", { status: 404, headers: withSecurityHeaders({}) });
       const ev = JSON.parse(decompressRaw(row.raw, row.compressed)) as SignedEvent;
       return new Response(renderPermalinkHTML(ev, url.origin), {
-        headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60" },
+        headers: withSecurityHeaders({ "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60" }, { html: true }),
       });
     }
-    return new Response("not found", { status: 404 });
+    return new Response("not found", { status: 404, headers: withSecurityHeaders({}) });
   },
   websocket: {
     open(ws) {

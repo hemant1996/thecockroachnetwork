@@ -1,10 +1,15 @@
 {
   "name": "cockroach-client",
-  "version": "0.7.0",
+  "version": "0.8.7",
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "bun test"
+    "test": "bun test",
+    "build:vendor": "bun build --format=esm --target=browser --minify --outdir=./vendor scripts/vendor-ed25519.js scripts/vendor-hashes.js && ./scripts/vendor-checksum.sh"
+  },
+  "dependencies": {
+    "@noble/ed25519": "2.3.0",
+    "@noble/hashes": "1.8.0"
   },
   "license": "CC0-1.0"
 }
